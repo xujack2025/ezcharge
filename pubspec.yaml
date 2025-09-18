@@ -9,11 +9,54 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  url_launcher:
+  firebase_core:
+  firebase_auth:
+  cloud_firestore:
+  firebase_storage:
+  mobile_scanner:
+  image_picker:
+  file_picker:
+  google_sign_in:
+  intl:
+  google_maps_flutter:
+  location:
+  flutter_polyline_points:
+  provider:
+  geolocator:
+  pinput:
+  get:
+  dash_chat_2:
+  chat_gpt_sdk:
+  fl_chart:
+  pdf:
+  printing:
+  google_fonts:
+  carousel_slider:
+  camera:
+  google_mlkit_face_detection:
+  qr_flutter:
+  shared_preferences:
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons:
+  flutter_native_splash:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - images/
+
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/ezcharge_logo.png"
