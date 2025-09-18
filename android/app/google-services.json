@@ -1,0 +1,122 @@
+{
+  "project_info": {
+    "project_number": "505880735220",
+    "firebase_url": "https://ezcharge-7e845-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "ezcharge-7e845",
+    "storage_bucket": "ezcharge-7e845.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505880735220:android:77e23265bc10b2c4461da1",
+        "android_client_info": {
+          "package_name": "com.example.ezcharge"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "505880735220-g5tfbuqeglanfm8h6mem3cu592ohup47.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ezcharge",
+            "certificate_hash": "4dac354f59efdf041f31ef7fccadeb7d598987e2"
+          }
+        },
+        {
+          "client_id": "505880735220-uo5tico8u955kq2kurbirvlbsmtrv7tc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ezcharge",
+            "certificate_hash": "569e9d04a7e35c4aadc09d2fdcc127e6b595580c"
+          }
+        },
+        {
+          "client_id": "505880735220-g7hi68abppsl91340u8vhkp7gbe67i6n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAY0zfaFIE52REJOi-Govg1ZHu5EPvY_Vo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "505880735220-g7hi68abppsl91340u8vhkp7gbe67i6n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505880735220:android:1269e01422857d6a461da1",
+        "android_client_info": {
+          "package_name": "com.example.ezcharge_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "505880735220-m6phemptd6oao0ce85bf0igg0hi130e8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ezcharge_app",
+            "certificate_hash": "569e9d04a7e35c4aadc09d2fdcc127e6b595580c"
+          }
+        },
+        {
+          "client_id": "505880735220-g7hi68abppsl91340u8vhkp7gbe67i6n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAY0zfaFIE52REJOi-Govg1ZHu5EPvY_Vo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "505880735220-g7hi68abppsl91340u8vhkp7gbe67i6n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505880735220:android:91f9a84f2eb58226461da1",
+        "android_client_info": {
+          "package_name": "com.ezcharge.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "505880735220-g7hi68abppsl91340u8vhkp7gbe67i6n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAY0zfaFIE52REJOi-Govg1ZHu5EPvY_Vo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "505880735220-g7hi68abppsl91340u8vhkp7gbe67i6n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

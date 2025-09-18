@@ -57,7 +57,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     height: 350,
                     child: const Image(
                       image: AssetImage(
-                          'images/welcome_map_icon.png'), // Replace with actual map image
+                          'assets/images/welcome_map_icon.png'), // Replace with actual map image
                       fit: BoxFit.cover,
                     ),
                   ),

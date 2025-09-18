@@ -73,7 +73,7 @@ class _IntroScreenState extends State<IntroScreen> {
                       color: Colors.black,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Image.asset('images/ezcharge_logo.png', fit: BoxFit.contain),
+                    child: Image.asset('assets/images/ezcharge_logo.png', fit: BoxFit.contain),
                   ),
                   const SizedBox(height: 20),
                   // Title Text
