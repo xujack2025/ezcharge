@@ -1,5 +1,6 @@
 import 'package:ezcharge/viewmodels/tracking_viewmodel.dart';
 import 'package:ezcharge/views/auth/Intro_screen.dart';
+import 'package:ezcharge/views/customer/customercontent/AccountScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:ezcharge/viewmodels/emergency_request_viewmodel.dart';
 
@@ -13,7 +14,8 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-            create: (context) => EmergencyRequestViewModel()),
+          create: (context) => EmergencyRequestViewModel(),
+        ),
         ChangeNotifierProvider(create: (context) => TrackingViewModel()),
         // ✅ Add this line
       ],
@@ -32,6 +34,7 @@ class MyApp extends StatelessWidget {
       title: 'EzCharge',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: IntroScreen(),
+      routes: {'/account': (context) => AccountScreen()},
     );
   }
 }

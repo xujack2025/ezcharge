@@ -16,6 +16,7 @@ import 'package:ezcharge/views/customer/customercontent/TopUpScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -43,6 +44,13 @@ class _AccountScreenState extends State<AccountScreen> {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         String userPhone = user.phoneNumber ?? "";
+
+        // 🔧 DEV BYPASS: If no phone number (anonymous login), check SharedPreferences
+        if (userPhone.isEmpty) {
+          final prefs = await SharedPreferences.getInstance();
+          userPhone = prefs.getString('dev_phone_number') ?? "";
+        }
+
         if (userPhone.isEmpty) return;
 
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -98,11 +106,14 @@ class _AccountScreenState extends State<AccountScreen> {
         backgroundColor: Colors.white,
         elevation: 1,
         automaticallyImplyLeading: false,
-        title: const Text("Account",
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 30,
-                fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Account",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: Column(
         children: [
@@ -132,19 +143,26 @@ class _AccountScreenState extends State<AccountScreen> {
                             Text(
                               "Account ID: $_accountId",
                               style: const TextStyle(
-                                  fontSize: 14, color: Colors.white),
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.bolt,
-                                      color: Colors.blue, size: 18),
+                                  const Icon(
+                                    Icons.bolt,
+                                    color: Colors.blue,
+                                    size: 18,
+                                  ),
                                   const SizedBox(width: 5),
                                   Text(
                                     "$_pointBalance pts",
@@ -175,8 +193,11 @@ class _AccountScreenState extends State<AccountScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.account_balance_wallet,
-                                color: Colors.white, size: 28),
+                            const Icon(
+                              Icons.account_balance_wallet,
+                              color: Colors.white,
+                              size: 28,
+                            ),
                             const SizedBox(width: 10),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,7 +205,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                 const Text(
                                   "EZCharge Credits",
                                   style: TextStyle(
-                                      fontSize: 14, color: Colors.white),
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                  ),
                                 ),
                                 Text(
                                   "RM ${_walletBalance.toStringAsFixed(2)}",
@@ -203,98 +226,132 @@ class _AccountScreenState extends State<AccountScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => TopUpScreen()),
+                                builder: (context) => TopUpScreen(),
+                              ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white),
-                          child: const Text("+ TOP UP",
-                              style:
-                                  TextStyle(color: Colors.blue, fontSize: 14)),
+                            backgroundColor: Colors.white,
+                          ),
+                          child: const Text(
+                            "+ TOP UP",
+                            style: TextStyle(color: Colors.blue, fontSize: 14),
+                          ),
                         ),
                       ],
                     ),
                   ),
-//Selection button
+                  //Selection button
                   _buildSection("My Account", [
-                    _buildListItem("Edit Profile", onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => EditProfileScreen()),
-                      );
-                    }),
-                    _buildListItem("Charging", onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ActivityScreen()),
-                      );
-                    }),
-                    _buildListItem("Authenticate Account", onTap: () {
-                      if (_authStatus == "Pending") {
+                    _buildListItem(
+                      "Edit Profile",
+                      onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const PendingScreen()),
+                            builder: (context) => EditProfileScreen(),
+                          ),
                         );
-                      } else if (_authStatus == "Pass") {
+                      },
+                    ),
+                    _buildListItem(
+                      "Charging",
+                      onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const PassScreen()),
+                            builder: (context) => ActivityScreen(),
+                          ),
                         );
-                      } else if (_authStatus == "Fail") {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const FailScreen()),
-                        );
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
+                      },
+                    ),
+                    _buildListItem(
+                      "Authenticate Account",
+                      onTap: () {
+                        if (_authStatus == "Pending") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PendingScreen(),
+                            ),
+                          );
+                        } else if (_authStatus == "Pass") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PassScreen(),
+                            ),
+                          );
+                        } else if (_authStatus == "Fail") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const FailScreen(),
+                            ),
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
                               builder: (context) =>
-                                  const AuthenticateAccountScreen()),
+                                  const AuthenticateAccountScreen(),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    _buildListItem(
+                      "Bookmarks",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookmarkScreen(),
+                          ),
                         );
-                      }
-                    }),
-                    _buildListItem("Bookmarks", onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => BookmarkScreen()),
-                      );
-                    }),
+                      },
+                    ),
                   ]),
                   _buildSection("Payments", [
-                    _buildListItem("Payment Methods", onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => PaymentMethodScreen()),
-                      );
-                    }),
-                    _buildListItem("Payment History", onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => PaymentHistoryListScreen()),
-                      );
-                    }),
+                    _buildListItem(
+                      "Payment Methods",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PaymentMethodScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildListItem(
+                      "Payment History",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PaymentHistoryListScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   ]),
                   _buildSection("Others", [
                     _buildListItem("F.A.Q"),
                     _buildListItem("Contact Us"),
                     _buildListItem("Terms of Use"),
                     _buildListItem("Privacy Policy"),
-                    _buildListItem("Delete Account", onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const DeleteAccountScreen()),
-                      );
-                    }),
+                    _buildListItem(
+                      "Delete Account",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DeleteAccountScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   ]),
 
                   _buildCenteredListItem(context, "Log Out", Icons.logout),
@@ -355,19 +412,27 @@ class _AccountScreenState extends State<AccountScreen> {
           );
         } else if (index == 3) {
           // Inbox - Replace with actual screen
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => NotificationScreen()));
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => NotificationScreen()),
+          );
         } else if (index == 0) {
           // Inbox - Replace with actual screen
           Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => HomeScreen()));
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+          );
         }
       },
       items: const [
         BottomNavigationBarItem(
-            icon: Icon(Icons.directions_car), label: "EZCharge"),
+          icon: Icon(Icons.directions_car),
+          label: "EZCharge",
+        ),
         BottomNavigationBarItem(
-            icon: Icon(Icons.card_giftcard), label: "Rewards"),
+          icon: Icon(Icons.card_giftcard),
+          label: "Rewards",
+        ),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Me"),
         BottomNavigationBarItem(icon: Icon(Icons.mail), label: "Inbox"),
       ],
@@ -375,7 +440,10 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Widget _buildCenteredListItem(
-      BuildContext context, String title, IconData icon) {
+    BuildContext context,
+    String title,
+    IconData icon,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -388,11 +456,14 @@ class _AccountScreenState extends State<AccountScreen> {
             children: [
               Icon(icon, color: Colors.black),
               const SizedBox(width: 8),
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black)),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
             ],
           ),
         ),
@@ -403,6 +474,8 @@ class _AccountScreenState extends State<AccountScreen> {
   void _logoutUser(BuildContext context) {
     FirebaseAuth.instance.signOut();
     Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => const IntroScreen()));
+      context,
+      MaterialPageRoute(builder: (context) => const IntroScreen()),
+    );
   }
 }

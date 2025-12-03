@@ -1,0 +1,45 @@
+// Add this import at the top of signin_screen.dart (line 5):
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Add this button after the "Sign In as Admin" button (after line 198):
+
+                  // 🔧 DEV ONLY: Skip OTP Button
+                  Center(
+                    child: TextButton(
+                      onPressed: () async {
+                        String phoneNumber = _phoneController.text.trim();
+                        if (phoneNumber.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Enter your phone number first")),
+                          );
+                          return;
+                        }
+
+                        // Format phone number
+                        if (!phoneNumber.startsWith('+')) {
+                          if (phoneNumber.startsWith('0')) {
+                            phoneNumber = '+60${phoneNumber.substring(1)}';
+                          } else {
+                            phoneNumber = '+60$phoneNumber';
+                          }
+                        }
+
+                        // Save phone number for dev bypass
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('dev_phone_number', phoneNumber);
+
+                        // Sign in anonymously
+                        await _auth.signInAnonymously();
+                        
+                        // Navigate to account screen
+                        Navigator.pushReplacementNamed(context, '/account');
+                      },
+                      child: const Text(
+                        "⚠️ Skip OTP (Dev Only)",
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),

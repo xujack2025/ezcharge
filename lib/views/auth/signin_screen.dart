@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ezcharge/views/auth/otp_screen.dart';
-import 'package:ezcharge/views/auth/AdminSignInScreen.dart'; // Import the Admin Sign-In Screen
+import 'package:ezcharge/views/auth/AdminSignInScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -20,7 +21,8 @@ class _SignInScreenState extends State<SignInScreen> {
     String phoneNumber = _phoneController.text.trim();
     if (phoneNumber.isEmpty || phoneNumber.length < 10) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Enter a valid phone number")));
+        const SnackBar(content: Text("Enter a valid phone number")),
+      );
       return;
     }
 
@@ -34,8 +36,9 @@ class _SignInScreenState extends State<SignInScreen> {
       },
       verificationFailed: (FirebaseAuthException e) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Error: ${e.message}")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: ${e.message}")));
       },
       codeSent: (String verificationId, int? resendToken) {
         print("VERIFICATION ID: $verificationId"); // Debugging
@@ -77,8 +80,10 @@ class _SignInScreenState extends State<SignInScreen> {
                       color: Colors.blue, //Blue Circle
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.arrow_back,
-                        color: Colors.white), // White Back Icon
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                    ), // White Back Icon
                   ),
                 ),
                 const SizedBox(width: 15), // Spacing between icon and text
@@ -94,111 +99,166 @@ class _SignInScreenState extends State<SignInScreen> {
 
           // Grey Background Content
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  //Sign In Description
-                  const SizedBox(height: 10),
-                  const Text(
-                    "Sign in or create account with your phone number",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  const Text(
-                    "A verification code will be sent to this phone number",
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Phone Number Input
-                  TextField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      hintText: "Enter phone number",
-                      hintStyle: TextStyle(color: Colors.grey),
-                      prefixIcon: const Icon(Icons.phone),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  //Proceed Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _sendOTP,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // ✅ Button color
-                        padding: const EdgeInsets.all(8),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5)),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    //Sign In Description
+                    const SizedBox(height: 10),
+                    const Text(
+                      "Sign in or create account with your phone number",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "PROCEED",
-                              style: TextStyle(
+                    ),
+
+                    const SizedBox(height: 5),
+
+                    const Text(
+                      "A verification code will be sent to this phone number",
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Phone Number Input
+                    TextField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        hintText: "Enter phone number",
+                        hintStyle: TextStyle(color: Colors.grey),
+                        prefixIcon: const Icon(Icons.phone),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    //Proceed Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _sendOTP,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue, // ✅ Button color
+                          padding: const EdgeInsets.all(8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const Text(
+                                "PROCEED",
+                                style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,
-                                  letterSpacing: 3),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // "Or" Divider Line
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10),
-                          height: 1,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const Text("Or", style: TextStyle(color: Colors.grey)),
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10),
-                          height: 1,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  //"Sign In as Admin" Button
-                  Center(
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  AdminSignInScreen()), // Navigate to Admin Screen
-                        );
-                      },
-                      child: const Text(
-                        "Sign In as Admin",
-                        style: TextStyle(
-                            color: Colors.blue, fontWeight: FontWeight.bold),
+                                  letterSpacing: 3,
+                                ),
+                              ),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+
+                    // "Or" Divider Line
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            height: 1,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const Text("Or", style: TextStyle(color: Colors.grey)),
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            height: 1,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    //"Sign In as Admin" Button
+                    Center(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AdminSignInScreen(),
+                            ), // Navigate to Admin Screen
+                          );
+                        },
+                        child: const Text(
+                          "Sign In as Admin",
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // 🔧 DEV ONLY: Skip OTP Button
+                    Center(
+                      child: TextButton(
+                        onPressed: () async {
+                          String phoneNumber = _phoneController.text.trim();
+                          if (phoneNumber.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Enter your phone number first"),
+                              ),
+                            );
+                            return;
+                          }
+
+                          // Format phone number
+                          if (!phoneNumber.startsWith('+')) {
+                            if (phoneNumber.startsWith('0')) {
+                              phoneNumber = '+60${phoneNumber.substring(1)}';
+                            } else {
+                              phoneNumber = '+60$phoneNumber';
+                            }
+                          }
+
+                          // Save phone number for dev bypass
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setString(
+                            'dev_phone_number',
+                            phoneNumber,
+                          );
+
+                          // Navigate directly (no auth needed for dev)
+                          Navigator.pushReplacementNamed(context, '/account');
+                        },
+                        child: const Text(
+                          "⚠️ Skip OTP (Dev Only)",
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
