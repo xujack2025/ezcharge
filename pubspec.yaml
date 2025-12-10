@@ -37,6 +37,7 @@ dependencies:
   google_mlkit_face_detection: ^0.13.1
   qr_flutter: ^4.1.0
   shared_preferences: ^2.5.3
+  flutter_dotenv: ^5.1.0
 
   http: any
   cached_network_image: any

@@ -1,7 +1,9 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class Secrets {
-  // TODO: Add your Google Maps API key from environment or config
-  static const String googleMapsApiKey = "YOUR_GOOGLE_MAPS_API_KEY_HERE";
+  static String googleMapsApiKey =
+      dotenv.env['GOOGLE_MAPS_API_KEY'] ?? 'YOUR_GOOGLE_MAPS_API_KEY_HERE';
 }
 
-// TODO: Add your OpenAI API key from environment or config
-const OPENAI_API_KEY = "YOUR_OPENAI_API_KEY_HERE";
+String get OPENAI_API_KEY =>
+    dotenv.env['OPENAI_API_KEY'] ?? 'YOUR_OPENAI_API_KEY_HERE';
