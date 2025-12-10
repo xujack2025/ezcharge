@@ -6,7 +6,7 @@ import 'dart:convert';
 
 import 'package:ezcharge/secrets.dart';
 
-const String googleMapsApiKey = Secrets.googleMapsApiKey;
+final String googleMapsApiKey = Secrets.googleMapsApiKey;
 
 class TrackingViewModel extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

@@ -13,7 +13,7 @@ import 'package:ezcharge/secrets.dart';
 import 'package:ezcharge/models/emergency_request_model.dart';
 import 'package:ezcharge/viewmodels/emergency_request_viewmodel.dart';
 
-const String googleMapsApiKey = Secrets.googleMapsApiKey;
+final String googleMapsApiKey = Secrets.googleMapsApiKey;
 
 class EmergencyRequestView extends StatefulWidget {
   const EmergencyRequestView({super.key});
