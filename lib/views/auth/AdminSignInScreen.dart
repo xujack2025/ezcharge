@@ -2,9 +2,10 @@ import 'package:ezcharge/views/auth/OTPAdminScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'otp_screen.dart';
 
 class AdminSignInScreen extends StatefulWidget {
+  const AdminSignInScreen({super.key});
+
   @override
   _AdminSignInScreenState createState() => _AdminSignInScreenState();
 }

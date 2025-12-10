@@ -3,16 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:provider/provider.dart';
 
-import 'package:ezcharge/viewmodels/tracking_viewmodel.dart';
 
 class AdminAssignDriverPage extends StatefulWidget {
   final String requestID;
 
-  const AdminAssignDriverPage({required this.requestID, Key? key})
-      : super(key: key);
+  const AdminAssignDriverPage({required this.requestID, super.key});
 
   @override
   _AdminAssignDriverPageState createState() => _AdminAssignDriverPageState();

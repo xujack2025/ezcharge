@@ -38,6 +38,9 @@ dependencies:
   qr_flutter: ^4.1.0
   shared_preferences: ^2.5.3
 
+  http: any
+  cached_network_image: any
+  path: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

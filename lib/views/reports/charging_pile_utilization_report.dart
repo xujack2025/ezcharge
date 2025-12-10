@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -252,7 +251,7 @@ class _ChargingPileUtilizationReportState
             "${pile['totalEnergy'].toStringAsFixed(2)} kWh",
             "${pile['totalHoursUsed'].toStringAsFixed(2)} h",
             // ✅ Display total hours
-            "$peakHour:00 (${maxSessions} sessions)"
+            "$peakHour:00 ($maxSessions sessions)"
           ];
         }).toList(),
         cellStyle: pw.TextStyle(fontSize: 10),

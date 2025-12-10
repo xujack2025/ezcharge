@@ -3,8 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
-import 'package:ezcharge/constants/colors.dart';
-import 'package:ezcharge/constants/text_styles.dart';
 
 class ManageComplaintsPage extends StatefulWidget {
   const ManageComplaintsPage({super.key});
@@ -222,8 +220,7 @@ class ComplaintDetailScreen extends StatelessWidget {
   final String complaintId;
 
   const ComplaintDetailScreen(
-      {Key? key, required this.complaint, required this.complaintId})
-      : super(key: key);
+      {super.key, required this.complaint, required this.complaintId});
 
   @override
   Widget build(BuildContext context) {

@@ -2,10 +2,8 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../../models/charging_bay_model.dart';
 import 'package:ezcharge/viewmodels/charging_station_viewmodel.dart';
 import 'package:ezcharge/views/admin/admin_charging_bay.dart';
-import 'package:ezcharge/models/charging_bay_model.dart';
 class AdminChargingStationsPage extends StatefulWidget {
   const AdminChargingStationsPage({super.key});
 
@@ -28,7 +26,7 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
   File? _selectedImage;
   String? _imageUrl;
   String? _editingStationID;
-  List<Map<String, dynamic>> _stations = [];
+  final List<Map<String, dynamic>> _stations = [];
 
   @override
   void initState() {

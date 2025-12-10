@@ -6,10 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:ezcharge/views/EZCHARGE/ReservationScreen.dart';
-import 'package:ezcharge/views/EZCHARGE/ReviewScreen.dart';
 import 'package:ezcharge/views/EZCHARGE/map_utlis.dart';
 import 'package:ezcharge/views/customer/rating/customer_complaint.dart';
-import 'package:ezcharge/views/customer/rating/customer_rating.dart';
 import 'package:ezcharge/views/customer/rating/customer_review.dart';
 
 class StationScreen extends StatefulWidget {
@@ -37,8 +35,9 @@ class _StationScreenState extends State<StationScreen> {
   List<Map<String, dynamic>> reviewsList = [];
 
   String _formatReviewDate(dynamic timestamp) {
-    if (timestamp == null || timestamp is! Timestamp)
+    if (timestamp == null || timestamp is! Timestamp) {
       return "Unknown Date"; // Handle null & invalid types
+    }
 
     DateTime reviewDate = timestamp.toDate();
     Duration difference = DateTime.now().difference(reviewDate);
@@ -92,7 +91,7 @@ class _StationScreenState extends State<StationScreen> {
       List<double> hourlyUsage = List.filled(24, 0.0);
 
       for (var doc in snapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        Map<String, dynamic> data = doc.data();
 
         // ✅ Convert Firestore timestamp to UTC+8
         DateTime checkInTime =
@@ -598,7 +597,7 @@ class _StationScreenState extends State<StationScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -614,7 +613,7 @@ class _StationScreenState extends State<StationScreen> {
           const Text("Provided Charger",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
-          ...chargerList.map((charger) => _buildChargerCard(charger)).toList(),
+          ...chargerList.map((charger) => _buildChargerCard(charger)),
         ],
       ),
     );
@@ -911,8 +910,9 @@ class _StationScreenState extends State<StationScreen> {
     // Must pass authentication
     if (_authStatus != "Pass") return false;
     // Must not have upcoming or active reservation
-    if (_reservationStatus == "Upcoming" || _reservationStatus == "Active")
+    if (_reservationStatus == "Upcoming" || _reservationStatus == "Active") {
       return false;
+    }
 
     return true;
   }

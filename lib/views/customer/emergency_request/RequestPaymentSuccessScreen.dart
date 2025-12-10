@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:ezcharge/views/EZCHARGE/PaymentHistoryDetail.dart';
 import 'package:ezcharge/views/customer/emergency_request/RequestPaymentHistoryDetailScreen.dart';
 
 class RequestPaymentSuccessScreen extends StatefulWidget {
@@ -9,10 +8,10 @@ class RequestPaymentSuccessScreen extends StatefulWidget {
   final double totalAmount;
 
   const RequestPaymentSuccessScreen({
-    Key? key,
+    super.key,
     required this.paymentMethod,
     required this.totalAmount,
-  }) : super(key: key);
+  });
 
   @override
   State<RequestPaymentSuccessScreen> createState() =>

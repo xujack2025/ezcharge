@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart' as path;
 
 import 'package:ezcharge/views/customer/rating/manage_complaint.dart';
 
@@ -311,7 +310,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
             const Text("Location Bay *",
                 style: TextStyle(fontWeight: FontWeight.bold)),
             DropdownButtonFormField<String>(
-              value: _selectedBayID,
+              initialValue: _selectedBayID,
               hint: const Text("Select Bay"),
               items: _chargingBays.map((bay) {
                 return DropdownMenuItem(
@@ -338,7 +337,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
             const Text("Report Reason *",
                 style: TextStyle(fontWeight: FontWeight.bold)),
             DropdownButtonFormField<String>(
-              value: _reportReason,
+              initialValue: _reportReason,
               hint: const Text("Report Reason"),
               items: ["Charger not working", "Blocked bay", "Payment issue"]
                   .map((reason) =>

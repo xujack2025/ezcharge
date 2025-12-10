@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -401,7 +400,7 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
                         return DropdownButtonFormField<String>(
                           isExpanded: true,
                           // Ensures it takes full width
-                          value: selectedStationId,
+                          initialValue: selectedStationId,
                           hint: const Text("Select Charging Station"),
                           decoration: InputDecoration(
                             border: OutlineInputBorder(

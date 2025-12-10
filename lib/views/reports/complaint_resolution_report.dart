@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -148,7 +147,7 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
           /*.add(const Duration(hours: 8))*/
           : null;
       Duration? resolutionTime =
-          resolvedAt != null ? resolvedAt.difference(submittedAt) : null;
+          resolvedAt?.difference(submittedAt);
 
       // ✅ Fetch userName from the corresponding `customers` document
       String userName = await _fetchCustomerName(customerID);
