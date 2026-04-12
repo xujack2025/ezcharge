@@ -7,11 +7,11 @@ class CheckOutSuccessScreen extends StatelessWidget {
   final String duration;
 
   const CheckOutSuccessScreen({
-    Key? key,
+    super.key,
     required this.chargingCost,
     required this.penaltyCost,
     required this.duration,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

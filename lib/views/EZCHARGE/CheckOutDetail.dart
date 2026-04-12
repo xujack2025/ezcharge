@@ -9,8 +9,7 @@ import 'dart:async';
 class CheckOutDetailScreen extends StatefulWidget {
   final Duration totalDuration; // Passed in from Timer/StopCharging screen
 
-  const CheckOutDetailScreen({Key? key, required this.totalDuration})
-    : super(key: key);
+  const CheckOutDetailScreen({super.key, required this.totalDuration});
 
   @override
   State<CheckOutDetailScreen> createState() => _CheckOutDetailScreenState();

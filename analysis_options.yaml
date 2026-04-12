@@ -1,1 +1,75 @@
 include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  errors:
+    missing_required_param: error
+    missing_return: error
+    todo: ignore
+    deprecated_member_use_from_same_package: ignore
+
+linter:
+  rules:
+    - directives_ordering
+    - avoid_print
+    - avoid_relative_lib_imports
+    # # Error handling
+    # - avoid_empty_else
+    
+    
+
+    # # Readability
+    # - always_declare_return_types
+    # - always_put_control_body_on_new_line
+    # - always_put_required_named_parameters_first
+    # - annotate_overrides
+    # - cascade_invocations
+    
+
+    # # Style
+    # - prefer_const_constructors
+    # - prefer_const_constructors_in_immutables
+    # - prefer_const_declarations
+    # - prefer_const_literals_to_create_immutables
+    # - prefer_constructors_over_static_methods
+    # - prefer_expression_function_bodies
+    # - prefer_final_fields
+    # - prefer_final_in_for_each
+    # - prefer_final_locals
+    # - prefer_foreach
+    # - prefer_if_elements_to_conditional_expressions
+    # - prefer_int_literals
+    # - prefer_null_aware_operators
+    # - prefer_relative_imports
+    # - prefer_single_quotes
+    # - sort_constructors_first
+    # - sort_pub_dependencies
+    # - sort_unnamed_constructors_first
+    # - tighten_type_of_initializing_formals
+    # - type_annotate_public_apis
+    # - type_init_formals
+    # - unawaited_futures
+    # - unnecessary_await_in_return
+    # - unnecessary_brace_in_string_interps
+    # - unnecessary_const
+    # - unnecessary_getters_setters
+    # - unnecessary_lambdas
+    # - unnecessary_null_aware_assignments
+    # - unnecessary_null_checks
+    # - unnecessary_overrides
+    # - unnecessary_parenthesis
+    # - unnecessary_statements
+    # - unnecessary_string_escapes
+    # - unnecessary_string_interpolations
+    # - unnecessary_this
+    # - unnecessary_to_list_in_spreads
+    # - use_build_context_synchronously
+    # - use_full_hex_values_for_flutter_colors
+    # - use_function_type_syntax_for_parameters
+    # - use_is_even_rather_than_modulo
+    # - use_key_in_widget_constructors
+    # - use_late_for_private_fields_and_variables
+    # - use_named_constants
+    # - use_raw_strings
+    # - use_setters_to_change_properties
+    # - use_string_buffers
+    # - use_test_throws_matchers

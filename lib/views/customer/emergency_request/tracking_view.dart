@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:ezcharge/views/EZCHARGE/PaymentScreen.dart';
 import 'package:ezcharge/views/EZCHARGE/book_a_charge_screen.dart';
 import 'package:ezcharge/views/customer/emergency_request/request_payment.dart';
 import 'package:flutter/material.dart';
@@ -20,8 +19,8 @@ class TrackingView extends StatefulWidget {
   const TrackingView({
     required this.driverID,
     required this.requestID,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   _TrackingViewState createState() => _TrackingViewState();

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class PaymentHistoryListScreen extends StatefulWidget {
-  const PaymentHistoryListScreen({Key? key}) : super(key: key);
+  const PaymentHistoryListScreen({super.key});
 
   @override
   State<PaymentHistoryListScreen> createState() =>

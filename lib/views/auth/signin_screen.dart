@@ -4,6 +4,8 @@ import 'otp_screen.dart';
 import 'AdminSignInScreen.dart'; // Import the Admin Sign-In Screen
 
 class SignInScreen extends StatefulWidget {
+  const SignInScreen({super.key});
+
   @override
   _SignInScreenState createState() => _SignInScreenState();
 }

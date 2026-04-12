@@ -7,8 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class StopChargingScreen extends StatefulWidget {
   final Duration totalDuration;
 
-  const StopChargingScreen({Key? key, required this.totalDuration})
-    : super(key: key);
+  const StopChargingScreen({super.key, required this.totalDuration});
 
   @override
   _StopChargingScreenState createState() => _StopChargingScreenState();

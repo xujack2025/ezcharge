@@ -4,9 +4,7 @@ import 'package:ezcharge/views/EZCHARGE/HomeScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../models/emergency_request_model.dart';
-import '../../viewmodels/emergency_request_viewmodel.dart';
 import '../customer/emergency_request/emergency_request_view.dart';
 import '../customer/emergency_request/request_history.dart';
 import '../customer/emergency_request/tracking_view.dart';
@@ -17,6 +15,8 @@ import 'CheckInScreen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class BookAChargeScreen extends StatefulWidget {
+  const BookAChargeScreen({super.key});
+
   @override
   _BookAChargeScreenState createState() => _BookAChargeScreenState();
 }
@@ -189,7 +189,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
               if (!updatedSnapshot.exists) return;
 
               Map<String, dynamic>? updatedData =
-                  updatedSnapshot.data() as Map<String, dynamic>?;
+                  updatedSnapshot.data();
 
               if (updatedData != null && updatedData.containsKey('driverID')) {
                 String updatedDriverID = updatedData['driverID'] ?? "Unknown";

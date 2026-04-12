@@ -273,7 +273,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   const SizedBox(height: 10),
                   ...chargers
                       .map((charger) => _buildChargerCard(charger))
-                      .toList(),
+                      ,
 
                   const SizedBox(height: 20),
 

@@ -3,7 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'Welcome_screen.dart';
 
 class IntroScreen extends StatefulWidget {
-  const IntroScreen({Key? key}) : super(key: key);
+  const IntroScreen({super.key});
 
   @override
   State<IntroScreen> createState() => _IntroScreenState();

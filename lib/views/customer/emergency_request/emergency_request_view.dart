@@ -15,6 +15,8 @@ import 'package:ezcharge/secrets.dart';
 const String googleMapsApiKey = Secrets.googleMapsApiKey;
 
 class EmergencyRequestView extends StatefulWidget {
+  const EmergencyRequestView({super.key});
+
   @override
   _EmergencyRequestViewState createState() => _EmergencyRequestViewState();
 }
@@ -31,7 +33,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
 
   String? requestID;
   String? _selectedReason;
-  String _preferredTime = "";
+  final String _preferredTime = "";
   String? customerID;
 
   LatLng _selectedLocation = const LatLng(3.219792, 101.643793); // Default KL
@@ -232,8 +234,9 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        if (!mounted)
+        if (!mounted) {
           return; // ✅ Prevent modifying state after widget is disposed
+        }
         setState(() {
           _suggestions = json.decode(response.body)["predictions"];
         });
@@ -514,7 +517,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
                   ),
                   const SizedBox(height: 5),
                   DropdownButtonFormField<String>(
-                    value: _selectedReason,
+                    initialValue: _selectedReason,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.grey[200],

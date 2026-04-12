@@ -8,7 +8,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart' as path;
 
 class AuthenticateAccountScreen extends StatefulWidget {
-  const AuthenticateAccountScreen({Key? key}) : super(key: key);
+  const AuthenticateAccountScreen({super.key});
 
   @override
   State<AuthenticateAccountScreen> createState() =>
@@ -24,7 +24,7 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
   }
 
   File? _licenseImage;
-  bool _isUploading = false;
+  final bool _isUploading = false;
   String _accountId = "";
 
   //Pick Image from Gallery
@@ -99,7 +99,7 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
 
     try {
       // Generate unique filename
-      final fileName = '${_accountId}${path.extension(_licenseImage!.path)}';
+      final fileName = '$_accountId${path.extension(_licenseImage!.path)}';
       final Reference storageRef = FirebaseStorage.instance.ref().child(
         'license/$fileName',
       );

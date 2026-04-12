@@ -21,7 +21,7 @@ class EmergencyRequestViewModel extends ChangeNotifier {
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) =>
-                EmergencyRequest.fromMap(doc.data() as Map<String, dynamic>))
+                EmergencyRequest.fromMap(doc.data()))
             .toList());
   }
 

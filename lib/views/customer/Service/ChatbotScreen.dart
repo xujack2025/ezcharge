@@ -6,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 
 class Chatbotscreen extends StatefulWidget {
+  const Chatbotscreen({super.key});
+
   @override
   _ChatbotscreenState createState() => _ChatbotscreenState();
 }

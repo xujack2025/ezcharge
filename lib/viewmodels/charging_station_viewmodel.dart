@@ -9,14 +9,14 @@ import '../models/charging_bay_model.dart';
 class ChargingStationViewModel {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  List<Map<String, dynamic>> _stations = [];
+  final List<Map<String, dynamic>> _stations = [];
 
   List<Map<String, dynamic>> get stations => _stations;
 
   Stream<List<Map<String, dynamic>>> fetchChargingStationsStream() {
     return _firestore.collection('station').snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        Map<String, dynamic> data = doc.data();
         return {
           "stationID": doc.id,
           "stationName": data["StationName"] ?? '',

@@ -4,6 +4,8 @@ import 'AdminSignInScreen.dart';
 import 'otp_verification.dart';
 
 class SignInScreen extends StatefulWidget {
+  const SignInScreen({super.key});
+
   @override
   _SignInScreenState createState() => _SignInScreenState();
 }

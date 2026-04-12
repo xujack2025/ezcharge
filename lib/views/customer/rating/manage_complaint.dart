@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import '../../../constants/colors.dart';
-import '../../../constants/text_styles.dart';
 
 class ManageComplaintsPage extends StatefulWidget {
   const ManageComplaintsPage({super.key});
@@ -221,8 +219,7 @@ class ComplaintDetailScreen extends StatelessWidget {
   final String complaintId;
 
   const ComplaintDetailScreen(
-      {Key? key, required this.complaint, required this.complaintId})
-      : super(key: key);
+      {super.key, required this.complaint, required this.complaintId});
 
   @override
   Widget build(BuildContext context) {
