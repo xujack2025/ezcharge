@@ -1,6 +1,6 @@
 name: ezcharge
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0+1
 
 environment:
@@ -10,10 +10,53 @@ dependencies:
   flutter:
     sdk: flutter
 
+  camera: ^0.12.0+1
+  carousel_slider: ^5.1.2
+  chat_gpt_sdk: ^3.1.5
+  cloud_firestore: ^6.2.0
+  dash_chat_2: ^0.0.21
+  file_picker: ^11.0.2
+  firebase_auth: ^6.3.0
+  firebase_core: ^4.6.0
+  firebase_storage: ^13.2.0
+  fl_chart: ^1.2.0
+  flutter_polyline_points: ^3.1.0
+  geolocator: ^14.0.2
+  get: ^4.7.3
+  google_fonts: ^8.0.2
+  google_maps_flutter: ^2.17.0
+  google_mlkit_face_detection: ^0.13.2
+  google_sign_in: ^7.2.0
+  image_picker: ^1.2.1
+  intl: ^0.19.0
+  location: ^8.0.1
+  mobile_scanner: ^7.2.0
+  pdf: ^3.12.0
+  pinput: ^6.0.2
+  printing: ^5.14.3
+  provider: ^6.1.5+1
+  qr_flutter: ^4.1.0
+  shared_preferences: ^2.5.5
+  url_launcher: ^6.3.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/images/
+
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "images/ezcharge_logo.png"
