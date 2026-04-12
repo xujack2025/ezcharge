@@ -16,17 +16,17 @@ class _IntroScheduleScreenState extends State<IntroScheduleScreen> {
     OnboardingPage(
       title: 'Schedule your charging',
       subtitle: 'Check, Reserve and charge your EV',
-      imagePath: 'images/schedule_charging1.png',
+      imagePath: 'assets/images/schedule_charging1.png',
     ),
     OnboardingPage(
       title: 'Pay for your charging',
       subtitle: 'Pay with any method you prefer',
-      imagePath: 'images/schedule_charging2.png',
+      imagePath: 'assets/images/schedule_charging2.png',
     ),
     OnboardingPage(
       title: 'Earn for your charging',
       subtitle: 'Earn points for every sustainable action',
-      imagePath: 'images/schedule_charging3.png',
+      imagePath: 'assets/images/schedule_charging3.png',
     ),
   ];
 

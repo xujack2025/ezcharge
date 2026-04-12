@@ -133,7 +133,7 @@ class _ChatbotscreenState extends State<Chatbotscreen> {
           if (!message.isMe) ...[
             CircleAvatar(
               radius: 16,
-              backgroundImage: AssetImage('images/ezcharge_logo.png'),
+              backgroundImage: AssetImage('assets/images/ezcharge_logo.png'),
             ),
 
             SizedBox(width: 8),
@@ -189,7 +189,7 @@ class _ChatbotscreenState extends State<Chatbotscreen> {
           children: [
             CircleAvatar(
               radius: 16,
-              backgroundImage: AssetImage('images/ezcharge_logo.png'),
+              backgroundImage: AssetImage('assets/images/ezcharge_logo.png'),
             ),
             SizedBox(width: 8),
             Text(

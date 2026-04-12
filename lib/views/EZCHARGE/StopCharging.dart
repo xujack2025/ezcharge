@@ -135,7 +135,7 @@ class _StopChargingScreenState extends State<StopChargingScreen> {
             const SizedBox(height: 40),
             // If you have a specific image for stopping charging, use it here
             Image.asset(
-              'images/startcharging.png',
+              'assets/images/startcharging.png',
               fit: BoxFit.contain,
               height: 180, // Adjust as needed
             ),

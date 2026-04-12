@@ -130,7 +130,7 @@ class _StartChargingScreenState extends State<StartChargingScreen> {
 
             // The charging image
             Image.asset(
-              'images/startcharging.png',
+              'assets/images/startcharging.png',
               fit: BoxFit.contain,
               height: 180, // Adjust as needed
             ),

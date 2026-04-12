@@ -218,7 +218,7 @@ class _CheckDetailScreenState extends State<CheckDetailScreen> {
                   //Image
                   Center(
                     child: Image.asset(
-                      'images/charging.png',
+                      'assets/images/charging.png',
                       fit: BoxFit.contain,
                     ),
                   ),

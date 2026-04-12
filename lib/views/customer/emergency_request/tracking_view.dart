@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:ezcharge/viewmodels/tracking_viewmodel.dart';
 import 'package:ezcharge/views/EZCHARGE/book_a_charge_screen.dart';
 import 'package:ezcharge/views/customer/emergency_request/request_payment.dart';
+import 'package:ezcharge/secrets.dart';
 
 class TrackingView extends StatefulWidget {
   final String driverID;
@@ -23,10 +24,10 @@ class TrackingView extends StatefulWidget {
   });
 
   @override
-  _TrackingViewState createState() => _TrackingViewState();
+  TrackingViewState createState() => TrackingViewState();
 }
 
-class _TrackingViewState extends State<TrackingView> {
+class TrackingViewState extends State<TrackingView> {
   LatLng? driverLocation;
   LatLng? customerLocation;
   int estimatedTime = 0;
@@ -342,15 +343,11 @@ class _TrackingViewState extends State<TrackingView> {
 
   /// ✅ Function to Decode Google Maps Polyline
   List<LatLng> _decodePolyline(String encoded) {
-    List<LatLng> polylineCoordinates = [];
-    PolylinePoints polylinePoints = PolylinePoints();
+    List<PointLatLng> result = PolylinePoints.decodePolyline(encoded);
 
-    List<PointLatLng> result = polylinePoints.decodePolyline(encoded);
-    for (var point in result) {
-      polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-    }
-
-    return polylineCoordinates;
+    return result
+        .map((point) => LatLng(point.latitude, point.longitude))
+        .toList();
   }
 
   @override

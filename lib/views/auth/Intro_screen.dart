@@ -76,7 +76,7 @@ class _IntroScreenState extends State<IntroScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Image.asset(
-                      'images/ezcharge_logo.png',
+                      'assets/images/ezcharge_logo.png',
                       fit: BoxFit.contain,
                     ),
                   ),

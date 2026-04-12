@@ -67,7 +67,9 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
   Future<void> _loadImage() async {
     try {
       String url = await FirebaseStorage.instance
-          .ref("images/power_bank.png") // Ensure this is the correct path
+          .ref(
+            "images/power_bank.png",
+          ) // Ensure this is the correct path
           .getDownloadURL();
 
       print("✅ New Image URL: $url"); // Print the URL for debugging

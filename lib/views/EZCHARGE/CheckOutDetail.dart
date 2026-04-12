@@ -361,7 +361,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
                   // Display image
                   Center(
                     child: Image.asset(
-                      'images/charging.png',
+                      'assets/images/charging.png',
                       fit: BoxFit.contain,
                       height: 150,
                     ),
