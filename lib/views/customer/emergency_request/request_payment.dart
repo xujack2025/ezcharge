@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/views/EZCHARGE/RewardSelectScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'RequestSelectPaymentScreen.dart';
+
+import 'package:ezcharge/views/EZCHARGE/RewardSelectScreen.dart';
+import 'package:ezcharge/views/customer/emergency_request/RequestSelectPaymentScreen.dart';
 
 class RequestPaymentScreen extends StatefulWidget {
   final String requestID;

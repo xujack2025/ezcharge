@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/views/customer/customercontent/PaymentHistoryList.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import 'package:ezcharge/views/customer/customercontent/PaymentHistoryList.dart';
 
 class RequestPaymentHistoryDetailScreen extends StatefulWidget {
   final String accountId;

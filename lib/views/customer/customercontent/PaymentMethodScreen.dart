@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/views/customer/customercontent/AddCardScreen.dart';
-import 'package:ezcharge/views/customer/customercontent/TopUpScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:ezcharge/views/customer/customercontent/AddCardScreen.dart';
+import 'package:ezcharge/views/customer/customercontent/TopUpScreen.dart';
 
 class PaymentMethodScreen extends StatefulWidget {
   const PaymentMethodScreen({super.key});

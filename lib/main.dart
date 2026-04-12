@@ -1,10 +1,10 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:ezcharge/viewmodels/emergency_request_viewmodel.dart';
 import 'package:ezcharge/viewmodels/tracking_viewmodel.dart';
 import 'package:ezcharge/views/auth/Intro_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:ezcharge/viewmodels/emergency_request_viewmodel.dart';
-
-import 'package:firebase_core/firebase_core.dart';
-import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

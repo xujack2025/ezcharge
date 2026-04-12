@@ -1,6 +1,8 @@
 import 'dart:async';
-import 'package:ezcharge/views/customer/customercontent/AccountScreen.dart';
+
 import 'package:flutter/material.dart';
+
+import 'package:ezcharge/views/customer/customercontent/AccountScreen.dart';
 
 class PassScreen extends StatefulWidget {
   const PassScreen({super.key});

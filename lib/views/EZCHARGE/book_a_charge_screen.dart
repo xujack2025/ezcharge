@@ -1,18 +1,20 @@
 import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/views/EZCHARGE/HomeScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import '../../models/emergency_request_model.dart';
-import '../customer/emergency_request/emergency_request_view.dart';
-import '../customer/emergency_request/request_history.dart';
-import '../customer/emergency_request/tracking_view.dart';
-import '../customer/Reward/RewardScreen.dart';
-import '../customer/Notification/NotificationScreen.dart';
-import '../customer/customercontent/AccountScreen.dart';
-import 'CheckInScreen.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+
+import 'package:ezcharge/models/emergency_request_model.dart';
+import 'package:ezcharge/views/customer/Notification/NotificationScreen.dart';
+import 'package:ezcharge/views/customer/Reward/RewardScreen.dart';
+import 'package:ezcharge/views/customer/customercontent/AccountScreen.dart';
+import 'package:ezcharge/views/customer/emergency_request/emergency_request_view.dart';
+import 'package:ezcharge/views/customer/emergency_request/request_history.dart';
+import 'package:ezcharge/views/customer/emergency_request/tracking_view.dart';
+import 'package:ezcharge/views/EZCHARGE/CheckInScreen.dart';
+import 'package:ezcharge/views/EZCHARGE/HomeScreen.dart';
 
 class BookAChargeScreen extends StatefulWidget {
   const BookAChargeScreen({super.key});
@@ -188,8 +190,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
             .listen((updatedSnapshot) {
               if (!updatedSnapshot.exists) return;
 
-              Map<String, dynamic>? updatedData =
-                  updatedSnapshot.data();
+              Map<String, dynamic>? updatedData = updatedSnapshot.data();
 
               if (updatedData != null && updatedData.containsKey('driverID')) {
                 String updatedDriverID = updatedData['driverID'] ?? "Unknown";

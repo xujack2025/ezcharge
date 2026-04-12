@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../../viewmodels/charging_station_viewmodel.dart';
-import 'admin_charging_bay.dart';
+import 'package:ezcharge/viewmodels/charging_station_viewmodel.dart';
+import 'package:ezcharge/views/admin/admin_charging_bay.dart';
 
 class AdminChargingStationsPage extends StatefulWidget {
   const AdminChargingStationsPage({super.key});

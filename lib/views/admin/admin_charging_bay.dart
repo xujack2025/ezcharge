@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../../models/charging_bay_model.dart';
-import '../../viewmodels/charging_station_viewmodel.dart';
+import 'package:ezcharge/models/charging_bay_model.dart';
+import 'package:ezcharge/viewmodels/charging_station_viewmodel.dart';
 
 class AdminChargingBayPage extends StatefulWidget {
   final String stationID;

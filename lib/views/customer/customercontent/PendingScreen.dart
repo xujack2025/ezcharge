@@ -1,9 +1,11 @@
 import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/views/customer/customercontent/AccountScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+
+import 'package:ezcharge/views/customer/customercontent/AccountScreen.dart';
 
 class PendingScreen extends StatefulWidget {
   const PendingScreen({super.key});

@@ -1,16 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
-import '../../../models/emergency_request_model.dart';
-import '../../../viewmodels/emergency_request_viewmodel.dart';
-import 'package:http/http.dart' as http;
+
+import 'package:ezcharge/models/emergency_request_model.dart';
 import 'package:ezcharge/secrets.dart';
+import 'package:ezcharge/viewmodels/emergency_request_viewmodel.dart';
 
 const String googleMapsApiKey = Secrets.googleMapsApiKey;
 

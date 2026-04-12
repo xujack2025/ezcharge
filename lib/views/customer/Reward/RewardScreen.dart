@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/views/EZCHARGE/HomeScreen.dart';
-import 'package:ezcharge/views/customer/Notification/NotificationScreen.dart';
-import 'package:ezcharge/views/customer/Reward/PointHistoryScreen.dart';
-import 'package:ezcharge/views/customer/customercontent/AccountScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:ezcharge/views/EZCHARGE/HomeScreen.dart';
+import 'package:ezcharge/views/customer/Notification/NotificationScreen.dart';
+import 'package:ezcharge/views/customer/customercontent/AccountScreen.dart';
+import 'package:ezcharge/views/customer/Reward/PointHistoryScreen.dart';
 
 class RewardScreen extends StatefulWidget {
   const RewardScreen({super.key});
@@ -232,9 +233,7 @@ class _RewardScreenState extends State<RewardScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
-            ..._rewards
-                .map((reward) => _buildPromotionItem(context, reward))
-                ,
+            ..._rewards.map((reward) => _buildPromotionItem(context, reward)),
           ],
         ),
       ),

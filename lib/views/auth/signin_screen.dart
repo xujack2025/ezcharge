@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'otp_screen.dart';
-import 'AdminSignInScreen.dart'; // Import the Admin Sign-In Screen
+import 'package:flutter/material.dart';
+
+import 'package:ezcharge/views/auth/AdminSignInScreen.dart'; // Import the Admin Sign-In Screen
+import 'package:ezcharge/views/auth/otp_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});

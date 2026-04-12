@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/views/customer/emergency_request/RequestPaymentHistoryDetailScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:ezcharge/views/customer/emergency_request/RequestPaymentHistoryDetailScreen.dart';
 
 class RequestPaymentSuccessScreen extends StatefulWidget {
   final String paymentMethod;

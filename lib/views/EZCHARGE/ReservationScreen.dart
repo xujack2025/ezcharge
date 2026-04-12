@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/views/customer/customercontent/ActivityScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import 'package:ezcharge/views/customer/customercontent/ActivityScreen.dart';
 
 class ReservationScreen extends StatefulWidget {
   final String stationId;
@@ -271,9 +272,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  ...chargers
-                      .map((charger) => _buildChargerCard(charger))
-                      ,
+                  ...chargers.map((charger) => _buildChargerCard(charger)),
 
                   const SizedBox(height: 20),
 

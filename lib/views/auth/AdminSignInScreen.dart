@@ -1,7 +1,8 @@
-import 'package:ezcharge/views/auth/OTPAdminScreen.dart';
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
+import 'package:ezcharge/views/auth/OTPAdminScreen.dart';
 
 class AdminSignInScreen extends StatefulWidget {
   const AdminSignInScreen({super.key});

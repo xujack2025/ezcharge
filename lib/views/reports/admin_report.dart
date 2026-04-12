@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'charging_usage_report.dart';
-import 'complaint_resolution_report.dart';
+
 //import 'financial_performance_report.dart';
-import 'charging_pile_utilization_report.dart';
+import 'package:ezcharge/views/reports/charging_pile_utilization_report.dart';
+import 'package:ezcharge/views/reports/charging_usage_report.dart';
+import 'package:ezcharge/views/reports/complaint_resolution_report.dart';
 
 class PrintReportScreen extends StatelessWidget {
   const PrintReportScreen({super.key});

@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:ezcharge/views/EZCHARGE/book_a_charge_screen.dart';
-import 'package:ezcharge/views/customer/emergency_request/request_payment.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../secrets.dart';
-import '../../../viewmodels/tracking_viewmodel.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+
+import 'package:ezcharge/viewmodels/tracking_viewmodel.dart';
+import 'package:ezcharge/views/EZCHARGE/book_a_charge_screen.dart';
+import 'package:ezcharge/views/customer/emergency_request/request_payment.dart';
 
 class TrackingView extends StatefulWidget {
   final String driverID;

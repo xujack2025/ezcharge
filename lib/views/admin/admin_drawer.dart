@@ -2,13 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../constants/colors.dart';
-import '../auth/signin_screen.dart';
-import '../reports/admin_report.dart';
-import 'admin_authenticate.dart';
-import 'admin_emergency_requests.dart';
-import 'admin_notification.dart';
-import 'admin_rewards.dart';
+import 'package:ezcharge/constants/colors.dart';
+import 'package:ezcharge/views/auth/signin_screen.dart';
+import 'package:ezcharge/views/reports/admin_report.dart';
+import 'package:ezcharge/views/admin/admin_authenticate.dart';
+import 'package:ezcharge/views/admin/admin_emergency_requests.dart';
+import 'package:ezcharge/views/admin/admin_notification.dart';
+import 'package:ezcharge/views/admin/admin_rewards.dart';
 
 class AdminDrawer extends StatelessWidget {
   final int selectedIndex;

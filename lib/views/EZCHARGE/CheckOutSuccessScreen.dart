@@ -1,5 +1,6 @@
-import 'package:ezcharge/views/EZCHARGE/PaymentScreen.dart';
 import 'package:flutter/material.dart';
+
+import 'package:ezcharge/views/EZCHARGE/PaymentScreen.dart';
 
 class CheckOutSuccessScreen extends StatelessWidget {
   final double chargingCost;

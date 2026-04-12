@@ -1,12 +1,14 @@
 import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+
 import 'package:ezcharge/views/EZCHARGE/CheckDetail.dart';
 import 'package:ezcharge/views/EZCHARGE/HomeScreen.dart';
 import 'package:ezcharge/views/EZCHARGE/book_a_charge_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class CheckInScreen extends StatefulWidget {
   const CheckInScreen({super.key});

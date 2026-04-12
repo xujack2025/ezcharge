@@ -1,18 +1,20 @@
 import 'dart:async';
-import 'package:ezcharge/views/EZCHARGE/CheckInScreen.dart';
-import 'package:ezcharge/views/EZCHARGE/StationScreen.dart';
-import 'package:ezcharge/views/EZCHARGE/book_a_charge_screen.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart'; // Import package for date formatting
+import 'package:location/location.dart';
+
 import 'package:ezcharge/views/customer/Notification/NotificationScreen.dart';
 import 'package:ezcharge/views/customer/Reward/RewardScreen.dart';
 import 'package:ezcharge/views/customer/customercontent/AccountScreen.dart';
-import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'FilterScreen.dart';
-import 'ReservationScreen.dart';
-import 'package:intl/intl.dart'; // Import package for date formatting
+import 'package:ezcharge/views/EZCHARGE/CheckInScreen.dart';
+import 'package:ezcharge/views/EZCHARGE/FilterScreen.dart';
+import 'package:ezcharge/views/EZCHARGE/ReservationScreen.dart';
+import 'package:ezcharge/views/EZCHARGE/StationScreen.dart';
+import 'package:ezcharge/views/EZCHARGE/book_a_charge_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -628,8 +630,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ? Colors.black
                             : Colors.grey, //Fix color toggle
                       ),
-                      onPressed: () =>
-                          toggleBookmark(setState), //Pass setState
+                      onPressed: () => toggleBookmark(setState), //Pass setState
                     ),
                   ],
                 ),

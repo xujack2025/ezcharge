@@ -1,5 +1,6 @@
-import 'package:ezcharge/views/customer/customercontent/AuthenticateAccountScreen.dart';
 import 'package:flutter/material.dart';
+
+import 'package:ezcharge/views/customer/customercontent/AuthenticateAccountScreen.dart';
 
 class FailScreen extends StatelessWidget {
   const FailScreen({super.key});

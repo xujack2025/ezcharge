@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/views/EZCHARGE/PaymentSuccessScreen.dart';
-import 'package:ezcharge/views/customer/customercontent/TopUpScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:ezcharge/views/customer/customercontent/TopUpScreen.dart';
+import 'package:ezcharge/views/EZCHARGE/PaymentSuccessScreen.dart';
 
 class SelectPaymentScreen extends StatefulWidget {
   final double totalAmount;

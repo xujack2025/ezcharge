@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/views/EZCHARGE/CheckOutSuccessScreen.dart';
-import 'package:ezcharge/views/customer/Service/ChatbotScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'dart:async';
+
+import 'package:ezcharge/views/customer/Service/ChatbotScreen.dart';
+import 'package:ezcharge/views/EZCHARGE/CheckOutSuccessScreen.dart';
 
 class CheckOutDetailScreen extends StatefulWidget {
   final Duration totalDuration; // Passed in from Timer/StopCharging screen

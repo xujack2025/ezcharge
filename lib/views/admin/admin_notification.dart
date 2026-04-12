@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../models/notification_model.dart';
-import '../../viewmodels/notification_viewmodel.dart';
+import 'package:ezcharge/models/notification_model.dart';
+import 'package:ezcharge/viewmodels/notification_viewmodel.dart';
 
 class AdminNotificationPage extends StatefulWidget {
   const AdminNotificationPage({super.key});

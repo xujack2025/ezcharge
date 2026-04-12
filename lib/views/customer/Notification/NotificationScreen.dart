@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 import 'package:ezcharge/views/EZCHARGE/HomeScreen.dart';
 import 'package:ezcharge/views/customer/Reward/RewardScreen.dart';
 import 'package:ezcharge/views/customer/customercontent/AccountScreen.dart';
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});

@@ -1,13 +1,18 @@
-import 'package:ezcharge/views/admin/admin_dashboard.dart';
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
+import 'package:ezcharge/views/admin/admin_dashboard.dart';
 
 class OTPAdminScreen extends StatefulWidget {
   final String phoneNumber;
   final String verificationID;
 
-  const OTPAdminScreen({super.key, required this.phoneNumber, required this.verificationID});
+  const OTPAdminScreen({
+    super.key,
+    required this.phoneNumber,
+    required this.verificationID,
+  });
 
   @override
   _OTPAdminScreenState createState() => _OTPAdminScreenState();

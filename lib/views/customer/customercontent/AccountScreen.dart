@@ -1,4 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
 import 'package:ezcharge/views/EZCHARGE/HomeScreen.dart';
 import 'package:ezcharge/views/auth/Intro_screen.dart';
 import 'package:ezcharge/views/customer/Notification/NotificationScreen.dart';
@@ -8,14 +11,12 @@ import 'package:ezcharge/views/customer/customercontent/AuthenticateAccountScree
 import 'package:ezcharge/views/customer/customercontent/BookmarkScreen.dart';
 import 'package:ezcharge/views/customer/customercontent/DeleteAccountScreen.dart';
 import 'package:ezcharge/views/customer/customercontent/EditProfileScreen.dart';
-import 'package:ezcharge/views/customer/customercontent/PassScreen.dart';
 import 'package:ezcharge/views/customer/customercontent/FailScreen.dart';
+import 'package:ezcharge/views/customer/customercontent/PassScreen.dart';
 import 'package:ezcharge/views/customer/customercontent/PaymentHistoryList.dart';
 import 'package:ezcharge/views/customer/customercontent/PaymentMethodScreen.dart';
 import 'package:ezcharge/views/customer/customercontent/PendingScreen.dart';
 import 'package:ezcharge/views/customer/customercontent/TopUpScreen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});

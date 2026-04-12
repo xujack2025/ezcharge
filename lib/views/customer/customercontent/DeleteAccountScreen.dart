@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'ConfirmDeleteScreen.dart';
+import 'package:ezcharge/views/customer/customercontent/ConfirmDeleteScreen.dart';
 
 class DeleteAccountScreen extends StatefulWidget {
   const DeleteAccountScreen({super.key});

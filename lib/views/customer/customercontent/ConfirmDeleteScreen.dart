@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/views/auth/Intro_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:ezcharge/views/auth/Intro_screen.dart';
 
 class ConfirmDeleteScreen extends StatelessWidget {
   const ConfirmDeleteScreen({super.key});
