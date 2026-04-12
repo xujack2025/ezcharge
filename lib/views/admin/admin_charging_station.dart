@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/viewmodels/charging_station_viewmodel.dart';
@@ -15,7 +14,6 @@ class AdminChargingStationsPage extends StatefulWidget {
 }
 
 class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final ChargingStationViewModel _chargingStationViewModel =
       ChargingStationViewModel();
 
@@ -28,7 +26,6 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
   File? _selectedImage;
   String? _imageUrl;
   String? _editingStationID;
-  final List<Map<String, dynamic>> _stations = [];
 
   @override
   void initState() {
@@ -81,24 +78,35 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildStyledTextField("Station Name", _stationNameController),
-                  _buildStyledTextField("Description", _descriptionController,
-                      maxLines: 3),
+                  _buildStyledTextField(
+                    "Description",
+                    _descriptionController,
+                    maxLines: 3,
+                  ),
                   _buildStyledTextField("Nearby", _nearbyController),
                   _buildStyledTextField("Location", _locationController),
                   Row(
                     children: [
                       Expanded(
-                          child: _buildStyledTextField(
-                              "Latitude", _latitudeController)),
+                        child: _buildStyledTextField(
+                          "Latitude",
+                          _latitudeController,
+                        ),
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
-                          child: _buildStyledTextField(
-                              "Longitude", _longitudeController)),
+                        child: _buildStyledTextField(
+                          "Longitude",
+                          _longitudeController,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
-                  const Text("Station Image",
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    "Station Image",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 10),
                   Center(
                     child: ClipRRect(
@@ -106,22 +114,25 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
                       child: _selectedImage != null
                           ? Image.file(_selectedImage!, height: 120)
                           : (_imageUrl != null && _imageUrl!.isNotEmpty)
-                              ? Image.network(_imageUrl!, height: 120)
-                              : Container(
-                                  height: 120,
-                                  width: 120,
-                                  color: Colors.grey[200],
-                                  child: const Icon(Icons.image_not_supported,
-                                      size: 40, color: Colors.grey),
-                                ),
+                          ? Image.network(_imageUrl!, height: 120)
+                          : Container(
+                              height: 120,
+                              width: 120,
+                              color: Colors.grey[200],
+                              child: const Icon(
+                                Icons.image_not_supported,
+                                size: 40,
+                                color: Colors.grey,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 10),
                   Center(
                     child: OutlinedButton.icon(
                       onPressed: () async {
-                        File? pickedImage =
-                            await _chargingStationViewModel.pickImage();
+                        File? pickedImage = await _chargingStationViewModel
+                            .pickImage();
                         if (pickedImage != null) {
                           setDialogState(() {
                             _selectedImage = pickedImage;
@@ -132,15 +143,18 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
                       label: const Text("Pick Image"),
                       style: OutlinedButton.styleFrom(
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            actionsPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            actionsPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 10,
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -156,10 +170,13 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
                   foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ],
@@ -192,14 +209,15 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
 
     // ✅ Keep previous image if no new one is selected
     if (_imageUrl == null && _editingStationID != null) {
-      _imageUrl =
-          await _chargingStationViewModel.getStationImage(_editingStationID!);
+      _imageUrl = await _chargingStationViewModel.getStationImage(
+        _editingStationID!,
+      );
     }
 
     if (_editingStationID == null) {
       // ✅ Generate ID and create new station (Capacity is auto-managed)
-      String newStationID =
-          await _chargingStationViewModel.generateNewStationID();
+      String newStationID = await _chargingStationViewModel
+          .generateNewStationID();
       await _chargingStationViewModel.createChargingStation(
         stationName: _stationNameController.text,
         description: _descriptionController.text,
@@ -245,12 +263,14 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-                child: CircularProgressIndicator()); // ✅ Show loading
+              child: CircularProgressIndicator(),
+            ); // ✅ Show loading
           }
 
           if (snapshot.hasError) {
             return Center(
-                child: Text("Error: ${snapshot.error}")); // ✅ Handle error
+              child: Text("Error: ${snapshot.error}"),
+            ); // ✅ Handle error
           }
 
           final stations = snapshot.data ?? [];
@@ -305,8 +325,11 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
                           width: 70,
                           height: 70,
                           color: Colors.grey.shade300,
-                          child: const Icon(Icons.ev_station,
-                              color: Colors.green, size: 40),
+                          child: const Icon(
+                            Icons.ev_station,
+                            color: Colors.green,
+                            size: 40,
+                          ),
                         ),
                 ),
                 const SizedBox(width: 10),
@@ -324,8 +347,10 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
                       ),
                       Text(
                         "📍 ${station["location"]}",
-                        style:
-                            const TextStyle(fontSize: 14, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -342,10 +367,14 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildInfoChip(Icons.battery_charging_full,
-                    "Capacity: ${station["capacity"]} Bays"),
-                _buildInfoChip(Icons.car_repair,
-                    "Occupied: ${station["occupied_bays"]} Bays"),
+                _buildInfoChip(
+                  Icons.battery_charging_full,
+                  "Capacity: ${station["capacity"]} Bays",
+                ),
+                _buildInfoChip(
+                  Icons.car_repair,
+                  "Occupied: ${station["occupied_bays"]} Bays",
+                ),
               ],
             ),
 
@@ -369,8 +398,11 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
   }
 
   // ✅ Build Text Field Widget
-  Widget _buildStyledTextField(String label, TextEditingController controller,
-      {int maxLines = 1}) {
+  Widget _buildStyledTextField(
+    String label,
+    TextEditingController controller, {
+    int maxLines = 1,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: TextField(

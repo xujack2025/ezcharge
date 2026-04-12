@@ -32,8 +32,10 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     return _firestore
         .collectionGroup('complaints')
         .where('status', isEqualTo: status)
-        .orderBy('ComplaintDate',
-            descending: true) // ✅ Order by date (newest first)
+        .orderBy(
+          'ComplaintDate',
+          descending: true,
+        ) // ✅ Order by date (newest first)
         .snapshots();
   }
 
@@ -43,13 +45,15 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
 
     try {
       // ✅ Fetch all customers
-      QuerySnapshot customersSnapshot =
-          await _firestore.collection('customers').get();
+      QuerySnapshot customersSnapshot = await _firestore
+          .collection('customers')
+          .get();
 
       for (var customerDoc in customersSnapshot.docs) {
         // ✅ Fetch complaints from each customer's subcollection
-        QuerySnapshot complaintSnapshot =
-            await customerDoc.reference.collection('complaints').get();
+        QuerySnapshot complaintSnapshot = await customerDoc.reference
+            .collection('complaints')
+            .get();
 
         allComplaints.addAll(complaintSnapshot.docs);
       }
@@ -65,7 +69,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     try {
       QuerySnapshot staffSnapshot = await _firestore
           .collection('staff')
-          .where('status', isEqualTo: 'Available')  // Filter by 'status' field
+          .where('status', isEqualTo: 'Available') // Filter by 'status' field
           .get();
       return staffSnapshot.docs;
     } catch (e) {
@@ -74,15 +78,20 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     }
   }
 
-
   // ✅ Assign staff and update complaint status
-  Future<void> assignStaffToComplaint(String customerId, String complaintId, String adminId, String staffId) async {
+  Future<void> assignStaffToComplaint(
+    String customerId,
+    String complaintId,
+    String adminId,
+    String staffId,
+  ) async {
     final User? user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text("Admin must be logged in to assign staff.")),
+          content: Text("Admin must be logged in to assign staff."),
+        ),
       );
       return;
     }
@@ -111,11 +120,11 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
           .collection('complaints')
           .doc(complaintId)
           .update({
-        'status': 'In Progress',
-        'AdminID': adminID,
-        'AssignedStaffID': staffId,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+            'status': 'In Progress',
+            'AdminID': adminID,
+            'AssignedStaffID': staffId,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
 
       // ✅ Update staff status to "Busy"
       await _firestore.collection('staff').doc(staffId).update({
@@ -124,14 +133,15 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text("Complaint assigned to staff. Staff is now Busy.")),
+          content: Text("Complaint assigned to staff. Staff is now Busy."),
+        ),
       );
 
       setState(() {}); // Refresh UI
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error assigning staff: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error assigning staff: $e")));
     }
   }
 
@@ -147,9 +157,9 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
           .get();
 
       if (!complaintSnapshot.exists) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Complaint not found.")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Complaint not found.")));
         return;
       }
 
@@ -162,9 +172,9 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
           .collection('complaints')
           .doc(complaintId)
           .update({
-        'status': 'Resolved',
-        'resolvedAt': FieldValue.serverTimestamp(),
-      });
+            'status': 'Resolved',
+            'resolvedAt': FieldValue.serverTimestamp(),
+          });
 
       // ✅ Update staff status back to "Available"
       if (staffId != null) {
@@ -175,14 +185,15 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text("Complaint resolved. Staff is now Available.")),
+          content: Text("Complaint resolved. Staff is now Available."),
+        ),
       );
 
       setState(() {}); // Refresh UI
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error resolving complaint: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error resolving complaint: $e")));
     }
   }
 
@@ -246,7 +257,8 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
 
             return Card(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               elevation: 4,
               margin: const EdgeInsets.only(bottom: 12),
               child: Padding(
@@ -262,7 +274,9 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
                           child: Text(
                             "Complaint ID: ${data['ComplaintID'] ?? 'N/A'}",
                             style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -274,24 +288,37 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
                     // ✅ Complaint Details
                     _buildDetailRow(Icons.person, "Customer ID", customerId),
                     _buildDetailRow(
-                        Icons.location_on, "Station ID", data['StationID']),
+                      Icons.location_on,
+                      "Station ID",
+                      data['StationID'],
+                    ),
                     _buildDetailRow(Icons.warning, "Reason", data['Reason']),
                     _buildDetailRow(
-                        Icons.description, "Description", data['Description']),
+                      Icons.description,
+                      "Description",
+                      data['Description'],
+                    ),
                     _buildDetailRow(
-                        Icons.date_range,
-                        "Date",
-                        data['ComplaintDate'] != null
-                            ? (data['ComplaintDate'] as Timestamp)
+                      Icons.date_range,
+                      "Date",
+                      data['ComplaintDate'] != null
+                          ? (data['ComplaintDate'] as Timestamp)
                                 .toDate()
                                 .toString()
-                            : 'Unknown'),
+                          : 'Unknown',
+                    ),
                     if (data['AdminID'] != null)
                       _buildDetailRow(
-                          Icons.admin_panel_settings, "Admin", data['AdminID']),
+                        Icons.admin_panel_settings,
+                        "Admin",
+                        data['AdminID'],
+                      ),
                     if (data['AssignedStaffID'] != null)
-                      _buildDetailRow(Icons.assignment_ind, "Staff",
-                          data['AssignedStaffID']),
+                      _buildDetailRow(
+                        Icons.assignment_ind,
+                        "Staff",
+                        data['AssignedStaffID'],
+                      ),
 
                     const SizedBox(height: 10),
 
@@ -317,27 +344,33 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildAssignStaffDropdown(staffSnapshot.data!,
-                                      customerId, complaint.id),
+                                  _buildAssignStaffDropdown(
+                                    staffSnapshot.data!,
+                                    customerId,
+                                    complaint.id,
+                                  ),
                                   const SizedBox(height: 10),
                                   ElevatedButton(
                                     onPressed: () {
                                       if (_selectedStaffId == null) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
                                           const SnackBar(
-                                              content: Text(
-                                                  "Please select a staff member.")),
+                                            content: Text(
+                                              "Please select a staff member.",
+                                            ),
+                                          ),
                                         );
                                         return;
                                       }
 
                                       assignStaffToComplaint(
-                                          customerId,
-                                          complaint.id,
-                                          FirebaseAuth
-                                              .instance.currentUser!.uid,
-                                          _selectedStaffId!);
+                                        customerId,
+                                        complaint.id,
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                        _selectedStaffId!,
+                                      );
                                     },
                                     child: const Text("Assign Staff"),
                                   ),
@@ -390,9 +423,13 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
         children: [
           Icon(icon, color: Colors.white, size: 18),
           const SizedBox(width: 5),
-          Text(status ?? 'Pending',
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold)),
+          Text(
+            status ?? 'Pending',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -419,8 +456,11 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
   }
 
   /// ✅ Dropdown for assigning staff
-  Widget _buildAssignStaffDropdown(List<QueryDocumentSnapshot> staffDocs,
-      String customerId, String complaintId) {
+  Widget _buildAssignStaffDropdown(
+    List<QueryDocumentSnapshot> staffDocs,
+    String customerId,
+    String complaintId,
+  ) {
     return DropdownButton<String>(
       hint: const Text("Select Staff"),
       value: _selectedStaffId,

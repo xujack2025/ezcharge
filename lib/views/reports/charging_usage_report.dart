@@ -42,8 +42,10 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
       // ✅ Fetch admin details from Firestore using the phone number
       final adminQuery = await FirebaseFirestore.instance
           .collection('admins') // ✅ Ensure correct collection name
-          .where('PhoneNumber',
-              isEqualTo: phoneNumber) // ✅ Search by phone number
+          .where(
+            'PhoneNumber',
+            isEqualTo: phoneNumber,
+          ) // ✅ Search by phone number
           .limit(1)
           .get();
 
@@ -76,7 +78,8 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
 
       if (stationSnapshot.exists) {
         setState(() {
-          selectedStationLocation = stationSnapshot.data()?['Location'] ??
+          selectedStationLocation =
+              stationSnapshot.data()?['Location'] ??
               'Not Found'; // ✅ Check correct field name
         });
       } else {
@@ -97,7 +100,8 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
     if (selectedStationId == null || selectedDateRange == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text("Please select a station and date range.")),
+          content: Text("Please select a station and date range."),
+        ),
       );
       return;
     }
@@ -134,14 +138,18 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
     final snapshot = await FirebaseFirestore.instance
         .collection('attendance')
         .where("StationID", isEqualTo: selectedStationId)
-        .where("CheckInTime",
-            isGreaterThanOrEqualTo: Timestamp.fromDate(selectedDateRange!
-                .start /*.subtract(Duration(hours: 8))*/) // ✅ Adjusted
-            )
-        .where("CheckOutTime",
-            isLessThanOrEqualTo: Timestamp.fromDate(
-                adjustedEndDate /*.subtract(Duration(hours: 8))*/) // ✅ Adjusted
-            )
+        .where(
+          "CheckInTime",
+          isGreaterThanOrEqualTo: Timestamp.fromDate(
+            selectedDateRange!.start /*.subtract(Duration(hours: 8))*/,
+          ), // ✅ Adjusted
+        )
+        .where(
+          "CheckOutTime",
+          isLessThanOrEqualTo: Timestamp.fromDate(
+            adjustedEndDate /*.subtract(Duration(hours: 8))*/,
+          ), // ✅ Adjusted
+        )
         .get();
 
     int totalSessions = snapshot.docs.length;
@@ -150,7 +158,8 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
     Map<int, int> peakHourUsage = {}; // {hour: count}
 
     print(
-        "\n🔹 Retrieved ${snapshot.docs.length} Charging Sessions from Firestore 🔹");
+      "\n🔹 Retrieved ${snapshot.docs.length} Charging Sessions from Firestore 🔹",
+    );
 
     for (var doc in snapshot.docs) {
       var data = doc.data();
@@ -208,9 +217,10 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
           pw.Text(
             "Charging Station Usage Report",
             style: pw.TextStyle(
-                fontSize: 22,
-                fontWeight: pw.FontWeight.bold,
-                color: PdfColors.white),
+              fontSize: 22,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.white,
+            ),
           ),
           pw.SizedBox(height: 5),
           pw.Text(
@@ -233,15 +243,18 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text("Station ID: $selectedStationId",
-              style:
-                  pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
-          pw.Text("Station Location: $selectedStationLocation",
-              style:
-                  pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
           pw.Text(
-              "Date Range: ${selectedDateRange?.start.toLocal()} to ${selectedDateRange?.end.toLocal()}",
-              style: pw.TextStyle(fontSize: 14)),
+            "Station ID: $selectedStationId",
+            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Text(
+            "Station Location: $selectedStationLocation",
+            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Text(
+            "Date Range: ${selectedDateRange?.start.toLocal()} to ${selectedDateRange?.end.toLocal()}",
+            style: pw.TextStyle(fontSize: 14),
+          ),
           pw.Divider(),
         ],
       ),
@@ -252,7 +265,8 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
   Future<void> _pickDateRange() async {
     DateTimeRange? picked = await showDateRangePicker(
       context: context,
-      initialDateRange: selectedDateRange ??
+      initialDateRange:
+          selectedDateRange ??
           DateTimeRange(
             start: DateTime.now().subtract(const Duration(days: 7)),
             end: DateTime.now(),
@@ -275,16 +289,23 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text("Summary Section",
-              style:
-                  pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+          pw.Text(
+            "Summary Section",
+            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+          ),
           pw.SizedBox(height: 5),
           _buildKeyValueRow(
-              "Total Charges Made:", data['totalSessions'].toString()),
+            "Total Charges Made:",
+            data['totalSessions'].toString(),
+          ),
           _buildKeyValueRow(
-              "Total Revenue (RM):", data['totalRevenue'].toStringAsFixed(2)),
-          _buildKeyValueRow("Energy Consumption (kWh):",
-              data['totalEnergy'].toStringAsFixed(2)),
+            "Total Revenue (RM):",
+            data['totalRevenue'].toStringAsFixed(2),
+          ),
+          _buildKeyValueRow(
+            "Energy Consumption (kWh):",
+            data['totalEnergy'].toStringAsFixed(2),
+          ),
         ],
       ),
     );
@@ -296,8 +317,10 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
         pw.Text(label, style: pw.TextStyle(fontSize: 14)),
-        pw.Text(value,
-            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+        pw.Text(
+          value,
+          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+        ),
       ],
     );
   }
@@ -320,9 +343,10 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text("Peak Hour Analysis",
-              style:
-                  pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+          pw.Text(
+            "Peak Hour Analysis",
+            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+          ),
           pw.SizedBox(height: 10),
           pw.Container(
             height: 200,
@@ -344,11 +368,12 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
                   drawLine: true,
                   isCurved: true,
                   data: peakHours
-                      .map((hour) => pw.PointChartValue(
-                              hour.toDouble(),
-                              peakHourData[hour]!
-                                  .toDouble()) // ✅ Show session counts
-                          )
+                      .map(
+                        (hour) => pw.PointChartValue(
+                          hour.toDouble(),
+                          peakHourData[hour]!.toDouble(),
+                        ), // ✅ Show session counts
+                      )
                       .toList(),
                 ),
               ],
@@ -362,10 +387,7 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Print Report"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Print Report"), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -374,17 +396,22 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
             Card(
               elevation: 3,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                    vertical: 16.0, horizontal: 20.0),
+                  vertical: 16.0,
+                  horizontal: 20.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       "Charging Station",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     StreamBuilder<QuerySnapshot>(
@@ -394,7 +421,8 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) {
                           return const Center(
-                              child: CircularProgressIndicator());
+                            child: CircularProgressIndicator(),
+                          );
                         }
                         var stations = snapshot.data!.docs;
                         return DropdownButtonFormField<String>(
@@ -404,9 +432,11 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
                           hint: const Text("Select Charging Station"),
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                            contentPadding:
-                                const EdgeInsets.symmetric(horizontal: 12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                            ),
                           ),
                           items: stations.map((station) {
                             return DropdownMenuItem<String>(
@@ -435,17 +465,22 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
             Card(
               elevation: 3,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                    vertical: 16.0, horizontal: 20.0),
+                  vertical: 16.0,
+                  horizontal: 20.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       "Date Range",
-                      style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     ElevatedButton.icon(
@@ -461,7 +496,9 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
                       Text(
                         "${selectedDateRange!.start.toLocal().toString().split(' ')[0]} → ${selectedDateRange!.end.toLocal().toString().split(' ')[0]}",
                         style: const TextStyle(
-                            fontSize: 14, color: Colors.black54),
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
                       ),
                   ],
                 ),

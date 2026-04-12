@@ -27,25 +27,25 @@ class _AdminAuthenticatePageState extends State<AdminAuthenticatePage>
 
   // Fetch all customers' authentication requests
   Stream<List<Map<String, dynamic>>> fetchCustomerAuthData() {
-    return _firestore
-        .collection('customers')
-        .snapshots()
-        .asyncMap((snapshot) async {
-      List<Future<Map<String, dynamic>>> futureList =
-          snapshot.docs.map<Future<Map<String, dynamic>>>((doc) async {
-        var authDoc = await doc.reference
-            .collection('authenticate')
-            .doc('authentication')
-            .get();
-        final authData = authDoc.data() ?? {}; // Ensure no null errors
+    return _firestore.collection('customers').snapshots().asyncMap((
+      snapshot,
+    ) async {
+      List<Future<Map<String, dynamic>>> futureList = snapshot.docs
+          .map<Future<Map<String, dynamic>>>((doc) async {
+            var authDoc = await doc.reference
+                .collection('authenticate')
+                .doc('authentication')
+                .get();
+            final authData = authDoc.data() ?? {}; // Ensure no null errors
 
-        return {
-          "customerId": doc.id,
-          "licenseImage": authData['LicenseImage'] ?? '',
-          "selfieImage": authData['SelfieImage'] ?? '',
-          "Status": authData['Status'] ?? 'Pending',
-        };
-      }).toList();
+            return {
+              "customerId": doc.id,
+              "licenseImage": authData['LicenseImage'] ?? '',
+              "selfieImage": authData['SelfieImage'] ?? '',
+              "Status": authData['Status'] ?? 'Pending',
+            };
+          })
+          .toList();
 
       return await Future.wait(futureList);
     });
@@ -58,9 +58,7 @@ class _AdminAuthenticatePageState extends State<AdminAuthenticatePage>
         .doc(customerId)
         .collection('authenticate')
         .doc('authentication')
-        .update({
-      "Status": "Pass",
-    });
+        .update({"Status": "Pass"});
   }
 
   // Reject customer authentication
@@ -70,9 +68,7 @@ class _AdminAuthenticatePageState extends State<AdminAuthenticatePage>
         .doc(customerId)
         .collection('authenticate')
         .doc('authentication')
-        .update({
-      "Status": "Failed",
-    });
+        .update({"Status": "Failed"});
   }
 
   @override
@@ -82,7 +78,9 @@ class _AdminAuthenticatePageState extends State<AdminAuthenticatePage>
       child: Scaffold(
         appBar: AppBar(
           title: Text("Customer Authentication"),
-          bottom: _tabController == null // ✅ Null-check before using controller
+          bottom:
+              _tabController ==
+                  null // ✅ Null-check before using controller
               ? null
               : TabBar(
                   controller: _tabController,
@@ -105,7 +103,8 @@ class _AdminAuthenticatePageState extends State<AdminAuthenticatePage>
               return Center(child: Text("No authentication requests."));
             }
 
-            return _tabController == null // ✅ Handle null case
+            return _tabController ==
+                    null // ✅ Handle null case
                 ? Center(child: CircularProgressIndicator())
                 : TabBarView(
                     controller: _tabController!,
@@ -123,9 +122,12 @@ class _AdminAuthenticatePageState extends State<AdminAuthenticatePage>
 
   // 🔹 Build the customer list based on status
   Widget _buildCustomerList(
-      List<Map<String, dynamic>> customers, String status) {
-    var filteredCustomers =
-        customers.where((c) => c['Status'] == status).toList();
+    List<Map<String, dynamic>> customers,
+    String status,
+  ) {
+    var filteredCustomers = customers
+        .where((c) => c['Status'] == status)
+        .toList();
 
     if (filteredCustomers.isEmpty) {
       return Center(child: Text("No $status customers."));
@@ -143,31 +145,47 @@ class _AdminAuthenticatePageState extends State<AdminAuthenticatePage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Customer ID: ${customer['customerId']}",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  "Customer ID: ${customer['customerId']}",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
                       child: customer['licenseImage'].isNotEmpty
-                          ? Image.network(customer['licenseImage'],
-                              height: 120, fit: BoxFit.cover)
-                          : Image.asset('assets/images/placeholder.png',
-                              height: 120, fit: BoxFit.cover),
+                          ? Image.network(
+                              customer['licenseImage'],
+                              height: 120,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.asset(
+                              'assets/images/placeholder.png',
+                              height: 120,
+                              fit: BoxFit.cover,
+                            ),
                     ),
                     SizedBox(width: 10),
                     Expanded(
                       child: customer['selfieImage'].isNotEmpty
-                          ? Image.network(customer['selfieImage'],
-                              height: 120, fit: BoxFit.cover)
-                          : Image.asset('assets/images/placeholder.png',
-                              height: 120, fit: BoxFit.cover),
+                          ? Image.network(
+                              customer['selfieImage'],
+                              height: 120,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.asset(
+                              'assets/images/placeholder.png',
+                              height: 120,
+                              fit: BoxFit.cover,
+                            ),
                     ),
                   ],
                 ),
                 SizedBox(height: 10),
-                Text("Status: ${customer['Status']}",
-                    style: TextStyle(color: Colors.blue)),
+                Text(
+                  "Status: ${customer['Status']}",
+                  style: TextStyle(color: Colors.blue),
+                ),
                 SizedBox(height: 10),
                 if (status == "Pending") ...[
                   Row(
@@ -177,13 +195,15 @@ class _AdminAuthenticatePageState extends State<AdminAuthenticatePage>
                         onPressed: () =>
                             approveCustomer(customer['customerId']),
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green),
+                          backgroundColor: Colors.green,
+                        ),
                         child: Text("Approve"),
                       ),
                       ElevatedButton(
                         onPressed: () => rejectCustomer(customer['customerId']),
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red),
+                          backgroundColor: Colors.red,
+                        ),
                         child: Text("Reject"),
                       ),
                     ],

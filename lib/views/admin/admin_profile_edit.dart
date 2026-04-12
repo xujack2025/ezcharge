@@ -83,13 +83,16 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
     }
 
     try {
-      await FirebaseFirestore.instance.collection("admins").doc(_adminId).update({
-        "FirstName": _firstNameController.text,
-        "LastName": _lastNameController.text,
-        "EmailAddress": _emailController.text,
-        "Gender": _selectedGender,
-        "DateOfBirth": _selectedDateOfBirth,
-      });
+      await FirebaseFirestore.instance
+          .collection("admins")
+          .doc(_adminId)
+          .update({
+            "FirstName": _firstNameController.text,
+            "LastName": _lastNameController.text,
+            "EmailAddress": _emailController.text,
+            "Gender": _selectedGender,
+            "DateOfBirth": _selectedDateOfBirth,
+          });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Profile updated successfully!")),
@@ -114,7 +117,8 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
 
     if (pickedDate != null) {
       setState(() {
-        _selectedDateOfBirth = "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+        _selectedDateOfBirth =
+            "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
       });
     }
   }
@@ -134,7 +138,14 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Edit Profile", style: TextStyle(color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Edit Profile",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 1,
       ),
@@ -143,16 +154,34 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTextField("First Name", _firstNameController, isRequired: true),
+            _buildTextField(
+              "First Name",
+              _firstNameController,
+              isRequired: true,
+            ),
             _buildTextField("Last Name", _lastNameController, isRequired: true),
-            _buildTextField("Email Address", _emailController, hint: "Enter Email Address"),
-            _buildTextField("Phone Number", _phoneController, isEditable: false),
+            _buildTextField(
+              "Email Address",
+              _emailController,
+              hint: "Enter Email Address",
+            ),
+            _buildTextField(
+              "Phone Number",
+              _phoneController,
+              isEditable: false,
+            ),
 
-            _buildDropdownField("Gender", _genders, _selectedGender, (newValue) {
+            _buildDropdownField("Gender", _genders, _selectedGender, (
+              newValue,
+            ) {
               setState(() => _selectedGender = newValue);
             }),
 
-            _buildDatePickerField("Date of Birth", _selectedDateOfBirth, _pickDate),
+            _buildDatePickerField(
+              "Date of Birth",
+              _selectedDateOfBirth,
+              _pickDate,
+            ),
 
             const SizedBox(height: 20),
 
@@ -163,9 +192,18 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
                 ),
-                child: const Text("SAVE", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "SAVE",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
@@ -175,7 +213,13 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
   }
 
   // 🔹 Function to build text fields
-  Widget _buildTextField(String label, TextEditingController controller, {String? hint, bool isRequired = false, bool isEditable = true}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    String? hint,
+    bool isRequired = false,
+    bool isEditable = true,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
@@ -183,8 +227,15 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
         children: [
           Row(
             children: [
-              Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-              if (isRequired) const Text(" *", style: TextStyle(color: Colors.red)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (isRequired)
+                const Text(" *", style: TextStyle(color: Colors.red)),
             ],
           ),
           const SizedBox(height: 5),
@@ -195,7 +246,9 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
               hintText: hint,
               filled: true,
               fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
             ),
           ),
         ],
@@ -204,13 +257,21 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
   }
 
   // 🔹 Function to build dropdown fields
-  Widget _buildDropdownField(String label, List<String> items, String? selectedValue, ValueChanged<String?> onChanged) {
+  Widget _buildDropdownField(
+    String label,
+    List<String> items,
+    String? selectedValue,
+    ValueChanged<String?> onChanged,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 5),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -239,13 +300,20 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
   }
 
   // 🔹 Function to build date picker field
-  Widget _buildDatePickerField(String label, String? selectedDate, VoidCallback onTap) {
+  Widget _buildDatePickerField(
+    String label,
+    String? selectedDate,
+    VoidCallback onTap,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 5),
           InkWell(
             onTap: onTap,
@@ -260,7 +328,11 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
                 children: [
                   Text(selectedDate ?? "Select Date of Birth"),
                   const Spacer(),
-                  const Icon(Icons.calendar_today, color: Colors.black54, size: 16),
+                  const Icon(
+                    Icons.calendar_today,
+                    color: Colors.black54,
+                    size: 16,
+                  ),
                 ],
               ),
             ),

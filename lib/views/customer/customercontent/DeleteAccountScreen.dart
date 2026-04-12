@@ -16,7 +16,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
     "Always out of service",
     "I have duplicate account",
     "Other application offer greater promotion",
-    "Others"
+    "Others",
   ];
 
   //Function to Show Bottom Sheet for Selecting a Reason
@@ -29,18 +29,22 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("Select Reason",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text(
+                "Select Reason",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 10),
-              ..._reasons.map((reason) => ListTile(
-                    title: Text(reason),
-                    onTap: () {
-                      setState(() {
-                        _selectedReason = reason;
-                      });
-                      Navigator.pop(context); // Close the bottom sheet
-                    },
-                  )),
+              ..._reasons.map(
+                (reason) => ListTile(
+                  title: Text(reason),
+                  onTap: () {
+                    setState(() {
+                      _selectedReason = reason;
+                    });
+                    Navigator.pop(context); // Close the bottom sheet
+                  },
+                ),
+              ),
             ],
           ),
         );
@@ -65,11 +69,14 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Delete Account",
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 30,
-                fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Delete Account",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -89,16 +96,22 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
             const SizedBox(height: 30),
             Row(
               children: const [
-                Text("Reason",
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black)),
-                Text(" *",
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red)),
+                Text(
+                  "Reason",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                Text(
+                  " *",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -106,8 +119,10 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
               onTap: _showReasonPicker,
               child: Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.grey[300], // Disabled look
                   borderRadius: BorderRadius.circular(8),
@@ -118,10 +133,11 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                     Text(
                       _selectedReason ?? "Select Reason",
                       style: TextStyle(
-                          color: _selectedReason == null
-                              ? Colors.black54
-                              : Colors.black,
-                          fontSize: 16),
+                        color: _selectedReason == null
+                            ? Colors.black54
+                            : Colors.black,
+                        fontSize: 16,
+                      ),
                     ),
                     const Icon(Icons.arrow_drop_down, color: Colors.black54),
                   ],
@@ -138,22 +154,27 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>
-                                  const ConfirmDeleteScreen()),
+                            builder: (context) => const ConfirmDeleteScreen(),
+                          ),
                         );
                       },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      _selectedReason == null ? Colors.grey : Colors.blue,
+                  backgroundColor: _selectedReason == null
+                      ? Colors.grey
+                      : Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
                 ),
-                child: const Text("CONTINUE",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "CONTINUE",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],

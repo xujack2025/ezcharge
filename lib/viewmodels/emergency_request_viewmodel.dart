@@ -20,10 +20,11 @@ class EmergencyRequestViewModel extends ChangeNotifier {
         .collection('emergency_requests')
         .where('customerID', isEqualTo: customerID)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) =>
-                EmergencyRequest.fromMap(doc.data()))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => EmergencyRequest.fromMap(doc.data()))
+              .toList(),
+        );
   }
 
   /// ✅ Create Emergency Request
@@ -34,14 +35,15 @@ class EmergencyRequestViewModel extends ChangeNotifier {
 
       // ✅ Ensure request ID is updated before saving
       request = EmergencyRequest(
-          requestID: requestID,
-          customerID: request.customerID,
-          location: request.location,
-          address: request.address,
-          bookingReason: request.bookingReason,
-          preferredTime: request.preferredTime,
-          status: request.status,
-          imageUrl: request.imageUrl);
+        requestID: requestID,
+        customerID: request.customerID,
+        location: request.location,
+        address: request.address,
+        bookingReason: request.bookingReason,
+        preferredTime: request.preferredTime,
+        status: request.status,
+        imageUrl: request.imageUrl,
+      );
 
       await _firestore
           .collection('emergency_requests')
@@ -57,10 +59,9 @@ class EmergencyRequestViewModel extends ChangeNotifier {
   /// ✅ Update Request Status (Real-time Changes)
   Future<void> updateRequestStatus(String requestID, String status) async {
     try {
-      await _firestore
-          .collection('emergency_requests')
-          .doc(requestID)
-          .update({'status': status});
+      await _firestore.collection('emergency_requests').doc(requestID).update({
+        'status': status,
+      });
     } catch (e) {
       print("Error updating status: $e");
     }
@@ -135,13 +136,12 @@ class EmergencyRequestViewModel extends ChangeNotifier {
           pickedDate.day,
           pickedTime.hour,
           pickedTime.minute,
-        );//.toUtc().add(const Duration(hours: 8)); // ✅ Ensure selected time is also UTC+8
+        ); //.toUtc().add(const Duration(hours: 8)); // ✅ Ensure selected time is also UTC+8
 
         notifyListeners();
       }
     }
   }
-
 
   /// 🔹 **Calculate Fee**
   double calculateFee(double kWhUsed) {

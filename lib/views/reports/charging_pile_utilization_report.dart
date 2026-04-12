@@ -41,8 +41,10 @@ class _ChargingPileUtilizationReportState
       // ✅ Fetch admin details from Firestore using the phone number
       final adminQuery = await FirebaseFirestore.instance
           .collection('admins') // ✅ Ensure correct collection name
-          .where('PhoneNumber',
-              isEqualTo: phoneNumber) // ✅ Search by phone number
+          .where(
+            'PhoneNumber',
+            isEqualTo: phoneNumber,
+          ) // ✅ Search by phone number
           .limit(1)
           .get();
 
@@ -101,12 +103,18 @@ class _ChargingPileUtilizationReportState
     DateTime adjustedEndDate = selectedDateRange!.end.add(Duration(days: 1));
     final snapshot = await FirebaseFirestore.instance
         .collection('attendance')
-        .where("CheckInTime",
-            isGreaterThanOrEqualTo: Timestamp.fromDate(selectedDateRange!
-                .start /*.subtract(const Duration(hours: 8))*/))
-        .where("CheckInTime",
-            isLessThanOrEqualTo: Timestamp.fromDate(
-                adjustedEndDate /*.subtract(const Duration(hours: 8))*/))
+        .where(
+          "CheckInTime",
+          isGreaterThanOrEqualTo: Timestamp.fromDate(
+            selectedDateRange!.start /*.subtract(const Duration(hours: 8))*/,
+          ),
+        )
+        .where(
+          "CheckInTime",
+          isLessThanOrEqualTo: Timestamp.fromDate(
+            adjustedEndDate /*.subtract(const Duration(hours: 8))*/,
+          ),
+        )
         .orderBy("CheckInTime", descending: true)
         .get();
 
@@ -120,13 +128,15 @@ class _ChargingPileUtilizationReportState
 
       DateTime startTime = (data['CheckInTime'] as Timestamp)
           .toDate() /*.add(const Duration(hours: 8))*/;
-      DateTime endTime = (data['CheckOutTime'] as Timestamp?)
+      DateTime endTime =
+          (data['CheckOutTime'] as Timestamp?)
               ?.toDate() /*.add(const Duration(hours: 8))*/ ??
           startTime; // If missing, use start time
 
       double energyUsed = (data['EnergyUsed'] ?? 0).toDouble();
-      Duration sessionDuration =
-          endTime.difference(startTime); // ✅ Calculate session duration
+      Duration sessionDuration = endTime.difference(
+        startTime,
+      ); // ✅ Calculate session duration
       double sessionHours =
           sessionDuration.inMinutes / 60.0; // Convert to hours
 
@@ -174,9 +184,10 @@ class _ChargingPileUtilizationReportState
           pw.Text(
             "Charging Pile Utilization Report",
             style: pw.TextStyle(
-                fontSize: 22,
-                fontWeight: pw.FontWeight.bold,
-                color: PdfColors.white),
+              fontSize: 22,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.white,
+            ),
           ),
           pw.SizedBox(height: 5),
           pw.Text(
@@ -227,12 +238,14 @@ class _ChargingPileUtilizationReportState
           "Total Sessions",
           "Total Energy Used",
           "Total Hours Used", // ✅ New column
-          "Peak Usage Hour"
+          "Peak Usage Hour",
         ],
         data: pileData.map((pile) {
           Map<int, int> usageByHour = (pile['usageByHour'] as Map).map(
             (key, value) => MapEntry(
-                int.parse(key.toString()), int.parse(value.toString())),
+              int.parse(key.toString()),
+              int.parse(value.toString()),
+            ),
           );
 
           int peakHour = 0;
@@ -251,7 +264,7 @@ class _ChargingPileUtilizationReportState
             "${pile['totalEnergy'].toStringAsFixed(2)} kWh",
             "${pile['totalHoursUsed'].toStringAsFixed(2)} h",
             // ✅ Display total hours
-            "$peakHour:00 ($maxSessions sessions)"
+            "$peakHour:00 ($maxSessions sessions)",
           ];
         }).toList(),
         cellStyle: pw.TextStyle(fontSize: 10),
@@ -297,17 +310,22 @@ class _ChargingPileUtilizationReportState
             Card(
               elevation: 3,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                    vertical: 16.0, horizontal: 20.0),
+                  vertical: 16.0,
+                  horizontal: 20.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       "Date Range",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     ElevatedButton.icon(
@@ -323,7 +341,9 @@ class _ChargingPileUtilizationReportState
                       Text(
                         "${selectedDateRange!.start.toLocal().toString().split(' ')[0]} → ${selectedDateRange!.end.toLocal().toString().split(' ')[0]}",
                         style: const TextStyle(
-                            fontSize: 14, color: Colors.black54),
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
                       ),
                   ],
                 ),

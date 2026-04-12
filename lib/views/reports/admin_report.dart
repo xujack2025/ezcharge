@@ -15,19 +15,38 @@ class PrintReportScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildReportTile(context, "📊 Charging Usage Report", ChargingUsageReport()),
-          _buildReportTile(context, "🛠️ Complaint Resolution Report", ComplaintResolutionReport()),
+          _buildReportTile(
+            context,
+            "📊 Charging Usage Report",
+            ChargingUsageReport(),
+          ),
+          _buildReportTile(
+            context,
+            "🛠️ Complaint Resolution Report",
+            ComplaintResolutionReport(),
+          ),
           //_buildReportTile(context, "💰 Financial Performance Report", FinancialPerformanceReport()),
-          _buildReportTile(context, "🔌 Charging Pile Utilization Report", ChargingPileUtilizationReport()),
+          _buildReportTile(
+            context,
+            "🔌 Charging Pile Utilization Report",
+            ChargingPileUtilizationReport(),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildReportTile(BuildContext context, String title, Widget reportPage) {
+  Widget _buildReportTile(
+    BuildContext context,
+    String title,
+    Widget reportPage,
+  ) {
     return Card(
       child: ListTile(
-        title: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         trailing: const Icon(Icons.arrow_forward_ios),
         onTap: () => Navigator.push(
           context,

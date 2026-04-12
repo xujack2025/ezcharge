@@ -94,7 +94,9 @@ class _IntroScheduleScreenState extends State<IntroScheduleScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 60, vertical: 10),
+                        horizontal: 60,
+                        vertical: 10,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -170,10 +172,7 @@ class OnboardingPage extends StatelessWidget {
                 Text(
                   subtitle,
                   textAlign: TextAlign.left,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black54,
-                  ),
+                  style: const TextStyle(fontSize: 16, color: Colors.black54),
                 ),
               ],
             ),

@@ -21,7 +21,8 @@ class _SignInScreenState extends State<SignInScreen> {
     String phoneNumber = _phoneController.text.trim();
     if (phoneNumber.isEmpty || phoneNumber.length < 10) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Enter a valid phone number")));
+        const SnackBar(content: Text("Enter a valid phone number")),
+      );
       return;
     }
 
@@ -35,8 +36,9 @@ class _SignInScreenState extends State<SignInScreen> {
       },
       verificationFailed: (FirebaseAuthException e) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Error: ${e.message}")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: ${e.message}")));
       },
       codeSent: (String verificationId, int? resendToken) {
         print("📌 VERIFICATION ID: $verificationId"); // Debugging
@@ -78,8 +80,10 @@ class _SignInScreenState extends State<SignInScreen> {
                       color: Colors.blue, // ✅ Blue Circle
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.arrow_back,
-                        color: Colors.white), // ✅ White Back Icon
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                    ), // ✅ White Back Icon
                   ),
                 ),
                 const SizedBox(width: 15), // Spacing between icon and text
@@ -127,7 +131,8 @@ class _SignInScreenState extends State<SignInScreen> {
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
 
@@ -142,17 +147,19 @@ class _SignInScreenState extends State<SignInScreen> {
                         backgroundColor: Colors.blue, // ✅ Button color
                         padding: const EdgeInsets.all(8),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5)),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
                       ),
                       child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text(
                               "PROCEED",
                               style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                  letterSpacing: 3),
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: 3,
+                              ),
                             ),
                     ),
                   ),
@@ -188,14 +195,16 @@ class _SignInScreenState extends State<SignInScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>
-                                  AdminSignInScreen()), // Navigate to Admin Screen
+                            builder: (context) => AdminSignInScreen(),
+                          ), // Navigate to Admin Screen
                         );
                       },
                       child: const Text(
                         "Sign In as Admin",
                         style: TextStyle(
-                            color: Colors.blue, fontWeight: FontWeight.bold),
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),

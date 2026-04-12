@@ -9,11 +9,11 @@ class AdminRewardsScreen extends StatefulWidget {
 }
 
 class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
-  final CollectionReference rewardsCollection =
-      FirebaseFirestore.instance.collection('reward');
+  final CollectionReference rewardsCollection = FirebaseFirestore.instance
+      .collection('reward');
 
-  final CollectionReference usersCollection =
-      FirebaseFirestore.instance.collection('customers');
+  final CollectionReference usersCollection = FirebaseFirestore.instance
+      .collection('customers');
 
   List<String> selectedUsers = [];
 
@@ -35,11 +35,10 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
 
               // ✅ Check if DateOfBirth is a Firestore Timestamp
               if (user['DateOfBirth'] is Timestamp) {
-                dob = (user['DateOfBirth'] as Timestamp)
-                    .toDate()
-                    .add(Duration(hours: 8)); // ✅ Convert to UTC+8
+                dob = (user['DateOfBirth'] as Timestamp).toDate().add(
+                  Duration(hours: 8),
+                ); // ✅ Convert to UTC+8
               }
-
               // ✅ Handle DateOfBirth stored as a String (e.g., "21/2/2025")
               else if (user['DateOfBirth'] is String) {
                 try {
@@ -61,7 +60,8 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                 int birthMonth = dob.month;
 
                 print(
-                    "Converted Date: $dob, Birth Month: $birthMonth, Expected: $currentMonth");
+                  "Converted Date: $dob, Birth Month: $birthMonth, Expected: $currentMonth",
+                );
 
                 return birthMonth == currentMonth; // Compare month only
               }
@@ -87,20 +87,23 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
   }
 
   void _openRewardDialog({String? rewardId, Map<String, dynamic>? rewardData}) {
-    TextEditingController rewardDetailsController =
-        TextEditingController(text: rewardData?['RewardDetails'] ?? '');
-    TextEditingController pointsController =
-        TextEditingController(text: rewardData?['Points']?.toString() ?? '');
+    TextEditingController rewardDetailsController = TextEditingController(
+      text: rewardData?['RewardDetails'] ?? '',
+    );
+    TextEditingController pointsController = TextEditingController(
+      text: rewardData?['Points']?.toString() ?? '',
+    );
 
     DateTime? selectedDate = rewardData?['ExpiredDate']?.toDate();
 
     List<String> userTypes = [
       'New Register Member',
       'Birthday Member',
-      'Anniversary Celebration'
+      'Anniversary Celebration',
     ];
-    List<String> selectedUserTypes =
-        List<String>.from(rewardData?['EligibleUserTypes'] ?? []);
+    List<String> selectedUserTypes = List<String>.from(
+      rewardData?['EligibleUserTypes'] ?? [],
+    );
 
     showDialog(
       context: context,
@@ -161,8 +164,10 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                             : 'Select Expiry Date',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      trailing:
-                          const Icon(Icons.calendar_today, color: Colors.blue),
+                      trailing: const Icon(
+                        Icons.calendar_today,
+                        color: Colors.blue,
+                      ),
                       onTap: () async {
                         DateTime? pickedDate = await showDatePicker(
                           context: context,
@@ -182,8 +187,10 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                     // Eligible User Types
                     const Text(
                       'Eligible User Types:',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                     Card(
                       color: Colors.grey[100],
@@ -223,7 +230,10 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 10,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -243,13 +253,15 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                     if (rewardDetailsController.text.isNotEmpty &&
                         pointsController.text.isNotEmpty &&
                         selectedDate != null) {
-
                       List<String> finalSelectedUsers = [];
 
                       // ✅ If no users are selected, add all users
                       if (selectedUsers.isEmpty) {
-                        QuerySnapshot querySnapshot = await usersCollection.get();
-                        finalSelectedUsers = querySnapshot.docs.map((doc) => doc.id).toList();
+                        QuerySnapshot querySnapshot = await usersCollection
+                            .get();
+                        finalSelectedUsers = querySnapshot.docs
+                            .map((doc) => doc.id)
+                            .toList();
                       } else {
                         finalSelectedUsers = List<String>.from(selectedUsers);
                       }
@@ -258,19 +270,24 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                         'RewardDetails': rewardDetailsController.text,
                         'Points': int.parse(pointsController.text),
                         'ExpiredDate': Timestamp.fromDate(selectedDate!),
-                        'EligibleUserTypes': List<String>.from(selectedUserTypes),
+                        'EligibleUserTypes': List<String>.from(
+                          selectedUserTypes,
+                        ),
                         'SelectedUsers': finalSelectedUsers,
                         'RewardID': rewardId ?? '',
                       };
 
                       // Ensure selected users are correctly saved
                       if (rewardId == null) {
-                        String newId = "RWD${DateTime.now().millisecondsSinceEpoch}";
+                        String newId =
+                            "RWD${DateTime.now().millisecondsSinceEpoch}";
                         newReward['RewardID'] = newId;
 
                         // ✅ Ensure selectedUsers list is actually stored
                         if (selectedUsers.isNotEmpty) {
-                          newReward['SelectedUsers'] = List<String>.from(selectedUsers);
+                          newReward['SelectedUsers'] = List<String>.from(
+                            selectedUsers,
+                          );
                         } else {
                           newReward['SelectedUsers'] = []; // Avoid null issue
                         }
@@ -278,10 +295,11 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                         rewardsCollection.doc(newId).set(newReward);
                       } else {
                         // ✅ Update the reward with selectedUsers
-                        newReward['SelectedUsers'] = List<String>.from(selectedUsers);
+                        newReward['SelectedUsers'] = List<String>.from(
+                          selectedUsers,
+                        );
                         rewardsCollection.doc(rewardId).update(newReward);
                       }
-
 
                       Navigator.pop(context);
                     }
@@ -293,7 +311,9 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                   ),
                   child: const Text('Save'),
                 ),
@@ -329,7 +349,9 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                         child: Text(
                           "Select Users",
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -398,66 +420,74 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
 
                       // Users List
                       SizedBox(
-                        height: MediaQuery.of(context).size.height *
+                        height:
+                            MediaQuery.of(context).size.height *
                             0.4, // Dynamic height
                         width: double.maxFinite, // Ensures proper fit
                         child: StreamBuilder(
                           stream: usersCollection.snapshots(),
                           builder:
                               (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Center(child: CircularProgressIndicator());
-                            }
-                            if (snapshot.hasError) {
-                              return Center(child: Text("Error loading users"));
-                            }
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+                                if (snapshot.hasError) {
+                                  return Center(
+                                    child: Text("Error loading users"),
+                                  );
+                                }
 
-                            var users = snapshot.data!.docs.where((doc) {
-                              var user = doc.data() as Map<String, dynamic>;
-                              var name = user['FirstName']?.toLowerCase() ?? '';
-                              return searchQuery.isEmpty ||
-                                  name.contains(searchQuery);
-                            }).toList();
+                                var users = snapshot.data!.docs.where((doc) {
+                                  var user = doc.data() as Map<String, dynamic>;
+                                  var name =
+                                      user['FirstName']?.toLowerCase() ?? '';
+                                  return searchQuery.isEmpty ||
+                                      name.contains(searchQuery);
+                                }).toList();
 
-                            if (users.isEmpty) {
-                              return Center(child: Text("No users found."));
-                            }
+                                if (users.isEmpty) {
+                                  return Center(child: Text("No users found."));
+                                }
 
-                            return ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: users.length,
-                              itemBuilder: (context, index) {
-                                var doc = users[index];
-                                var user = doc.data() as Map<String, dynamic>;
-                                return Card(
-                                  elevation: 2,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: CheckboxListTile(
-                                    title: Text(
-                                      user['FirstName'] ?? 'No Name',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    subtitle: Text("ID: ${doc.id}"),
-                                    value: selectedUsers.contains(doc.id),
-                                    activeColor: Colors.blue,
-                                    onChanged: (bool? selected) {
-                                      setDialogState(() {
-                                        if (selected == true) {
-                                          selectedUsers.add(doc.id);
-                                        } else {
-                                          selectedUsers.remove(doc.id);
-                                        }
-                                      });
-                                    },
-                                  ),
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: users.length,
+                                  itemBuilder: (context, index) {
+                                    var doc = users[index];
+                                    var user =
+                                        doc.data() as Map<String, dynamic>;
+                                    return Card(
+                                      elevation: 2,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: CheckboxListTile(
+                                        title: Text(
+                                          user['FirstName'] ?? 'No Name',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        subtitle: Text("ID: ${doc.id}"),
+                                        value: selectedUsers.contains(doc.id),
+                                        activeColor: Colors.blue,
+                                        onChanged: (bool? selected) {
+                                          setDialogState(() {
+                                            if (selected == true) {
+                                              selectedUsers.add(doc.id);
+                                            } else {
+                                              selectedUsers.remove(doc.id);
+                                            }
+                                          });
+                                        },
+                                      ),
+                                    );
+                                  },
                                 );
                               },
-                            );
-                          },
                         ),
                       ),
 
@@ -480,7 +510,9 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               padding: EdgeInsets.symmetric(
-                                  horizontal: 24, vertical: 12),
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
                             ),
                             child: Text("Done"),
                           ),
@@ -544,14 +576,18 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   leading: CircleAvatar(
                     backgroundColor: Colors.blueAccent,
                     child: Text(
                       reward['Points'].toString(),
                       style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   title: Text(
@@ -564,15 +600,20 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                       const SizedBox(height: 5),
                       Row(
                         children: [
-                          const Icon(Icons.calendar_today,
-                              size: 16, color: Colors.grey),
+                          const Icon(
+                            Icons.calendar_today,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
                           const SizedBox(width: 5),
                           Expanded(
                             // Prevents overflow in case of long expiry date text
                             child: Text(
                               "Expiry: ${reward['ExpiredDate'].toDate()}",
                               style: const TextStyle(
-                                  fontSize: 14, color: Colors.grey),
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
                               overflow:
                                   TextOverflow.ellipsis, // Truncates long text
                             ),
@@ -584,12 +625,14 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                         spacing: 6,
                         children:
                             (reward['EligibleUserTypes'] as List<dynamic>?)
-                                    ?.map((type) => Chip(
-                                          label: Text(type),
-                                          backgroundColor: Colors.blue.shade100,
-                                        ))
-                                    .toList() ??
-                                [const Text("No Eligible Users")],
+                                ?.map(
+                                  (type) => Chip(
+                                    label: Text(type),
+                                    backgroundColor: Colors.blue.shade100,
+                                  ),
+                                )
+                                .toList() ??
+                            [const Text("No Eligible Users")],
                       ),
                     ],
                   ),

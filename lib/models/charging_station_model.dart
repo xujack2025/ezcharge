@@ -30,7 +30,7 @@ class ChargingStation {
       stationID: data['StationID'] ?? '',
       stationName: data['StationName'] ?? '',
       description: data['Description'] ?? '',
-      nearby: data['Nearby']??'',
+      nearby: data['Nearby'] ?? '',
       location: data['Location'] ?? '',
       latitude: data['Latitude'] ?? '',
       longitude: data['Longitude'] ?? '',

@@ -40,8 +40,10 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
       // ✅ Fetch admin details from Firestore using the phone number
       final adminQuery = await FirebaseFirestore.instance
           .collection('admins') // ✅ Ensure correct collection name
-          .where('PhoneNumber',
-              isEqualTo: phoneNumber) // ✅ Search by phone number
+          .where(
+            'PhoneNumber',
+            isEqualTo: phoneNumber,
+          ) // ✅ Search by phone number
           .limit(1)
           .get();
 
@@ -119,17 +121,22 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
     DateTime adjustedEndDate = selectedDateRange!.end.add(Duration(days: 1));
     final snapshot = await FirebaseFirestore.instance
         .collectionGroup('complaints')
-        .where("status", whereIn: [
-          "Resolved",
-          "Pending",
-          "In Progress"
-        ]) // ✅ Include 'status' to match the index
-        .where("ComplaintDate",
-            isGreaterThanOrEqualTo: Timestamp.fromDate(selectedDateRange!
-                .start /*.subtract(const Duration(hours: 8))*/))
-        .where("ComplaintDate",
-            isLessThanOrEqualTo: Timestamp.fromDate(
-                adjustedEndDate /*.subtract(const Duration(hours: 8))*/))
+        .where(
+          "status",
+          whereIn: ["Resolved", "Pending", "In Progress"],
+        ) // ✅ Include 'status' to match the index
+        .where(
+          "ComplaintDate",
+          isGreaterThanOrEqualTo: Timestamp.fromDate(
+            selectedDateRange!.start /*.subtract(const Duration(hours: 8))*/,
+          ),
+        )
+        .where(
+          "ComplaintDate",
+          isLessThanOrEqualTo: Timestamp.fromDate(
+            adjustedEndDate /*.subtract(const Duration(hours: 8))*/,
+          ),
+        )
         .orderBy("ComplaintDate", descending: true) // ✅ Must match index order
         .get();
 
@@ -146,8 +153,7 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
           ? (data['updatedAt'] as Timestamp).toDate()
           /*.add(const Duration(hours: 8))*/
           : null;
-      Duration? resolutionTime =
-          resolvedAt?.difference(submittedAt);
+      Duration? resolutionTime = resolvedAt?.difference(submittedAt);
 
       // ✅ Fetch userName from the corresponding `customers` document
       String userName = await _fetchCustomerName(customerID);
@@ -179,9 +185,10 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
           pw.Text(
             "Complaint Resolution Report",
             style: pw.TextStyle(
-                fontSize: 22,
-                fontWeight: pw.FontWeight.bold,
-                color: PdfColors.white),
+              fontSize: 22,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.white,
+            ),
           ),
           pw.SizedBox(height: 5),
           pw.Text(
@@ -209,18 +216,20 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
           "Status",
           "Submitted At",
           "Resolved At",
-          "Resolution Time"
+          "Resolution Time",
         ],
         data: complaints
-            .map((complaint) => [
-                  complaint['complaintID'],
-                  complaint['userName'],
-                  complaint['issueType'],
-                  complaint['status'],
-                  complaint['submittedAt'].toString(),
-                  complaint['resolvedAt']?.toString() ?? "Not Resolved",
-                  complaint['resolutionTime'],
-                ])
+            .map(
+              (complaint) => [
+                complaint['complaintID'],
+                complaint['userName'],
+                complaint['issueType'],
+                complaint['status'],
+                complaint['submittedAt'].toString(),
+                complaint['resolvedAt']?.toString() ?? "Not Resolved",
+                complaint['resolutionTime'],
+              ],
+            )
             .toList(),
         cellStyle: pw.TextStyle(fontSize: 10),
         headerStyle: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
@@ -268,17 +277,22 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
               Card(
                 elevation: 3,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      vertical: 16.0, horizontal: 20.0),
+                    vertical: 16.0,
+                    horizontal: 20.0,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         "Date Range",
-                        style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       ElevatedButton.icon(
@@ -294,7 +308,9 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
                         Text(
                           "${selectedDateRange!.start.toLocal().toString().split(' ')[0]} → ${selectedDateRange!.end.toLocal().toString().split(' ')[0]}",
                           style: const TextStyle(
-                              fontSize: 14, color: Colors.black54),
+                            fontSize: 14,
+                            color: Colors.black54,
+                          ),
                         ),
                     ],
                   ),

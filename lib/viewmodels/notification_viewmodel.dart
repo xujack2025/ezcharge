@@ -14,11 +14,19 @@ class NotificationViewModel extends ChangeNotifier {
     try {
       QuerySnapshot snapshot = await _firestore
           .collection('notification') // ✅ Ensure collection name is correct
-          .orderBy('CreatedTime', descending: true) // ✅ Ensure correct field name
+          .orderBy(
+            'CreatedTime',
+            descending: true,
+          ) // ✅ Ensure correct field name
           .get();
 
       _notifications = snapshot.docs
-          .map((doc) => NotificationModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id))
+          .map(
+            (doc) => NotificationModel.fromFirestore(
+              doc.data() as Map<String, dynamic>,
+              doc.id,
+            ),
+          )
           .toList();
 
       notifyListeners(); // ✅ Notify UI to update
@@ -33,7 +41,9 @@ class NotificationViewModel extends ChangeNotifier {
       int epochTime = DateTime.now().millisecondsSinceEpoch;
       String notificationID = "NTF$epochTime";
 
-      DocumentReference notificationRef = _firestore.collection('notification').doc(notificationID);
+      DocumentReference notificationRef = _firestore
+          .collection('notification')
+          .doc(notificationID);
 
       NotificationModel newNotification = NotificationModel(
         notificationID: notificationID,
@@ -50,9 +60,12 @@ class NotificationViewModel extends ChangeNotifier {
     }
   }
 
-
   // ✅ Update a Notification
-  Future<void> updateNotification(String notificationId, String title, String message) async {
+  Future<void> updateNotification(
+    String notificationId,
+    String title,
+    String message,
+  ) async {
     try {
       await _firestore.collection('notification').doc(notificationId).update({
         'Title': title,
@@ -80,12 +93,16 @@ class NotificationViewModel extends ChangeNotifier {
     try {
       QuerySnapshot usersSnapshot = await _firestore.collection('users').get();
       for (var userDoc in usersSnapshot.docs) {
-        await _firestore.collection('users').doc(userDoc.id).collection('notification').add({
-          'Title': title,
-          'Description': message,
-          'CreatedAt': FieldValue.serverTimestamp(),
-          'IsRead': false,
-        });
+        await _firestore
+            .collection('users')
+            .doc(userDoc.id)
+            .collection('notification')
+            .add({
+              'Title': title,
+              'Description': message,
+              'CreatedAt': FieldValue.serverTimestamp(),
+              'IsRead': false,
+            });
       }
       notifyListeners();
     } catch (e) {
@@ -96,7 +113,9 @@ class NotificationViewModel extends ChangeNotifier {
   // ✅ Mark Notification as Read
   Future<void> markAsRead(String notificationId) async {
     try {
-      await _firestore.collection('notification').doc(notificationId).update({'ReadTime': DateTime.now().toString()});
+      await _firestore.collection('notification').doc(notificationId).update({
+        'ReadTime': DateTime.now().toString(),
+      });
       notifyListeners();
     } catch (e) {
       throw Exception("Error marking notification as read: $e");

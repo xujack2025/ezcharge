@@ -39,10 +39,15 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
   }
 
   // ✏️ Function to Edit Review
-  void _editReview(BuildContext context, String reviewId, String currentText,
-      dynamic currentRating) {
-    TextEditingController reviewController =
-        TextEditingController(text: currentText);
+  void _editReview(
+    BuildContext context,
+    String reviewId,
+    String currentText,
+    dynamic currentRating,
+  ) {
+    TextEditingController reviewController = TextEditingController(
+      text: currentText,
+    );
     double newRating = (currentRating is int)
         ? currentRating.toDouble()
         : (currentRating ?? 1.0);
@@ -60,8 +65,9 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                   TextField(
                     controller: reviewController,
                     maxLines: 3,
-                    decoration:
-                        const InputDecoration(labelText: "Update your review"),
+                    decoration: const InputDecoration(
+                      labelText: "Update your review",
+                    ),
                   ),
                   const SizedBox(height: 10),
                   // ⭐ Interactive Star Rating
@@ -71,7 +77,8 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                       return GestureDetector(
                         onTap: () {
                           setDialogState(() {
-                            newRating = index +
+                            newRating =
+                                index +
                                 1.0; // ✅ Updates state inside the dialog
                           });
                         },
@@ -87,22 +94,23 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
               ),
               actions: [
                 TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("Cancel")),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
                 ElevatedButton(
                   onPressed: () async {
-                    await _firestore
-                        .collection("reviews")
-                        .doc(reviewId)
-                        .update({
-                      "ReviewText": reviewController.text,
-                      "Rating": newRating.toInt(),
-                      // ✅ Ensure integer rating
-                    });
+                    await _firestore.collection("reviews").doc(reviewId).update(
+                      {
+                        "ReviewText": reviewController.text,
+                        "Rating": newRating.toInt(),
+                        // ✅ Ensure integer rating
+                      },
+                    );
 
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Review updated!")));
+                      const SnackBar(content: Text("Review updated!")),
+                    );
                   },
                   child: const Text("Save"),
                 ),
@@ -117,8 +125,9 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
   // ❌ Function to Delete Review
   void _deleteReview(String reviewId) async {
     await _firestore.collection("reviews").doc(reviewId).delete();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text("Review deleted!")));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Review deleted!")));
   }
 
   @override
@@ -184,37 +193,48 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                   title: Text(
                     review["ReviewText"] ?? "No review",
                     style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   subtitle: Row(
                     children: [
                       _buildStars((review["Rating"] as num?)?.toInt() ?? 0),
                       const SizedBox(width: 10),
                       Text(
-                        review["ReviewDate"]
-                                ?.toDate()
-                                .toString()
-                                .split(" ")[0] ??
+                        review["ReviewDate"]?.toDate().toString().split(
+                              " ",
+                            )[0] ??
                             "No date",
                         style: const TextStyle(
-                            fontSize: 12, color: Colors.black54),
+                          fontSize: 12,
+                          color: Colors.black54,
+                        ),
                       ),
                     ],
                   ),
                   trailing: PopupMenuButton<String>(
                     onSelected: (value) {
                       if (value == "edit") {
-                        _editReview(context, reviewId, review["ReviewText"],
-                            review["Rating"]);
+                        _editReview(
+                          context,
+                          reviewId,
+                          review["ReviewText"],
+                          review["Rating"],
+                        );
                       } else if (value == "delete") {
                         _deleteReview(reviewId);
                       }
                     },
                     itemBuilder: (context) => [
                       const PopupMenuItem(
-                          value: "edit", child: Text("Edit Review")),
+                        value: "edit",
+                        child: Text("Edit Review"),
+                      ),
                       const PopupMenuItem(
-                          value: "delete", child: Text("Delete Review")),
+                        value: "delete",
+                        child: Text("Delete Review"),
+                      ),
                     ],
                   ),
                 ),

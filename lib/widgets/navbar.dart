@@ -7,10 +7,7 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      title: Text(title),
-      centerTitle: true,
-    );
+    return AppBar(title: Text(title), centerTitle: true);
   }
 
   @override

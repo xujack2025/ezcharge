@@ -33,12 +33,13 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
         .collection('Charger')
         .snapshots() // Real-time listener
         .listen((snapshot) {
-      if (snapshot.docChanges.isNotEmpty) {
-        print("📢 Charger Status Updated! Auto-updating capacity...");
-        _chargingStationViewModel
-            .updateCapacity(widget.stationID); // Auto-run updateCapacity()
-      }
-    });
+          if (snapshot.docChanges.isNotEmpty) {
+            print("📢 Charger Status Updated! Auto-updating capacity...");
+            _chargingStationViewModel.updateCapacity(
+              widget.stationID,
+            ); // Auto-run updateCapacity()
+          }
+        });
   }
 
   Future<String> _generateNewChargerID() async {
@@ -71,12 +72,15 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
 
   // Manage Charging Bay: Add/Edit with validation
   void _editChargingBay(ChargingBay? bay) async {
-    TextEditingController chargerNameController =
-        TextEditingController(text: bay?.chargerName ?? "");
-    TextEditingController chargerVoltageController =
-        TextEditingController(text: bay?.chargerVoltage.toString() ?? "");
-    TextEditingController pricePerVoltageController =
-        TextEditingController(text: bay?.pricePerVoltage.toString() ?? "");
+    TextEditingController chargerNameController = TextEditingController(
+      text: bay?.chargerName ?? "",
+    );
+    TextEditingController chargerVoltageController = TextEditingController(
+      text: bay?.chargerVoltage.toString() ?? "",
+    );
+    TextEditingController pricePerVoltageController = TextEditingController(
+      text: bay?.pricePerVoltage.toString() ?? "",
+    );
 
     String chargerType = bay?.chargerType ?? "Type 2";
     String currentType = bay?.currentType ?? "AC";
@@ -115,7 +119,9 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
 
                     // Charger Name
                     _buildStyledTextField(
-                        "Charger Name", chargerNameController),
+                      "Charger Name",
+                      chargerNameController,
+                    ),
 
                     // Charger Type Dropdown
                     _buildStyledDropdown(
@@ -185,8 +191,10 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
                 ),
               ),
             ),
-            actionsPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            actionsPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -199,25 +207,32 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
                       chargerID: newChargerID,
                       chargerName: chargerNameController.text,
                       chargerType: chargerType,
-                      chargerVoltage:
-                          double.parse(chargerVoltageController.text),
+                      chargerVoltage: double.parse(
+                        chargerVoltageController.text,
+                      ),
                       currentType: currentType,
-                      pricePerVoltage:
-                          double.parse(pricePerVoltageController.text),
+                      pricePerVoltage: double.parse(
+                        pricePerVoltageController.text,
+                      ),
                       status: status,
                     );
 
                     if (bay == null) {
                       await _chargingStationViewModel.addChargingBay(
-                          widget.stationID, newBay);
+                        widget.stationID,
+                        newBay,
+                      );
                     } else {
                       await _chargingStationViewModel.updateChargingBay(
-                          widget.stationID, newBay);
+                        widget.stationID,
+                        newBay,
+                      );
                     }
 
                     if (originalStatus != status) {
-                      await _chargingStationViewModel
-                          .updateCapacity(widget.stationID);
+                      await _chargingStationViewModel.updateCapacity(
+                        widget.stationID,
+                      );
                     }
 
                     Navigator.pop(context);
@@ -229,9 +244,12 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
                   backgroundColor: Colors.blueAccent,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ],
@@ -255,8 +273,9 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
         backgroundColor: Colors.blueAccent,
       ),
       body: StreamBuilder<List<ChargingBay>>(
-        stream:
-            _chargingStationViewModel.fetchChargingBaysStream(widget.stationID),
+        stream: _chargingStationViewModel.fetchChargingBaysStream(
+          widget.stationID,
+        ),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -271,8 +290,10 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
           return chargingBays.isEmpty
               ? const Center(child: Text("No charging bays available."))
               : ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   itemCount: chargingBays.length,
                   itemBuilder: (context, index) {
                     var bay = chargingBays[index];
@@ -316,7 +337,9 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
                               onPressed: () async {
                                 await _chargingStationViewModel
                                     .deleteChargingBay(
-                                        widget.stationID, bay.chargerID);
+                                      widget.stationID,
+                                      bay.chargerID,
+                                    );
                               },
                             ),
                           ],
@@ -386,10 +409,10 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
           fillColor: Colors.white,
         ),
         items: items
-            .map((item) => DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(item),
-                ))
+            .map(
+              (item) =>
+                  DropdownMenuItem<String>(value: item, child: Text(item)),
+            )
             .toList(),
       ),
     );

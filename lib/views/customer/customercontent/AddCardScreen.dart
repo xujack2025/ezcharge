@@ -171,8 +171,10 @@ class _AddCardScreenState extends State<AddCardScreen> {
                 ),
                 child: isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("PROCEED",
-                        style: TextStyle(color: Colors.white)),
+                    : const Text(
+                        "PROCEED",
+                        style: TextStyle(color: Colors.white),
+                      ),
               ),
             ),
           ],

@@ -14,8 +14,11 @@ class AdminDrawer extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onItemTapped;
 
-  const AdminDrawer(
-      {super.key, required this.selectedIndex, required this.onItemTapped});
+  const AdminDrawer({
+    super.key,
+    required this.selectedIndex,
+    required this.onItemTapped,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -62,8 +65,10 @@ class AdminDrawer extends StatelessWidget {
                       ),
                       child: Text(
                         snapshot.data!.docs.length.toString(),
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
                       ),
                     );
                   },
@@ -74,7 +79,8 @@ class AdminDrawer extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const AdminNotificationPage()),
+                  builder: (context) => const AdminNotificationPage(),
+                ),
               );
             },
           ),
@@ -102,8 +108,10 @@ class AdminDrawer extends StatelessWidget {
               Icons.local_offer,
               color: AppColors.primaryLight,
             ),
-            title: const Text("Rewards",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            title: const Text(
+              "Rewards",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             onTap: () {
               Navigator.push(
                 context,
@@ -116,12 +124,11 @@ class AdminDrawer extends StatelessWidget {
 
           /// Emergency Request Assign Page
           ListTile(
-            leading: const Icon(
-              Icons.warning,
-              color: AppColors.danger,
+            leading: const Icon(Icons.warning, color: AppColors.danger),
+            title: const Text(
+              "Assign Drivers",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            title: const Text("Assign Drivers",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             onTap: () {
               Navigator.push(
                 context,
@@ -134,10 +141,7 @@ class AdminDrawer extends StatelessWidget {
 
           /// Print Report Screen
           ListTile(
-            leading: const Icon(
-              Icons.print,
-              color: Colors.blue,
-            ),
+            leading: const Icon(Icons.print, color: Colors.blue),
             title: const Text(
               "Print Report",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -145,9 +149,7 @@ class AdminDrawer extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => PrintReportScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => PrintReportScreen()),
               );
             },
           ),
@@ -165,7 +167,11 @@ class AdminDrawer extends StatelessWidget {
 
   // 🔹 Drawer Item Builder
   Widget _drawerItem(
-      BuildContext context, IconData icon, String title, int index) {
+    BuildContext context,
+    IconData icon,
+    String title,
+    int index,
+  ) {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),

@@ -22,17 +22,32 @@ class CustomBottomAppBar extends StatelessWidget {
       showUnselectedLabels: true,
       items: isAdmin
           ? const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-        BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "Analytics"),
-        BottomNavigationBarItem(icon: Icon(Icons.report), label: "Complaints"),
-        BottomNavigationBarItem(icon: Icon(Icons.ev_station), label: "Stations"),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-      ]
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.bar_chart),
+                label: "Analytics",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.report),
+                label: "Complaints",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.ev_station),
+                label: "Stations",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: "Profile",
+              ),
+            ]
           : const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-        BottomNavigationBarItem(icon: Icon(Icons.star), label: "Ratings"),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-      ],
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+              BottomNavigationBarItem(icon: Icon(Icons.star), label: "Ratings"),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: "Profile",
+              ),
+            ],
     );
   }
 }

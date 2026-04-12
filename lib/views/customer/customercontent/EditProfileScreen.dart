@@ -87,12 +87,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           .collection("customers")
           .doc(_customerId)
           .update({
-        "FirstName": _firstNameController.text,
-        "LastName": _lastNameController.text,
-        "EmailAddress": _emailController.text,
-        "Gender": _selectedGender,
-        "DateOfBirth": _selectedDateOfBirth,
-      });
+            "FirstName": _firstNameController.text,
+            "LastName": _lastNameController.text,
+            "EmailAddress": _emailController.text,
+            "Gender": _selectedGender,
+            "DateOfBirth": _selectedDateOfBirth,
+          });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Profile updated successfully!")),
@@ -143,7 +143,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         title: const Text(
           "Edit Profile",
           style: TextStyle(
-              color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold),
+            color: Colors.black,
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 1,
@@ -153,19 +156,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTextField("First Name", _firstNameController,
-                isRequired: true),
+            _buildTextField(
+              "First Name",
+              _firstNameController,
+              isRequired: true,
+            ),
             _buildTextField("Last Name", _lastNameController, isRequired: true),
-            _buildTextField("Email Address", _emailController,
-                hint: "Enter Email Address"),
-            _buildTextField("Phone Number", _phoneController,
-                isEditable: false),
-            _buildDropdownField("Gender", _genders, _selectedGender,
-                (newValue) {
+            _buildTextField(
+              "Email Address",
+              _emailController,
+              hint: "Enter Email Address",
+            ),
+            _buildTextField(
+              "Phone Number",
+              _phoneController,
+              isEditable: false,
+            ),
+            _buildDropdownField("Gender", _genders, _selectedGender, (
+              newValue,
+            ) {
               setState(() => _selectedGender = newValue);
             }),
             _buildDatePickerField(
-                "Date of Birth", _selectedDateOfBirth, _pickDate),
+              "Date of Birth",
+              _selectedDateOfBirth,
+              _pickDate,
+            ),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -175,13 +191,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
                 ),
-                child: const Text("SAVE",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "SAVE",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
@@ -191,8 +211,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   // Function to build text fields
-  Widget _buildTextField(String label, TextEditingController controller,
-      {String? hint, bool isRequired = false, bool isEditable = true}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    String? hint,
+    bool isRequired = false,
+    bool isEditable = true,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
@@ -200,9 +225,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         children: [
           Row(
             children: [
-              Text(label,
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.bold)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               if (isRequired)
                 const Text(" *", style: TextStyle(color: Colors.red)),
             ],
@@ -215,8 +244,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               hintText: hint,
               filled: true,
               fillColor: Colors.white,
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
             ),
           ),
         ],
@@ -225,16 +255,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   // Function to build dropdown fields
-  Widget _buildDropdownField(String label, List<String> items,
-      String? selectedValue, ValueChanged<String?> onChanged) {
+  Widget _buildDropdownField(
+    String label,
+    List<String> items,
+    String? selectedValue,
+    ValueChanged<String?> onChanged,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 5),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -264,15 +299,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   // Function to build date picker field
   Widget _buildDatePickerField(
-      String label, String? selectedDate, VoidCallback onTap) {
+    String label,
+    String? selectedDate,
+    VoidCallback onTap,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 5),
           InkWell(
             onTap: onTap,
@@ -287,8 +326,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 children: [
                   Text(selectedDate ?? "Select Date of Birth"),
                   const Spacer(),
-                  const Icon(Icons.calendar_today,
-                      color: Colors.black54, size: 16),
+                  const Icon(
+                    Icons.calendar_today,
+                    color: Colors.black54,
+                    size: 16,
+                  ),
                 ],
               ),
             ),

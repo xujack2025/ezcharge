@@ -33,8 +33,9 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
     DateTime endDate = today; // Today
 
     DateFormat dayFormat = DateFormat('d'); // Only day (e.g., 7)
-    DateFormat monthYearFormat =
-        DateFormat('MMM yyyy'); // Month and Year (e.g., Mar 2025)
+    DateFormat monthYearFormat = DateFormat(
+      'MMM yyyy',
+    ); // Month and Year (e.g., Mar 2025)
 
     setState(() {
       dateRange =
@@ -46,42 +47,46 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
   void listenForChargingSessions() {
     FirebaseFirestore.instance
         .collection('attendance')
-        .where('CheckInTime',
-            isGreaterThan: Timestamp.fromDate(DateTime.now()
-                .subtract(const Duration(days: 7)))) // Last 7 days
+        .where(
+          'CheckInTime',
+          isGreaterThan: Timestamp.fromDate(
+            DateTime.now().subtract(const Duration(days: 7)),
+          ),
+        ) // Last 7 days
         .snapshots()
         .listen((snapshot) {
-      Map<int, int> tempHourlyUsage = {
-        for (int i = 0; i < 24; i++) i: 0
-      }; // Initialize all 24 hours with 0
+          Map<int, int> tempHourlyUsage = {
+            for (int i = 0; i < 24; i++) i: 0,
+          }; // Initialize all 24 hours with 0
 
-      for (var doc in snapshot.docs) {
-        var docData = doc.data();
-        if (!(docData).containsKey('CheckInTime')) {
-          continue;
-        }
+          for (var doc in snapshot.docs) {
+            var docData = doc.data();
+            if (!(docData).containsKey('CheckInTime')) {
+              continue;
+            }
 
-        Timestamp? checkInTimestamp = doc['CheckInTime'];
-        if (checkInTimestamp == null) continue; // Skip if timestamp is null
+            Timestamp? checkInTimestamp = doc['CheckInTime'];
+            if (checkInTimestamp == null) continue; // Skip if timestamp is null
 
-        DateTime storedTime = checkInTimestamp
-            .toDate(); // Retrieved Firebase time (misinterpreted as UTC)
-        DateTime adjustedTime =
-            storedTime /*.add(const Duration(hours: 8))*/; // Manually adjust by +8 hours
+            DateTime storedTime = checkInTimestamp
+                .toDate(); // Retrieved Firebase time (misinterpreted as UTC)
+            DateTime adjustedTime =
+                storedTime /*.add(const Duration(hours: 8))*/; // Manually adjust by +8 hours
 
-        print(
-            "Firebase Stored Time: $storedTime | Corrected Local Time: $adjustedTime"); // Debugging output
+            print(
+              "Firebase Stored Time: $storedTime | Corrected Local Time: $adjustedTime",
+            ); // Debugging output
 
-        int hour = adjustedTime.hour;
-        tempHourlyUsage[hour] = (tempHourlyUsage[hour] ?? 0) + 1;
-      }
+            int hour = adjustedTime.hour;
+            tempHourlyUsage[hour] = (tempHourlyUsage[hour] ?? 0) + 1;
+          }
 
-      if (mounted) {
-        setState(() {
-          hourlyUsage = tempHourlyUsage;
+          if (mounted) {
+            setState(() {
+              hourlyUsage = tempHourlyUsage;
+            });
+          }
         });
-      }
-    });
   }
 
   @override
@@ -147,16 +152,19 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
             height: 350, // Better height for visibility
             width: double.infinity,
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: hourlyUsage.isEmpty
                   ? const Center(
                       child: Text(
                         "No data available for the past 7 days.",
                         style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey),
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
                       ),
                     )
                   : LineChart(
@@ -195,9 +203,11 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                               interval: 4, // Show label every 4 hours
                               getTitlesWidget: (double value, TitleMeta meta) {
                                 int displayHour = value.toInt();
-                                return Text("${displayHour}h",
-                                    // Display local time correctly
-                                    style: const TextStyle(fontSize: 12));
+                                return Text(
+                                  "${displayHour}h",
+                                  // Display local time correctly
+                                  style: const TextStyle(fontSize: 12),
+                                );
                               },
                             ),
                           ),
@@ -217,16 +227,21 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                         // End at 23 hours
                         minY: 0,
                         maxY: hourlyUsage.values.isNotEmpty
-                            ? (hourlyUsage.values
-                                        .reduce((a, b) => a > b ? a : b) +
-                                    1)
-                                .toDouble()
+                            ? (hourlyUsage.values.reduce(
+                                        (a, b) => a > b ? a : b,
+                                      ) +
+                                      1)
+                                  .toDouble()
                             : 10,
                         lineBarsData: [
                           LineChartBarData(
                             spots: hourlyUsage.entries
-                                .map((entry) => FlSpot(entry.key.toDouble(),
-                                    entry.value.toDouble()))
+                                .map(
+                                  (entry) => FlSpot(
+                                    entry.key.toDouble(),
+                                    entry.value.toDouble(),
+                                  ),
+                                )
                                 .toList(),
                             isCurved: true,
                             curveSmoothness: 0.3,
@@ -234,7 +249,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                             gradient: LinearGradient(
                               colors: [
                                 Colors.blueAccent,
-                                Colors.lightBlueAccent
+                                Colors.lightBlueAccent,
                               ], // 🔹 Apply gradient
                             ),
                             barWidth: 4,
@@ -244,7 +259,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                               gradient: LinearGradient(
                                 colors: [
                                   Colors.blueAccent.withOpacity(0.4),
-                                  Colors.transparent
+                                  Colors.transparent,
                                 ], // 🔹 Gradient for below the line
                                 stops: [0.1, 1.0],
                                 begin: Alignment.topCenter,
@@ -255,11 +270,11 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                               show: true,
                               getDotPainter: (spot, percent, barData, index) =>
                                   FlDotCirclePainter(
-                                radius: 4,
-                                color: Colors.blueAccent,
-                                strokeWidth: 1.5,
-                                strokeColor: Colors.white,
-                              ),
+                                    radius: 4,
+                                    color: Colors.blueAccent,
+                                    strokeWidth: 1.5,
+                                    strokeColor: Colors.white,
+                                  ),
                             ),
                           ),
                         ],
@@ -287,40 +302,48 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
 
         return stations.isEmpty
             ? const Center(
-                child: Text("No charging stations available.",
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.w500)))
+                child: Text(
+                  "No charging stations available.",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              )
             : ListView.builder(
                 itemCount: stations.length,
                 itemBuilder: (context, index) {
                   var station = stations[index];
                   return Card(
                     elevation: 2,
-                    margin:
-                        const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 5,
+                      horizontal: 10,
+                    ),
                     child: ListTile(
-                      title: Text(station["StationName"],
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      title: Text(
+                        station["StationName"],
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       subtitle: Text(
                         "Status: ${station["CapacityStatus"]}",
                         style: TextStyle(
                           color: station["CapacityStatus"] == "Overloaded"
                               ? Colors.red
                               : station["CapacityStatus"] == "Undefined"
-                                  ? Colors.grey
-                                  : station["CapacityStatus"] == "High Demand"
-                                      ? Colors.orange
-                                      : Colors.green,
+                              ? Colors.grey
+                              : station["CapacityStatus"] == "High Demand"
+                              ? Colors.orange
+                              : Colors.green,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                       onTap: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const AdminChargingStationsPage()));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminChargingStationsPage(),
+                          ),
+                        );
                       },
                     ),
                   );
@@ -339,18 +362,19 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// **📍 Top 5 Charging Stations**
-            const Text("📍 Most Frequently Visited Stations",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 200,
-              child: _buildTopStationsChart(),
+            const Text(
+              "📍 Most Frequently Visited Stations",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 8),
+            SizedBox(height: 200, child: _buildTopStationsChart()),
             const SizedBox(height: 15),
 
             /// **📅 Recent User Sessions**
-            const Text("📅 Recent Charging Sessions",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              "📅 Recent Charging Sessions",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             SizedBox(
               height: 300, // ✅ Fixed height to prevent overflow
@@ -359,18 +383,19 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
             const SizedBox(height: 15),
 
             /// **🔌 Most Used Chargers**
-            const Text("🔌 Most Used Chargers",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 200,
-              child: _buildMostUsedChargersChart(),
+            const Text(
+              "🔌 Most Used Chargers",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 8),
+            SizedBox(height: 200, child: _buildMostUsedChargersChart()),
             const SizedBox(height: 15),
 
             /// **📄 Each Charger Usage List**
-            const Text("📄 Charger Usage Details",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              "📄 Charger Usage Details",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             SizedBox(
               height: 300, // ✅ Fixed height to prevent overflow
@@ -600,9 +625,10 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
             Timestamp? timestamp = session["CheckInTime"];
             String formattedTime = timestamp != null
                 ? DateTime.fromMillisecondsSinceEpoch(
-                        timestamp.millisecondsSinceEpoch) // ✅ Convert safely
-                    .toLocal()
-                    .toString()
+                        timestamp.millisecondsSinceEpoch,
+                      ) // ✅ Convert safely
+                      .toLocal()
+                      .toString()
                 : "N/A";
 
             return Card(

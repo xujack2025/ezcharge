@@ -19,7 +19,7 @@ class ChargingBay {
     required this.status,
   });
 
-  // ✅ Convert Firestore DocumentSnapshot to ChargingBay object
+  // Convert Firestore DocumentSnapshot to ChargingBay object
   factory ChargingBay.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
@@ -37,7 +37,7 @@ class ChargingBay {
     );
   }
 
-  // ✅ Convert ChargingBay object to Map for Firestore
+  // Convert ChargingBay object to Map for Firestore
   Map<String, dynamic> toMap() {
     return {
       'ChargerID': chargerID,

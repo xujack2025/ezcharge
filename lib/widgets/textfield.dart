@@ -43,8 +43,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.hint,
-        labelStyle: TextStyle(color: _focusNode.hasFocus ? Colors.blueAccent : Colors.grey),
-        prefixIcon: widget.icon != null ? Icon(widget.icon, color: borderColor) : null,
+        labelStyle: TextStyle(
+          color: _focusNode.hasFocus ? Colors.blueAccent : Colors.grey,
+        ),
+        prefixIcon: widget.icon != null
+            ? Icon(widget.icon, color: borderColor)
+            : null,
         filled: true,
         fillColor: Colors.grey[200],
         focusedBorder: OutlineInputBorder(
@@ -92,8 +96,10 @@ class CustomPhoneTextField extends StatelessWidget {
         prefixText: prefixText,
         filled: true,
         fillColor: Colors.grey[200],
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

@@ -34,7 +34,9 @@ class _IntroScreenState extends State<IntroScreen> {
       // Handle case where user permanently denies location
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Location access permanently denied. Enable it in settings."),
+          content: Text(
+            "Location access permanently denied. Enable it in settings.",
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -73,7 +75,10 @@ class _IntroScreenState extends State<IntroScreen> {
                       color: Colors.black,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Image.asset('images/ezcharge_logo.png', fit: BoxFit.contain),
+                    child: Image.asset(
+                      'images/ezcharge_logo.png',
+                      fit: BoxFit.contain,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   // Title Text
@@ -100,12 +105,17 @@ class _IntroScreenState extends State<IntroScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const WelcomeScreen(),
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(horizontal: 75, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 75,
+                    vertical: 2,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),

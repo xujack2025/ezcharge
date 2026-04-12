@@ -47,7 +47,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
         if (userDoc.exists) {
           setState(() {
             _customerId = userDoc["CustomerID"];
-            _username ="${userDoc["FirstName"]} ${userDoc["LastName"]}"; // ✅ Prevents extra spaces
+            _username =
+                "${userDoc["FirstName"]} ${userDoc["LastName"]}"; // ✅ Prevents extra spaces
           });
         }
       }
@@ -56,19 +57,20 @@ class _ReviewScreenState extends State<ReviewScreen> {
     }
   }
 
-
   /// 🔹 Submit the review to Firestore under the current customer
   Future<void> _submitReview() async {
     if (_rating == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a rating!")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please select a rating!")));
       return;
     }
 
     if (_customerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error: User not found! Please log in again.")),
+        const SnackBar(
+          content: Text("Error: User not found! Please log in again."),
+        ),
       );
       return;
     }
@@ -83,16 +85,18 @@ class _ReviewScreenState extends State<ReviewScreen> {
       await FirebaseFirestore.instance
           .collection("CTM250001") // ✅ Go to 'customers' collection
           .doc(_customerId) // ✅ Use the current user's CustomerID
-          .collection("Rating") // ✅ Store the review inside 'Rating' subcollection
+          .collection(
+            "Rating",
+          ) // ✅ Store the review inside 'Rating' subcollection
           .doc(ratingId)
           .set({
-        "RatingID": "RTG${DateTime.now()}",
-        "StationID": widget.stationId,
-        "CustomerID": _customerId,
-        "Rating": _rating,
-        "Comments": _comment,
-        "RatingDate": dateNow,
-      });
+            "RatingID": "RTG${DateTime.now()}",
+            "StationID": widget.stationId,
+            "CustomerID": _customerId,
+            "Rating": _rating,
+            "Comments": _comment,
+            "RatingDate": dateNow,
+          });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Review submitted successfully!")),
@@ -100,14 +104,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error submitting review: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error submitting review: $e")));
     } finally {
       setState(() => _isSubmitting = false);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +149,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Card(
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Row(
@@ -164,16 +169,30 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(widget.stationName,
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          Text(widget.stationDescription,
-                              style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                          Text(
+                            widget.stationName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            widget.stationDescription,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
                           const SizedBox(height: 5),
                           Row(
                             children: const [
                               Icon(Icons.bolt, color: Colors.green, size: 18),
                               Text(" Available "),
-                              Icon(Icons.ev_station, color: Colors.black, size: 18),
+                              Icon(
+                                Icons.ev_station,
+                                color: Colors.black,
+                                size: 18,
+                              ),
                             ],
                           ),
                         ],
@@ -192,8 +211,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Kindly tell us the reason you are reporting this bay:",
-                      style: TextStyle(fontSize: 16)),
+                  const Text(
+                    "Kindly tell us the reason you are reporting this bay:",
+                    style: TextStyle(fontSize: 16),
+                  ),
 
                   // ✅ User Info
                   Row(
@@ -204,9 +225,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         child: Icon(Icons.person, color: Colors.black),
                       ),
                       const SizedBox(width: 10),
-                      Text(_username,style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black)) ,
-
-
+                      Text(
+                        _username,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
                     ],
                   ),
 
@@ -236,7 +262,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     maxLength: 500,
                     decoration: InputDecoration(
                       hintText: "Write your experience here (optional)",
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     onChanged: (value) {
                       setState(() {
@@ -256,11 +284,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: _isSubmitting
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("SUBMIT", style: TextStyle(color: Colors.white, fontSize: 16)),
+                  : const Text(
+                      "SUBMIT",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
             ),
           ),
         ],

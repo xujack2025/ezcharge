@@ -102,7 +102,7 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
                       gradient: LinearGradient(
                         colors: [
                           _getStatusBackgroundColor(complaint["status"]),
-                          Colors.white
+                          Colors.white,
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -120,7 +120,9 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
                       title: Text(
                         complaint["Reason"] ?? "No reason provided",
                         style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,12 +139,17 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
                           Text(
                             "Date: ${_formatDate(complaint["ComplaintDate"])}",
                             style: const TextStyle(
-                                fontSize: 12, color: Colors.black54),
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
                           ),
                         ],
                       ),
-                      trailing: const Icon(Icons.arrow_forward_ios,
-                          size: 18, color: Colors.black54),
+                      trailing: const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 18,
+                        color: Colors.black54,
+                      ),
                       onTap: () {
                         _showComplaintDetails(context, complaint, complaintId);
                       },
@@ -201,13 +208,18 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
   }
 
   // Show Complaint Details with Hero Animation
-  void _showComplaintDetails(BuildContext context,
-      Map<String, dynamic> complaint, String complaintId) {
+  void _showComplaintDetails(
+    BuildContext context,
+    Map<String, dynamic> complaint,
+    String complaintId,
+  ) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ComplaintDetailScreen(
-            complaint: complaint, complaintId: complaintId),
+          complaint: complaint,
+          complaintId: complaintId,
+        ),
       ),
     );
   }
@@ -218,15 +230,19 @@ class ComplaintDetailScreen extends StatelessWidget {
   final Map<String, dynamic> complaint;
   final String complaintId;
 
-  const ComplaintDetailScreen(
-      {super.key, required this.complaint, required this.complaintId});
+  const ComplaintDetailScreen({
+    super.key,
+    required this.complaint,
+    required this.complaintId,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text("Complaint Details"),
-          backgroundColor: Colors.blueAccent),
+        title: const Text("Complaint Details"),
+        backgroundColor: Colors.blueAccent,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -239,7 +255,9 @@ class ComplaintDetailScreen extends StatelessWidget {
                 child: Text(
                   complaint["Reason"] ?? "No reason provided",
                   style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold),
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -252,9 +270,10 @@ class ComplaintDetailScreen extends StatelessWidget {
             Text(
               "Status: ${complaint["status"] ?? "Pending"}",
               style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueGrey),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueGrey,
+              ),
             ),
             const SizedBox(height: 10),
             Text(

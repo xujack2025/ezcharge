@@ -78,15 +78,15 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
   // ✅ Build Each Notification Card
   Widget _buildNotificationCard(NotificationModel notification) {
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 4,
       shadowColor: Colors.grey.shade300,
       child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 10,
+        ),
         leading: CircleAvatar(
           backgroundColor: Colors.blueAccent,
           child: Icon(Icons.notifications, color: Colors.white),
@@ -139,8 +139,11 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
   }
 
   // ✅ Show Notification Dialog for Create/Update
-  void _showNotificationDialog(
-      {String? notificationId, String? title, String? message}) {
+  void _showNotificationDialog({
+    String? notificationId,
+    String? title,
+    String? message,
+  }) {
     _titleController.text = title ?? "";
     _messageController.text = message ?? "";
     _editingNotificationId = notificationId;
@@ -148,16 +151,16 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: Row(
           children: [
             const Icon(Icons.notifications, color: Colors.blueAccent),
             const SizedBox(width: 10),
-            Text(notificationId == null
-                ? "Create Notification"
-                : "Update Notification"),
+            Text(
+              notificationId == null
+                  ? "Create Notification"
+                  : "Update Notification",
+            ),
           ],
         ),
         content: _buildDialogContent(),
@@ -175,9 +178,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
           controller: _titleController,
           decoration: InputDecoration(
             labelText: "Title",
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
         const SizedBox(height: 10),
@@ -186,9 +187,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
           maxLines: 3,
           decoration: InputDecoration(
             labelText: "Message",
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
       ],

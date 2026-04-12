@@ -45,8 +45,10 @@ class _FilterScreenState extends State<FilterScreen> {
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text("Filter Options",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Filter Options",
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.close, size: 28, color: Colors.blue),
@@ -64,8 +66,10 @@ class _FilterScreenState extends State<FilterScreen> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: _resetFilters,
-                child: const Text("Reset Filters",
-                    style: TextStyle(color: Colors.blue, fontSize: 16)),
+                child: const Text(
+                  "Reset Filters",
+                  style: TextStyle(color: Colors.blue, fontSize: 16),
+                ),
               ),
             ),
 
@@ -75,10 +79,16 @@ class _FilterScreenState extends State<FilterScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildFilterButton("AC", _selectedPower == "AC",
-                      () => _togglePowerSupply("AC")),
-                  _buildFilterButton("DC", _selectedPower == "DC",
-                      () => _togglePowerSupply("DC")),
+                  _buildFilterButton(
+                    "AC",
+                    _selectedPower == "AC",
+                    () => _togglePowerSupply("AC"),
+                  ),
+                  _buildFilterButton(
+                    "DC",
+                    _selectedPower == "DC",
+                    () => _togglePowerSupply("DC"),
+                  ),
                 ],
               ),
             ),
@@ -90,17 +100,20 @@ class _FilterScreenState extends State<FilterScreen> {
                 spacing: 15,
                 children: [
                   _buildFilterButton(
-                      "Coffee Shop",
-                      _selectedNearby.contains("Coffee Shop"),
-                      () => _toggleNearby("Coffee Shop")),
+                    "Coffee Shop",
+                    _selectedNearby.contains("Coffee Shop"),
+                    () => _toggleNearby("Coffee Shop"),
+                  ),
                   _buildFilterButton(
-                      "Restaurant",
-                      _selectedNearby.contains("Restaurant"),
-                      () => _toggleNearby("Restaurant")),
+                    "Restaurant",
+                    _selectedNearby.contains("Restaurant"),
+                    () => _toggleNearby("Restaurant"),
+                  ),
                   _buildFilterButton(
-                      "Shopping Mall",
-                      _selectedNearby.contains("Shopping Mall"),
-                      () => _toggleNearby("Shopping Mall")),
+                    "Shopping Mall",
+                    _selectedNearby.contains("Shopping Mall"),
+                    () => _toggleNearby("Shopping Mall"),
+                  ),
                 ],
               ),
             ),
@@ -122,14 +135,16 @@ class _FilterScreenState extends State<FilterScreen> {
                   padding: const EdgeInsets.all(16),
                   backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: const Text(
                   "SHOW RESULT",
                   style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold),
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -146,9 +161,10 @@ class _FilterScreenState extends State<FilterScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(12),

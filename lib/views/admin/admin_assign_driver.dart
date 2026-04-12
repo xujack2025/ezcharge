@@ -55,14 +55,15 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
     // ✅ Ensure any previous tracking is stopped
     _stopTrackingDriverLocation();
 
-    positionStream = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10, // Update only when driver moves 10 meters
-      ),
-    ).listen((Position position) {
-      _updateDriverLocation(driverID, position);
-    });
+    positionStream =
+        Geolocator.getPositionStream(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 10, // Update only when driver moves 10 meters
+          ),
+        ).listen((Position position) {
+          _updateDriverLocation(driverID, position);
+        });
   }
 
   /// ✅ Stop tracking driver location
@@ -79,11 +80,12 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
           .collection('drivers')
           .doc(driverID)
           .update({
-        'location': GeoPoint(position.latitude, position.longitude),
-        'lastUpdated': FieldValue.serverTimestamp(),
-      });
+            'location': GeoPoint(position.latitude, position.longitude),
+            'lastUpdated': FieldValue.serverTimestamp(),
+          });
       print(
-          "✅ Driver location updated: ${position.latitude}, ${position.longitude}");
+        "✅ Driver location updated: ${position.latitude}, ${position.longitude}",
+      );
     } catch (e) {
       print("❌ Error updating driver location: $e");
     }
@@ -95,44 +97,47 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         .doc(widget.requestID)
         .snapshots()
         .listen((snapshot) {
-      if (!snapshot.exists) {
-        print("❌ Error: Request not found in Firestore.");
-        return;
-      }
+          if (!snapshot.exists) {
+            print("❌ Error: Request not found in Firestore.");
+            return;
+          }
 
-      Map<String, dynamic>? requestData = snapshot.data();
-      if (requestData == null) {
-        print("❌ Error: Firestore data is null.");
-        return;
-      }
+          Map<String, dynamic>? requestData = snapshot.data();
+          if (requestData == null) {
+            print("❌ Error: Firestore data is null.");
+            return;
+          }
 
-      String status =
-          requestData.containsKey('status') ? requestData['status'] : "Unknown";
-      String? driverID = requestData['driverID'];
+          String status = requestData.containsKey('status')
+              ? requestData['status']
+              : "Unknown";
+          String? driverID = requestData['driverID'];
 
-      print("🔄 Firestore Update Detected: Status = $status");
+          print("🔄 Firestore Update Detected: Status = $status");
 
-      setState(() {
-        isDriverAssigned = requestData.containsKey('driverID') &&
-            requestData['driverID'] != null;
-        isDriverArrived = (status == "Arrived" || status == "Charging");
-        isCharging = status == "Charging";
-      });
+          setState(() {
+            isDriverAssigned =
+                requestData.containsKey('driverID') &&
+                requestData['driverID'] != null;
+            isDriverArrived = (status == "Arrived" || status == "Charging");
+            isCharging = status == "Charging";
+          });
 
-      if (status == "Arrived") {
-        print("✅ Driver has arrived! Stopping location tracking.");
-        _stopTrackingDriverLocation(); // ✅ Stop tracking when driver arrives
-      }
+          if (status == "Arrived") {
+            print("✅ Driver has arrived! Stopping location tracking.");
+            _stopTrackingDriverLocation(); // ✅ Stop tracking when driver arrives
+          }
 
-      // ✅ Debugging: Confirm if this block is running
-      if (status == "Payment" && driverID != null) {
-        print(
-            "✅ Status is 'Completed', calling _updateDriverStatus($driverID)");
-        _updateDriverStatus(driverID);
-      } else {
-        print("⚠️ Status is NOT 'Completed' yet, skipping driver update.");
-      }
-    });
+          // ✅ Debugging: Confirm if this block is running
+          if (status == "Payment" && driverID != null) {
+            print(
+              "✅ Status is 'Completed', calling _updateDriverStatus($driverID)",
+            );
+            _updateDriverStatus(driverID);
+          } else {
+            print("⚠️ Status is NOT 'Completed' yet, skipping driver update.");
+          }
+        });
   }
 
   /// ✅ Fetch Available Drivers from Firestore
@@ -165,19 +170,13 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
     await FirebaseFirestore.instance
         .collection('emergency_requests')
         .doc(widget.requestID)
-        .update({
-      'driverID': selectedDriverID,
-      'status': 'Upcoming',
-    });
+        .update({'driverID': selectedDriverID, 'status': 'Upcoming'});
 
     // ✅ Update driver status to "Busy"
     await FirebaseFirestore.instance
         .collection('drivers')
         .doc(selectedDriverID)
-        .update({
-      'status': 'Busy',
-      'requestID': widget.requestID,
-    });
+        .update({'status': 'Busy', 'requestID': widget.requestID});
 
     setState(() {
       isDriverAssigned = true;
@@ -200,12 +199,11 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         .collection('emergency_requests')
         .doc(widget.requestID)
         .update({
-      'status': 'Charging',
-      'chargingStartTime': FieldValue.serverTimestamp(), // For accuracy
-      'chargingClientStartTime': clientNow, // For immediate local use
-
-      // ✅ Ensure Firestore stores this timestamp
-    });
+          'status': 'Charging',
+          'chargingStartTime': FieldValue.serverTimestamp(), // For accuracy
+          'chargingClientStartTime': clientNow, // For immediate local use
+          // ✅ Ensure Firestore stores this timestamp
+        });
 
     print("✅ Firestore Updated: Status changed to Charging at $startTime");
 
@@ -238,7 +236,8 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
       return;
     }
 
-    Timestamp startTimestamp = requestData['chargingClientStartTime'] ??
+    Timestamp startTimestamp =
+        requestData['chargingClientStartTime'] ??
         requestData['chargingStartTime'];
     DateTime chargingStartTime = startTimestamp.toDate();
 
@@ -265,17 +264,18 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
           .collection('emergency_requests')
           .doc(widget.requestID)
           .update({
-        'status': 'Payment',
-        'chargingEndTime': endTime,
-        'chargingTime': chargingTime,
-        // 🔹 Store exact seconds
-        'chargingFormattedTime': formattedChargingTime,
-        // 🔹 Store formatted HH:MM:SS
-        'totalCost': totalCost,
-      });
+            'status': 'Payment',
+            'chargingEndTime': endTime,
+            'chargingTime': chargingTime,
+            // 🔹 Store exact seconds
+            'chargingFormattedTime': formattedChargingTime,
+            // 🔹 Store formatted HH:MM:SS
+            'totalCost': totalCost,
+          });
 
       print(
-          "✅ Firestore updated: Charging stopped & status changed to Payment. Formatted time: $formattedChargingTime");
+        "✅ Firestore updated: Charging stopped & status changed to Payment. Formatted time: $formattedChargingTime",
+      );
 
       setState(() {
         isCharging = false;
@@ -283,8 +283,10 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                "Charging stopped. Total Cost: RM${totalCost.toStringAsFixed(2)}\nTime: $formattedChargingTime")),
+          content: Text(
+            "Charging stopped. Total Cost: RM${totalCost.toStringAsFixed(2)}\nTime: $formattedChargingTime",
+          ),
+        ),
       );
     } catch (e) {
       print("❌ Firestore Update Failed: $e");
@@ -355,16 +357,15 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
       );
 
       print(
-          "📍 Distance between driver and customer: ${distance.toStringAsFixed(2)} meters");
+        "📍 Distance between driver and customer: ${distance.toStringAsFixed(2)} meters",
+      );
 
       // ✅ Only allow confirmation if within 100 meters
       if (distance <= 100) {
         await FirebaseFirestore.instance
             .collection('emergency_requests')
             .doc(widget.requestID)
-            .update({
-          'status': 'Arrived',
-        });
+            .update({'status': 'Arrived'});
 
         setState(() {
           isDriverArrived = true;
@@ -379,8 +380,10 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  "❌ Driver is too far away (${distance.toStringAsFixed(2)}m). Move closer!")),
+            content: Text(
+              "❌ Driver is too far away (${distance.toStringAsFixed(2)}m). Move closer!",
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -397,9 +400,9 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
           .collection('drivers')
           .doc(driverID)
           .update({
-        'status': 'Available', // ✅ Set driver as Available
-        'requestID': FieldValue.delete(), // ✅ Remove requestID field
-      });
+            'status': 'Available', // ✅ Set driver as Available
+            'requestID': FieldValue.delete(), // ✅ Remove requestID field
+          });
 
       print("✅ Driver $driverID status updated successfully!");
     } catch (error) {
@@ -421,8 +424,10 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
                   if (!isDriverAssigned) ...[
                     const Text(
                       "Select a Driver:",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     ListView.builder(
@@ -446,8 +451,9 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
                     const SizedBox(height: 10),
                     Center(
                       child: ElevatedButton(
-                        onPressed:
-                            selectedDriverID == null ? null : _assignDriver,
+                        onPressed: selectedDriverID == null
+                            ? null
+                            : _assignDriver,
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 48),
                         ),
@@ -488,10 +494,12 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
                         onPressed: isCharging ? _stopCharging : _startCharging,
                         icon: Icon(isCharging ? Icons.stop : Icons.flash_on),
                         label: Text(
-                            isCharging ? "Stop Charging" : "Start Charging"),
+                          isCharging ? "Stop Charging" : "Start Charging",
+                        ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              isCharging ? Colors.red : Colors.green,
+                          backgroundColor: isCharging
+                              ? Colors.red
+                              : Colors.green,
                           minimumSize: const Size(double.infinity, 48),
                         ),
                       ),

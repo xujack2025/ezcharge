@@ -41,9 +41,11 @@ class ChargingStationViewModel {
         .doc(stationID)
         .collection('Charger')
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ChargingBay.fromFirestore(doc))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => ChargingBay.fromFirestore(doc))
+              .toList(),
+        );
   }
 
   // ✅ Create Charging Station (Capacity Initially 0, Occupied Bays 0)
@@ -184,9 +186,9 @@ class ChargingStationViewModel {
           .collection('Charger')
           .doc(bay.chargerID)
           .set({
-        ...bay.toMap(),
-        "Status": "Available", // ✅ Ensure "status" field exists
-      }, SetOptions(merge: true)); // ✅ Merge to prevent overwriting
+            ...bay.toMap(),
+            "Status": "Available", // ✅ Ensure "status" field exists
+          }, SetOptions(merge: true)); // ✅ Merge to prevent overwriting
 
       await updateCapacity(stationID); // ✅ Update capacity after adding bay
     } catch (e) {
@@ -228,7 +230,8 @@ class ChargingStationViewModel {
   Future<File?> pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(
-        source: ImageSource.gallery); // Can change to camera
+      source: ImageSource.gallery,
+    ); // Can change to camera
 
     if (pickedFile != null) {
       return File(pickedFile.path);
@@ -238,8 +241,10 @@ class ChargingStationViewModel {
 
   Future<String?> getStationImage(String stationID) async {
     try {
-      DocumentSnapshot doc =
-          await _firestore.collection('station').doc(stationID).get();
+      DocumentSnapshot doc = await _firestore
+          .collection('station')
+          .doc(stationID)
+          .get();
       if (doc.exists && doc['ImageUrl'] != null) {
         return doc['ImageUrl'];
       }
@@ -252,9 +257,9 @@ class ChargingStationViewModel {
   // ✅ Upload Image to Firebase Storage and Get URL
   Future<String?> uploadImage(File imageFile, String stationID) async {
     try {
-      Reference ref = _storage
-          .ref()
-          .child('charging_stations/$stationID.jpg'); // ✅ Correct path
+      Reference ref = _storage.ref().child(
+        'charging_stations/$stationID.jpg',
+      ); // ✅ Correct path
       UploadTask uploadTask = ref.putFile(imageFile);
 
       TaskSnapshot snapshot = await uploadTask.whenComplete(() => {});
@@ -309,7 +314,8 @@ class ChargingStationViewModel {
       });
 
       print(
-          "✅ Updated Station $stationID → Capacity: $totalBays, Occupied: $occupiedBays, Status: $capacityStatus");
+        "✅ Updated Station $stationID → Capacity: $totalBays, Occupied: $occupiedBays, Status: $capacityStatus",
+      );
     } catch (e) {
       print("❌ Error updating capacity: $e");
     }

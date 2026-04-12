@@ -25,18 +25,18 @@ class _AdminEmergencyRequestsPageState
           .collection('emergency_requests')
           .snapshots()
           .map((snapshot) {
-        print("✅ Firestore Update: Found ${snapshot.docs.length} requests");
-        return snapshot;
-      });
+            print("✅ Firestore Update: Found ${snapshot.docs.length} requests");
+            return snapshot;
+          });
     } else {
       return FirebaseFirestore.instance
           .collection('emergency_requests')
           .where('status', isEqualTo: selectedStatus)
           .snapshots()
           .map((snapshot) {
-        print("✅ Firestore Update: Found ${snapshot.docs.length} requests");
-        return snapshot;
-      });
+            print("✅ Firestore Update: Found ${snapshot.docs.length} requests");
+            return snapshot;
+          });
     }
   }
 
@@ -51,20 +51,18 @@ class _AdminEmergencyRequestsPageState
           });
         }
       },
-      items: [
-        "All",
-        "Pending",
-        "Upcoming",
-        "Arrived",
-        "Charging",
-        "Payment",
-        "Completed"
-      ].map<DropdownMenuItem<String>>((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        );
-      }).toList(),
+      items:
+          [
+            "All",
+            "Pending",
+            "Upcoming",
+            "Arrived",
+            "Charging",
+            "Payment",
+            "Completed",
+          ].map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(value: value, child: Text(value));
+          }).toList(),
     );
   }
 
@@ -78,16 +76,18 @@ class _AdminEmergencyRequestsPageState
           Card(
             margin: const EdgeInsets.all(16),
             elevation: 3,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Filter by Status:",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Text(
+                    "Filter by Status:",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                   _statusFilterDropdown(), // ✅ Dropdown Filter
                 ],
               ),
@@ -106,17 +106,24 @@ class _AdminEmergencyRequestsPageState
                 builder: (context, snapshot) {
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return const Center(
-                        child: Text("No requests found.",
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w500)));
+                      child: Text(
+                        "No requests found.",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
                   }
 
                   var requests = snapshot.data!.docs;
 
                   return ListView.builder(
                     itemCount: requests.length,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                     itemBuilder: (context, index) {
                       var request =
                           requests[index].data() as Map<String, dynamic>;
@@ -131,31 +138,42 @@ class _AdminEmergencyRequestsPageState
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(12),
                           leading: Icon(Icons.location_on, color: Colors.blue),
-                          title: Text("Location: ${request["address"]}",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          title: Text(
+                            "Location: ${request["address"]}",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Reason: ${request["bookingReason"]}",
-                                  style: TextStyle(color: Colors.black87)),
+                              Text(
+                                "Reason: ${request["bookingReason"]}",
+                                style: TextStyle(color: Colors.black87),
+                              ),
                               const SizedBox(height: 5),
                               Row(
                                 children: [
-                                  Icon(Icons.schedule,
-                                      size: 14, color: Colors.grey),
+                                  Icon(
+                                    Icons.schedule,
+                                    size: 14,
+                                    color: Colors.grey,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
-                                      request["preferredTime"] ??
-                                          "Unknown Time",
-                                      style: TextStyle(
-                                          fontSize: 12, color: Colors.grey)),
+                                    request["preferredTime"] ?? "Unknown Time",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ],
                           ),
                           trailing: Chip(
-                            label: Text(request["status"],
-                                style: TextStyle(color: Colors.white)),
+                            label: Text(
+                              request["status"],
+                              style: TextStyle(color: Colors.white),
+                            ),
                             backgroundColor: _getStatusColor(request["status"]),
                           ),
                           onTap: () {
@@ -168,7 +186,8 @@ class _AdminEmergencyRequestsPageState
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => AdminAssignDriverPage(
-                                      requestID: requestID),
+                                    requestID: requestID,
+                                  ),
                                 ),
                               );
                             } else {
@@ -211,7 +230,9 @@ class _AdminEmergencyRequestsPageState
 
   /// ✅ Improved Request Progress UI
   void _showRequestProgress(
-      BuildContext context, Map<String, dynamic> request) {
+    BuildContext context,
+    Map<String, dynamic> request,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -229,11 +250,14 @@ class _AdminEmergencyRequestsPageState
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 icon: const Icon(Icons.check_circle, color: Colors.white),
-                label: const Text("Got it!",
-                    style: TextStyle(color: Colors.white)),
+                label: const Text(
+                  "Got it!",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -250,7 +274,7 @@ class _AdminEmergencyRequestsPageState
       "Arrived",
       "Charging",
       "Payment",
-      "Completed"
+      "Completed",
     ];
     int currentIndex = statuses.indexOf(status);
 
@@ -267,8 +291,10 @@ class _AdminEmergencyRequestsPageState
                 CircleAvatar(
                   radius: 16,
                   backgroundColor: isActive ? Colors.green : Colors.grey[300],
-                  child: Icon(isActive ? Icons.check : Icons.circle,
-                      color: isActive ? Colors.white : Colors.grey),
+                  child: Icon(
+                    isActive ? Icons.check : Icons.circle,
+                    color: isActive ? Colors.white : Colors.grey,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Text(

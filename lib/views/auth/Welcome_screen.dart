@@ -40,30 +40,29 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(
-                      height: 180), // Distance between unititled and welcome
+                    height: 180,
+                  ), // Distance between unititled and welcome
                   const Text(
                     'Welcome to Malaysia',
-                    style: TextStyle(
-                      fontSize: 35,
-                      fontWeight: FontWeight.w900,
-                    ),
+                    style: TextStyle(fontSize: 35, fontWeight: FontWeight.w900),
                   ),
                   const SizedBox(
-                      height: 30), // Distance between map icon and welcome
-
+                    height: 30,
+                  ), // Distance between map icon and welcome
                   // Map with Marker
                   SizedBox(
                     width: 280,
                     height: 350,
                     child: const Image(
                       image: AssetImage(
-                          'images/welcome_map_icon.png'), // Replace with actual map image
+                        'images/welcome_map_icon.png',
+                      ), // Replace with actual map image
                       fit: BoxFit.cover,
                     ),
                   ),
                   const SizedBox(
-                      height: 50), // Distance between checkbox and map icon
-
+                    height: 50,
+                  ), // Distance between checkbox and map icon
                   // Terms and Privacy Checkbox
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -122,7 +121,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 35, vertical: 10),
+                        horizontal: 35,
+                        vertical: 10,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),

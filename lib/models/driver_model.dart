@@ -36,7 +36,8 @@ class Driver {
       firstName: map['FirstName'] ?? '',
       lastName: map['LastName'] ?? '',
       phone: map['PhoneNumber'] ?? '',
-      location: map['location'] ?? GeoPoint(0.0, 0.0), // ✅ Ensure default GeoPoint
+      location:
+          map['location'] ?? GeoPoint(0.0, 0.0), // ✅ Ensure default GeoPoint
       status: map['status'] ?? 'Offline',
     );
   }

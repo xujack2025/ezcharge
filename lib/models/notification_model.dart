@@ -16,7 +16,10 @@ class NotificationModel {
   });
 
   // ✅ Convert Firestore document to `NotificationModel` object
-  factory NotificationModel.fromFirestore(Map<String, dynamic> data, String documentId) {
+  factory NotificationModel.fromFirestore(
+    Map<String, dynamic> data,
+    String documentId,
+  ) {
     return NotificationModel(
       notificationID: documentId,
       title: data['Title'] ?? '',

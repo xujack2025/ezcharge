@@ -52,7 +52,9 @@ class EmergencyRequest {
     return EmergencyRequest(
       requestID: map['requestID'] ?? '',
       customerID: map['CustomerID'] ?? '',
-      location: map['location'] is GeoPoint ? map['location'] as GeoPoint : GeoPoint(0, 0), // ✅ Handle GeoPoint
+      location: map['location'] is GeoPoint
+          ? map['location'] as GeoPoint
+          : GeoPoint(0, 0), // ✅ Handle GeoPoint
       address: map['address'] ?? '', // ✅ Readable address for UI
       bookingReason: map['bookingReason'] ?? '',
       imageUrl: map['imageUrl'],

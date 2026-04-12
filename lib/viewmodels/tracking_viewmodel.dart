@@ -23,7 +23,8 @@ class TrackingViewModel extends ChangeNotifier {
   /// ✅ Extracts Driver Location from Firestore (Handles GeoPoint)
   LatLng? parseDriverLocation(DocumentSnapshot snapshot) {
     if (snapshot.exists && snapshot.data() != null) {
-      final Map<String, dynamic> driverData = snapshot.data() as Map<String, dynamic>;
+      final Map<String, dynamic> driverData =
+          snapshot.data() as Map<String, dynamic>;
 
       if (driverData.containsKey('location')) {
         final location = driverData['location'];
@@ -37,7 +38,10 @@ class TrackingViewModel extends ChangeNotifier {
 
   /// ✅ Stream to Get Tracking Info (Customer Request)
   Stream<DocumentSnapshot> getTrackingInfo(String requestID) {
-    return _firestore.collection('emergency_requests').doc(requestID).snapshots();
+    return _firestore
+        .collection('emergency_requests')
+        .doc(requestID)
+        .snapshots();
   }
 
   /// ✅ Convert Address to LatLng Using Google Geocoding API

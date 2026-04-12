@@ -16,10 +16,12 @@ class AppColors {
   static const Color gradientEnd = Color(0xFF004AAD); // End of gradient
 
   // 🔹 **Background Blues**
-  static const Color backgroundBlue =
-      Color(0xFFE3F2FD); // Light Blue Background
-  static const Color backgroundDarkBlue =
-      Color(0xFF1E3A5F); // Deep Blue Background
+  static const Color backgroundBlue = Color(
+    0xFFE3F2FD,
+  ); // Light Blue Background
+  static const Color backgroundDarkBlue = Color(
+    0xFF1E3A5F,
+  ); // Deep Blue Background
 
   // 🔹 **Blue for Buttons & Highlights**
   static const Color buttonBlue = Color(0xFF0066CC); // Standard Button Blue
@@ -35,10 +37,12 @@ class AppColors {
   static const Color alertBlue = Color(0xFF4682B4); // Steel Blue for Alerts
 
   // 🔹 **Transparent & Custom Blues**
-  static const Color transparentBlue =
-      Color(0x66007BFF); // Semi-transparent Blue
-  static const Color disabledBlue =
-      Color(0xFFB0C4DE); // Light Blue Disabled State
+  static const Color transparentBlue = Color(
+    0x66007BFF,
+  ); // Semi-transparent Blue
+  static const Color disabledBlue = Color(
+    0xFFB0C4DE,
+  ); // Light Blue Disabled State
 
   static const Color danger = Color(0xFFFF4D4D); // Red for errors/warnings
   static const Color background = Color(0xFFF5F5F5); // Light gray background

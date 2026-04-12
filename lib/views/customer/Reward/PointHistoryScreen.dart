@@ -75,8 +75,8 @@ class _PointHistoryScreenState extends State<PointHistoryScreen>
           customerSnapshot.data() as Map<String, dynamic>?;
       List<dynamic> usedRewardIds =
           (customerData?.containsKey("UsedReward") ?? false)
-              ? customerData!["UsedReward"]
-              : [];
+          ? customerData!["UsedReward"]
+          : [];
 
       // Prepare local lists to fill
       List<Map<String, dynamic>> expiredRewards = [];
@@ -92,8 +92,8 @@ class _PointHistoryScreenState extends State<PointHistoryScreen>
         if (rewardSnapshot.exists) {
           Map<String, dynamic> rewardData =
               rewardSnapshot.data() as Map<String, dynamic>;
-          DateTime expirationDate =
-              (rewardData["ExpiredDate"] as Timestamp).toDate();
+          DateTime expirationDate = (rewardData["ExpiredDate"] as Timestamp)
+              .toDate();
 
           // If it's expired, add it to expiredRewards
           if (expirationDate.isBefore(DateTime.now())) {
@@ -140,11 +140,14 @@ class _PointHistoryScreenState extends State<PointHistoryScreen>
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Top Up EZCHARGE Credit",
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 23,
-                fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Top Up EZCHARGE Credit",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 23,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 1,
         bottom: TabBar(
@@ -157,10 +160,7 @@ class _PointHistoryScreenState extends State<PointHistoryScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildInvalidTab(),
-          _buildUsedTab(),
-        ],
+        children: [_buildInvalidTab(), _buildUsedTab()],
       ),
     );
   }
@@ -177,7 +177,9 @@ class _PointHistoryScreenState extends State<PointHistoryScreen>
               return Container(
                 margin: EdgeInsets.symmetric(horizontal: 16, vertical: 15),
                 padding: EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 20), // Increased vertical padding
+                  horizontal: 16,
+                  vertical: 20,
+                ), // Increased vertical padding
                 decoration: BoxDecoration(
                   color: Colors.grey[300], // Light gray background
                   borderRadius: BorderRadius.circular(12),
@@ -191,12 +193,15 @@ class _PointHistoryScreenState extends State<PointHistoryScreen>
                       top: -10, // Moves label slightly above container
                       left: -25, // Aligns label to left
                       child: Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.blue[900], // Dark blue for label
                           borderRadius: BorderRadius.circular(
-                              8), // Uniform radius of 8 for all corners
+                            8,
+                          ), // Uniform radius of 8 for all corners
                         ),
                         child: Text(
                           "Expired",
@@ -263,8 +268,10 @@ class _PointHistoryScreenState extends State<PointHistoryScreen>
                 top: -10,
                 left: -25,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.blue[900], // A different color for "Used"
                     borderRadius: BorderRadius.circular(8),

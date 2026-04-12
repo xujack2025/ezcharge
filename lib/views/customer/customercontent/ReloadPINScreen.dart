@@ -114,9 +114,9 @@ class _ReloadPINScreenState extends State<ReloadPINScreen> {
           .doc(_accountId)
           .update({"WalletBalance": newBalance});
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Top-up successful!")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Top-up successful!")));
 
       Navigator.pop(context);
     } catch (e) {
@@ -143,11 +143,14 @@ class _ReloadPINScreenState extends State<ReloadPINScreen> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Reload with Reload PIN",
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 24,
-                fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Reload with Reload PIN",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 1,
       ),
@@ -168,16 +171,20 @@ class _ReloadPINScreenState extends State<ReloadPINScreen> {
                       ),
                       child: Column(
                         children: [
-                          const Icon(Icons.wallet,
-                              size: 50, color: Colors.white),
+                          const Icon(
+                            Icons.wallet,
+                            size: 50,
+                            color: Colors.white,
+                          ),
                           const SizedBox(height: 10),
                           const Text(
                             "RELOAD PIN\n"
                             "   ******",
                             style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ],
                       ),
@@ -200,7 +207,8 @@ class _ReloadPINScreenState extends State<ReloadPINScreen> {
                       hintText: "Reload PIN",
                       errorText: _isOtpValid ? null : "Invalid Reload OTP",
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
 

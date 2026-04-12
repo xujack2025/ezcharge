@@ -8,7 +8,11 @@ class OTPScreen extends StatefulWidget {
   final String phoneNumber;
   final String verificationId;
 
-  const OTPScreen({super.key, required this.phoneNumber, required this.verificationId});
+  const OTPScreen({
+    super.key,
+    required this.phoneNumber,
+    required this.verificationId,
+  });
 
   @override
   _OTPScreenState createState() => _OTPScreenState();
@@ -33,8 +37,9 @@ class _OTPScreenState extends State<OTPScreen> {
         smsCode: _otpController.text.trim(),
       );
 
-      UserCredential userCredential =
-          await _auth.signInWithCredential(credential);
+      UserCredential userCredential = await _auth.signInWithCredential(
+        credential,
+      );
       await _handleUserSignIn(userCredential.user!);
     } catch (e) {
       setState(() {
@@ -56,7 +61,9 @@ class _OTPScreenState extends State<OTPScreen> {
 
     if (querySnapshot.docs.isNotEmpty) {
       // ✅ Phone number exists → Allow login
-      print("✅ Existing user found in Firestore. Redirecting to AccountScreen...");
+      print(
+        "✅ Existing user found in Firestore. Redirecting to AccountScreen...",
+      );
     } else {
       // 🚀 New user → Create Firestore record
       print("🚀 New user! Creating Firestore record...");
@@ -68,18 +75,20 @@ class _OTPScreenState extends State<OTPScreen> {
           .collection("customers")
           .doc(customerId) // 🔥 Use CustomerID as Firestore doc ID
           .set({
-        "CustomerID": customerId, // ✅ Store CustomerID inside document
-        "PhoneNumber": widget.phoneNumber,
-        "EmailAddress": "",
-        "FirstName": "",
-        "LastName": "",
-        "Gender": "",
-        "PointBalance": 0,
-        "WalletBalance": 0,
-        "CreatedAt": FieldValue.serverTimestamp(),
-      });
+            "CustomerID": customerId, // ✅ Store CustomerID inside document
+            "PhoneNumber": widget.phoneNumber,
+            "EmailAddress": "",
+            "FirstName": "",
+            "LastName": "",
+            "Gender": "",
+            "PointBalance": 0,
+            "WalletBalance": 0,
+            "CreatedAt": FieldValue.serverTimestamp(),
+          });
 
-      print("✅ New user record created successfully with CustomerID: $customerId");
+      print(
+        "✅ New user record created successfully with CustomerID: $customerId",
+      );
     }
 
     // ✅ Navigate to AccountScreen
@@ -99,9 +108,10 @@ class _OTPScreenState extends State<OTPScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Enter the 6-digit code sent to ${widget.phoneNumber}",
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              "Enter the 6-digit code sent to ${widget.phoneNumber}",
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 10),
 
             // 🔹 OTP Input
@@ -123,8 +133,9 @@ class _OTPScreenState extends State<OTPScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _verifyOTP,
-                style:
-                    ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(16),
+                ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text("SUBMIT"),
@@ -134,8 +145,10 @@ class _OTPScreenState extends State<OTPScreen> {
             // 🔹 Resend Code
             const SizedBox(height: 10),
             const Center(
-              child: Text("Didn't receive it?",
-                  style: TextStyle(color: Colors.grey)),
+              child: Text(
+                "Didn't receive it?",
+                style: TextStyle(color: Colors.grey),
+              ),
             ),
             Center(
               child: TextButton(
