@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ezcharge/constants/text_styles.dart';
+import 'package:ezcharge/core/constants/text_styles.dart';
 
 class RatingPage extends StatefulWidget {
   final String stationId; // Accept station ID

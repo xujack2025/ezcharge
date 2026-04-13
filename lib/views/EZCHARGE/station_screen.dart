@@ -8,7 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:ezcharge/views/customer/rating/customer_complaint.dart';
 import 'package:ezcharge/views/customer/rating/customer_review.dart';
 import 'package:ezcharge/views/ezcharge/reservation_screen.dart';
-import 'package:ezcharge/views/ezcharge/map_utils.dart';
+import 'package:ezcharge/core/utils/map_utils.dart';
 
 class StationScreen extends StatefulWidget {
   final String stationId;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ezcharge/constants/colors.dart';
+import 'package:ezcharge/core/constants/colors.dart';
 
 class AppTextStyles {
   static const TextStyle heading = TextStyle(

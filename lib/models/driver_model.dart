@@ -1,26 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ezcharge/models/user_model.dart';
 
-class Driver {
-  String driverID;
-  String firstName;
-  String lastName;
-  String phone;
+class Driver extends UserModel {
   GeoPoint location;
   String status; // Available, Busy, Offline
 
   Driver({
-    required this.driverID,
-    required this.firstName,
-    required this.lastName,
-    required this.phone,
     required this.location,
     required this.status,
+    required super.id,
+    required super.firstName,
+    required super.lastName,
+    required super.phone,
   });
 
   // Convert to Firestore
   Map<String, dynamic> toMap() {
     return {
-      'driverID': driverID,
+      'driverID': id,
       'FirstName': firstName,
       'LastName': lastName,
       'phone': phone,
@@ -32,7 +29,7 @@ class Driver {
   // Convert from Firestore
   factory Driver.fromMap(Map<String, dynamic> map) {
     return Driver(
-      driverID: map['driverID'] ?? '',
+      id: map['driverID'] ?? '',
       firstName: map['FirstName'] ?? '',
       lastName: map['LastName'] ?? '',
       phone: map['PhoneNumber'] ?? '',

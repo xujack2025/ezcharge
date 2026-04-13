@@ -54,7 +54,8 @@ class DefaultFirebaseOptions {
     appId: '1:505880735220:android:52cd4b06b4771437461da1',
     messagingSenderId: '505880735220',
     projectId: 'ezcharge-7e845',
-    databaseURL: 'https://ezcharge-7e845-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://ezcharge-7e845-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'ezcharge-7e845.firebasestorage.app',
   );
 
@@ -63,11 +64,13 @@ class DefaultFirebaseOptions {
     appId: '1:505880735220:ios:14f7895c7ff311e2461da1',
     messagingSenderId: '505880735220',
     projectId: 'ezcharge-7e845',
-    databaseURL: 'https://ezcharge-7e845-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://ezcharge-7e845-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'ezcharge-7e845.firebasestorage.app',
-    androidClientId: '505880735220-g5tfbuqeglanfm8h6mem3cu592ohup47.apps.googleusercontent.com',
-    iosClientId: '505880735220-ntk675qrudi24u634583sfjnvoukgfqn.apps.googleusercontent.com',
+    androidClientId:
+        '505880735220-g5tfbuqeglanfm8h6mem3cu592ohup47.apps.googleusercontent.com',
+    iosClientId:
+        '505880735220-ntk675qrudi24u634583sfjnvoukgfqn.apps.googleusercontent.com',
     iosBundleId: 'com.xujack.ezcharge',
   );
-
 }

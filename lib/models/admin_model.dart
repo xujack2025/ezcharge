@@ -1,36 +1,33 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ezcharge/models/user_model.dart';
 
-class AdminModel {
-  final String adminID;
-  final String firstName;
-  final String lastName;
+class AdminModel extends UserModel {
   final String gender;
-  final String emailAddress;
-  final String phoneNumber;
-  final DateTime dateOfBirth;
+  final String dateOfBirth;
   final Timestamp createdAt;
+  final String email;
 
   AdminModel({
-    required this.adminID,
-    required this.firstName,
-    required this.lastName,
     required this.gender,
-    required this.emailAddress,
-    required this.phoneNumber,
     required this.dateOfBirth,
     required this.createdAt,
+    required this.email,
+    required super.id,
+    required super.firstName,
+    required super.lastName,
+    required super.phone,
   });
 
   // ✅ Convert Firestore document to AdminModel
   factory AdminModel.fromFirestore(Map<String, dynamic> data) {
     return AdminModel(
-      adminID: data['AdminID'] ?? '',
+      id: data['AdminID'] ?? '',
       firstName: data['FirstName'] ?? '',
       lastName: data['LastName'] ?? '',
       gender: data['Gender'] ?? '',
-      emailAddress: data['EmailAddress'] ?? '',
-      phoneNumber: data['PhoneNumber'] ?? '',
-      dateOfBirth: (data['DateOfBirth'] as Timestamp).toDate(),
+      email: data['EmailAddress'] ?? '',
+      phone: data['PhoneNumber'] ?? '',
+      dateOfBirth: data['DateOfBirth'] ?? '',
       createdAt: data['CreatedAt'] ?? Timestamp.now(),
     );
   }
@@ -38,13 +35,13 @@ class AdminModel {
   // ✅ Convert AdminModel to Firestore document format
   Map<String, dynamic> toFirestore() {
     return {
-      'AdminID': adminID,
+      'AdminID': id,
       'FirstName': firstName,
       'LastName': lastName,
       'Gender': gender,
-      'EmailAddress': emailAddress,
-      'PhoneNumber': phoneNumber,
-      'DateOfBirth': Timestamp.fromDate(dateOfBirth),
+      'EmailAddress': email,
+      'PhoneNumber': phone,
+      'DateOfBirth': dateOfBirth,
       'CreatedAt': createdAt,
     };
   }

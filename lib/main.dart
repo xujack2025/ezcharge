@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
+import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
 import 'package:ezcharge/viewmodels/emergency_request_viewmodel.dart';
 import 'package:ezcharge/viewmodels/tracking_viewmodel.dart';
 import 'package:ezcharge/views/auth/Intro_screen.dart';
@@ -16,11 +17,11 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (context) => AuthViewmodel()),
         ChangeNotifierProvider(
           create: (context) => EmergencyRequestViewModel(),
         ),
         ChangeNotifierProvider(create: (context) => TrackingViewModel()),
-        // ✅ Add this line
       ],
       child: MyApp(),
     ),

@@ -1,90 +1,63 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'package:ezcharge/core/utils/app_logger.dart';
 import 'package:ezcharge/views/auth/otp_admin_screen.dart';
+import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
 
 class AdminSignInScreen extends StatefulWidget {
   const AdminSignInScreen({super.key});
 
   @override
-  _AdminSignInScreenState createState() => _AdminSignInScreenState();
+  AdminSignInScreenState createState() => AdminSignInScreenState();
 }
 
-class _AdminSignInScreenState extends State<AdminSignInScreen> {
+class AdminSignInScreenState extends State<AdminSignInScreen> {
   final TextEditingController _phoneController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  bool _isLoading = false;
-  String? _errorMessage; //Error message state
+
+  AuthViewmodel get _authViewModel => context.read<AuthViewmodel>();
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
 
   //Send OTP if phone number exists
   void _sendOTP() async {
     String phoneNumber = _phoneController.text.trim();
-
-    if (phoneNumber.isEmpty || phoneNumber.length < 10) {
-      setState(() => _errorMessage = "Enter a valid phone number");
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null; // Reset error message
-    });
-
-    try {
-      //Check if phone number exists in Firestore (admins collection)
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("admins")
-          .where("PhoneNumber", isEqualTo: phoneNumber)
-          .get();
-
-      if (querySnapshot.docs.isEmpty) {
-        // Phone number not found → Show error below the text field
-        setState(() {
-          _isLoading = false;
-          _errorMessage = "Admin phone number not found!";
-        });
-        return;
-      }
-
-      // Phone number found → Proceed with OTP verification
-      await _auth.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        timeout: const Duration(seconds: 60),
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential);
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          setState(() {
-            _isLoading = false;
-            _errorMessage = "Error: ${e.message}";
-          });
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          print("VERIFICATION ID: $verificationId");
-          setState(() => _isLoading = false);
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OTPAdminScreen(
-                phoneNumber: phoneNumber,
-                verificationID: verificationId, //Correct parameter name
-              ),
-            ),
+    _authViewModel.sendAdminOtp(
+      phoneNumber,
+      onCodeSent: (verificationId) {
+        final admin = _authViewModel.admin;
+        if (admin != null) {
+          // 用 info，蓝色或带 ℹ️ 图标，表示重要的流程节点
+          AppLogger.info(
+            "Admin verified: ${admin.firstName} ${admin.lastName}",
           );
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {},
-      );
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = "Error checking phone number: $e";
-      });
-    }
+        }
+
+        // 用 debug，通常是灰/白色，开发完可以随时在 AppLogger 里关掉
+        AppLogger.debug("VERIFICATION ID: $verificationId");
+
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPAdminScreen(
+              phoneNumber: phoneNumber,
+              verificationID: verificationId,
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final authViewModel = context.watch<AuthViewmodel>();
+
     return Scaffold(
       backgroundColor: Colors.grey[200], //Light Grey Background
       body: Column(
@@ -151,10 +124,10 @@ class _AdminSignInScreenState extends State<AdminSignInScreen> {
                         ),
                       ),
                     ),
-                    if (_errorMessage != null) ...[
+                    if (authViewModel.errorMessage != null) ...[
                       const SizedBox(height: 5),
                       Text(
-                        _errorMessage!,
+                        authViewModel.errorMessage!,
                         style: const TextStyle(color: Colors.red, fontSize: 14),
                       ),
                     ],
@@ -167,7 +140,7 @@ class _AdminSignInScreenState extends State<AdminSignInScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _sendOTP,
+                    onPressed: authViewModel.isLoading ? null : _sendOTP,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -175,7 +148,7 @@ class _AdminSignInScreenState extends State<AdminSignInScreen> {
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
-                    child: _isLoading
+                    child: authViewModel.isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
                             "SUBMIT",

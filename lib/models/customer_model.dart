@@ -1,39 +1,36 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ezcharge/models/user_model.dart';
 
-class CustomerModel {
-  final String customerID;
-  final String firstName;
-  final String lastName;
+class CustomerModel extends UserModel {
   final String gender;
-  final String emailAddress;
-  final String phoneNumber;
   final double walletBalance;
   final int pointBalance;
   final DateTime dateOfBirth;
   final Timestamp createdAt;
+  final String email;
 
   CustomerModel({
-    required this.customerID,
-    required this.firstName,
-    required this.lastName,
     required this.gender,
-    required this.emailAddress,
-    required this.phoneNumber,
     required this.walletBalance,
     required this.pointBalance,
     required this.dateOfBirth,
     required this.createdAt,
+    required this.email,
+    required super.id,
+    required super.firstName,
+    required super.lastName,
+    required super.phone,
   });
 
   // ✅ Convert Firestore document to CustomerModel
   factory CustomerModel.fromFirestore(Map<String, dynamic> data) {
     return CustomerModel(
-      customerID: data['CustomerID'] ?? '',
+      id: data['CustomerID'] ?? '',
       firstName: data['FirstName'] ?? '',
       lastName: data['LastName'] ?? '',
       gender: data['Gender'] ?? '',
-      emailAddress: data['EmailAddress'] ?? '',
-      phoneNumber: data['PhoneNumber'] ?? '',
+      email: data['EmailAddress'] ?? '',
+      phone: data['PhoneNumber'] ?? '',
       walletBalance: (data['WalletBalance'] ?? 0.0).toDouble(),
       pointBalance: data['PointBalance'] ?? 0,
       dateOfBirth: (data['DateOfBirth'] as Timestamp).toDate(),
@@ -44,12 +41,12 @@ class CustomerModel {
   // ✅ Convert CustomerModel to Firestore document format
   Map<String, dynamic> toFirestore() {
     return {
-      'CustomerID': customerID,
+      'CustomerID': id,
       'FirstName': firstName,
       'LastName': lastName,
       'Gender': gender,
-      'EmailAddress': emailAddress,
-      'PhoneNumber': phoneNumber,
+      'EmailAddress': email,
+      'PhoneNumber': phone,
       'WalletBalance': walletBalance,
       'PointBalance': pointBalance,
       'DateOfBirth': Timestamp.fromDate(dateOfBirth),
