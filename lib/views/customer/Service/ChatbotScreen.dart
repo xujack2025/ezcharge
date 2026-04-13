@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:ezcharge/views/customer/Service/api_key.dart';
+import 'package:ezcharge/secrets.dart';
 
 class Chatbotscreen extends StatefulWidget {
   const Chatbotscreen({super.key});
@@ -91,7 +91,7 @@ class _ChatbotscreenState extends State<Chatbotscreen> {
         uri,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer ${APIKey.apiKey}",
+          "Authorization": "Bearer ${Secrets.openAiApiKey}",
         },
         body: json.encode(body),
       );

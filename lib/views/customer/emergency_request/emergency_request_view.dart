@@ -14,8 +14,6 @@ import 'package:ezcharge/models/emergency_request_model.dart';
 import 'package:ezcharge/secrets.dart';
 import 'package:ezcharge/viewmodels/emergency_request_viewmodel.dart';
 
-const String googleMapsApiKey = Secrets.googleMapsApiKey;
-
 class EmergencyRequestView extends StatefulWidget {
   const EmergencyRequestView({super.key});
 
@@ -231,7 +229,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
     });
 
     final String url =
-        "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&key=$googleMapsApiKey&components=country:MY";
+        "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&key=${Secrets.googleMapsApiKey}&components=country:MY";
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -253,7 +251,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
   /// 🔹 Get Address Details & Move Map
   Future<void> _selectAddress(String placeId, String description) async {
     final String detailsUrl =
-        "https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$googleMapsApiKey";
+        "https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=${Secrets.googleMapsApiKey}";
 
     final response = await http.get(Uri.parse(detailsUrl));
 
@@ -279,7 +277,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
   /// 🔹 Convert LatLng → Address using Google Geocoding API
   Future<void> _convertLatLngToAddress(LatLng latLng) async {
     final String url =
-        "https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.latitude},${latLng.longitude}&key=$googleMapsApiKey";
+        "https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.latitude},${latLng.longitude}&key=${Secrets.googleMapsApiKey}";
 
     try {
       final response = await http.get(Uri.parse(url));
