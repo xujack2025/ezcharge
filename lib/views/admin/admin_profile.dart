@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/services/auth_service.dart';
-import 'package:ezcharge/views/auth/signin.dart';
-import 'package:ezcharge/views/admin/admin_authenticate.dart'; // ✅ Import the Authentication Page
+import 'package:ezcharge/views/auth/sign_in.dart';
+import 'package:ezcharge/views/admin/admin_authenticate.dart';
 import 'package:ezcharge/views/admin/admin_profile_edit.dart';
 
 class AdminProfilePage extends StatefulWidget {

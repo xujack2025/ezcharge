@@ -3,28 +3,37 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/views/ezcharge/reward_select_screen.dart';
-import 'package:ezcharge/views/customer/emergency_request/request_select_payment_screen.dart';
+import 'package:ezcharge/views/ezcharge/select_payment_screen.dart';
 
-class RequestPaymentScreen extends StatefulWidget {
-  final String requestID;
+class PaymentScreen extends StatefulWidget {
   final double chargingCost;
+  final double penaltyCost;
   final String duration;
 
-  const RequestPaymentScreen({
+  const PaymentScreen({
     super.key,
-    required this.requestID,
     required this.chargingCost,
+    required this.penaltyCost,
     required this.duration,
   });
 
   @override
-  State<RequestPaymentScreen> createState() => _RequestPaymentScreenState();
+  State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
-class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
+class _PaymentScreenState extends State<PaymentScreen> {
+  // Loading indicator
   bool isLoading = false;
+
+  // Firestore fields
   String _accountId = "";
-  final String _stationImageUrl = "";
+  String _stationId = "";
+  String _chargerId = "";
+  String _stationName = "";
+  String _chargerName = "";
+  String _chargerType = "";
+  String _reservationStatus = "";
+  String _stationImageUrl = "";
   double _rewardDiscount = 0.0;
   String _selectedRewardID = "";
   int _rewardPoints = 0;
@@ -35,6 +44,7 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
     _getCustomerID();
   }
 
+  //Get the logged-in user's CustomerID from Firestore
   Future<void> _getCustomerID() async {
     setState(() => isLoading = true);
     try {
@@ -51,6 +61,9 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
           if (querySnapshot.docs.isNotEmpty) {
             var userDoc = querySnapshot.docs.first;
             _accountId = userDoc["CustomerID"] ?? "";
+
+            // Once we have _accountId, fetch the reservation record
+            await _fetchReservationRecord();
           }
         }
       }
@@ -60,10 +73,79 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
     setState(() => isLoading = false);
   }
 
+  //Fetch the reservation record for this user
+  Future<void> _fetchReservationRecord() async {
+    if (_accountId.isEmpty) return;
+
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection("reservation")
+          .doc(_accountId)
+          .get();
+
+      if (doc.exists) {
+        _chargerId = doc["ChargerID"] ?? "";
+        _stationId = doc["StationID"] ?? "";
+        _reservationStatus = doc["Status"] ?? "";
+
+        // Only fetch station & charger if reservation status is "Ended"
+        if (_reservationStatus == "Ended") {
+          await _fetchStation();
+          await _fetchCharger();
+        }
+      }
+    } catch (e) {
+      print("Error fetching reservation record: $e");
+    }
+  }
+
+  //Fetch station details
+  Future<void> _fetchStation() async {
+    if (_stationId.isEmpty) return;
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection("station")
+          .doc(_stationId)
+          .get();
+
+      if (doc.exists) {
+        _stationName = doc["StationName"] ?? "";
+        _stationImageUrl = doc["ImageUrl"] ?? "";
+        setState(() {});
+      }
+    } catch (e) {
+      print("Error fetching station: $e");
+    }
+  }
+
+  //Fetch charger details
+  Future<void> _fetchCharger() async {
+    if (_stationId.isEmpty || _chargerId.isEmpty) return;
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection("station")
+          .doc(_stationId)
+          .collection("Charger")
+          .doc(_chargerId)
+          .get();
+
+      if (doc.exists) {
+        _chargerName = doc["ChargerName"] ?? "";
+        _chargerType = doc["ChargerType"] ?? "";
+      }
+      // Trigger a rebuild to show the updated fields
+      setState(() {});
+    } catch (e) {
+      print("Error fetching charger: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // **Calculate total amount**
-    final double totalAmount = widget.chargingCost - _rewardDiscount;
+    //Calculate subtotal
+    final double subtotal = widget.chargingCost + widget.penaltyCost;
+    //Calculate final total after discount
+    final double totalAmount = subtotal - _rewardDiscount;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -75,6 +157,7 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    //Title "Payment" at the top
                     const Text(
                       "Payment",
                       style: TextStyle(
@@ -84,16 +167,30 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // **Charging Details**
-                    _infoRow("Total Duration:", widget.duration),
-                    _infoRow(
-                      "Charging Cost:",
-                      "RM ${widget.chargingCost.toStringAsFixed(2)}",
+                    //Station image
+                    Container(
+                      height: 200,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8),
+                        image: DecorationImage(
+                          image: NetworkImage(_stationImageUrl),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
+                    const SizedBox(height: 16),
+
+                    //Station info rows
+                    _infoRow("Charging Station:", _stationName),
+                    _infoRow("Charging Slot:", _chargerName),
+                    _infoRow("Charger Type:", _chargerType),
+                    _infoRow("Total Duration:", widget.duration),
 
                     const SizedBox(height: 16),
 
-                    // **Reward Discount Selection**
+                    //Reward discount label
                     const Text(
                       "Reward Discount",
                       style: TextStyle(
@@ -103,6 +200,7 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
                     ),
                     const SizedBox(height: 8),
 
+                    // Instead of Dropdown, use a button/tappable widget
                     InkWell(
                       onTap: () async {
                         final result =
@@ -116,7 +214,8 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
                           setState(() {
                             _rewardDiscount = result["discount"];
                             _selectedRewardID = result["rewardID"];
-                            _rewardPoints = result["points"];
+                            _rewardPoints =
+                                result["points"]; // save the points value
                           });
                         }
                       },
@@ -133,6 +232,7 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text("Select Reward"),
+                            // If discount is zero, show "-", else show the discount
                             Text(
                               _rewardDiscount == 0
                                   ? "-"
@@ -152,9 +252,16 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
 
                     const SizedBox(height: 16),
                     _infoRow(
-                      "Subtotal:",
+                      "Charging total:",
                       "RM ${widget.chargingCost.toStringAsFixed(2)}",
                     ),
+                    _infoRow(
+                      "Penalty total:",
+                      "RM ${widget.penaltyCost.toStringAsFixed(2)}",
+                    ),
+                    // Subtotal row
+                    _infoRow("Subtotal:", "RM ${subtotal.toStringAsFixed(2)}"),
+                    // Reward discount row
                     _infoRow(
                       "Reward Discount:",
                       _rewardDiscount == 0
@@ -164,7 +271,7 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
 
                     const Divider(height: 32),
 
-                    // **Final Total**
+                    //Total row
                     _infoRow(
                       "Total Amount:",
                       "RM ${(totalAmount < 0 ? 0.0 : totalAmount).toStringAsFixed(2)}",
@@ -173,7 +280,7 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
 
                     const SizedBox(height: 24),
 
-                    // **Continue to Payment**
+                    //CONTINUE button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -185,13 +292,21 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
                           ),
                         ),
                         onPressed: () {
+                          // 1) Calculate final total
+                          final double subtotal =
+                              widget.chargingCost + widget.penaltyCost;
+                          final double finalTotal = subtotal - _rewardDiscount;
+                          // Ensure it never goes below 0
+                          final double safeTotal = finalTotal < 0
+                              ? 0
+                              : finalTotal;
+
+                          //Navigate to SelectPaymentScreen with the final total, rewardID, and rewardPoints
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => RequestSelectPaymentScreen(
-                                totalAmount: totalAmount < 0
-                                    ? 0.0
-                                    : totalAmount,
+                              builder: (context) => SelectPaymentScreen(
+                                totalAmount: safeTotal,
                                 rewardID: _selectedRewardID,
                                 rewardPoints: _rewardPoints,
                               ),
@@ -215,7 +330,7 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
     );
   }
 
-  // **Helper for displaying key-value information rows**
+  // Helper widget for row label + value
   Widget _infoRow(String label, String value, {bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),

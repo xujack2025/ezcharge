@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ezcharge/views/customer/customercontent/AccountScreen.dart';
+import 'package:ezcharge/views/customer/customer_content/account_screen.dart';
 
 class OTPScreen extends StatefulWidget {
   final String phoneNumber;

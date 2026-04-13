@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import 'package:ezcharge/viewmodels/tracking_viewmodel.dart';
-import 'package:ezcharge/views/EZCHARGE/book_a_charge_screen.dart';
+import 'package:ezcharge/views/ezcharge/book_a_charge_screen.dart';
 import 'package:ezcharge/views/customer/emergency_request/request_payment.dart';
 import 'package:ezcharge/secrets.dart';
 

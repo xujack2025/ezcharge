@@ -7,14 +7,14 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/models/emergency_request_model.dart';
-import 'package:ezcharge/views/customer/Notification/NotificationScreen.dart';
-import 'package:ezcharge/views/customer/Reward/RewardScreen.dart';
-import 'package:ezcharge/views/customer/customercontent/AccountScreen.dart';
+import 'package:ezcharge/views/customer/notification/notification_screen.dart';
+import 'package:ezcharge/views/customer/reward/reward_screen.dart';
+import 'package:ezcharge/views/customer/customer_content/account_screen.dart';
 import 'package:ezcharge/views/customer/emergency_request/emergency_request_view.dart';
 import 'package:ezcharge/views/customer/emergency_request/request_history.dart';
 import 'package:ezcharge/views/customer/emergency_request/tracking_view.dart';
-import 'package:ezcharge/views/EZCHARGE/CheckInScreen.dart';
-import 'package:ezcharge/views/EZCHARGE/HomeScreen.dart';
+import 'package:ezcharge/views/ezcharge/check_in_screen.dart';
+import 'package:ezcharge/views/ezcharge/home_screen.dart';
 
 class BookAChargeScreen extends StatefulWidget {
   const BookAChargeScreen({super.key});

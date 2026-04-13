@@ -1,73 +1,126 @@
 lib/
 ├── views/
 │   ├── admin/
-│   │   ├── admin_dashboard.dart
-│   │   ├── admin_profile.dart
-│   │   ├── admin_notification.dart
-│   │   ├── admin_charging_station.dart
-│   │   ├── admin_rewards.dart
-│   │   ├── admin_mechanics.dart
 │   │   ├── admin_analysis.dart
+│   │   ├── admin_assign_driver.dart
+│   │   ├── admin_authenticate.dart
+│   │   ├── admin_charging_bay.dart
+│   │   ├── admin_charging_station.dart
 │   │   ├── admin_complaint.dart
-│   │   ├── admin_home_content.dart
+│   │   ├── admin_dashboard.dart
 │   │   ├── admin_drawer.dart
+│   │   ├── admin_emergency_requests.dart
+│   │   ├── admin_notification.dart
+│   │   ├── admin_profile.dart
+│   │   ├── admin_profile_edit.dart
+│   │   ├── admin_rewards.dart
 │   ├── auth/
-│   │   ├── login.dart
-│   │   ├── signup.dart
+│   │   ├── admin_sign_in_screen.dart
+│   │   ├── intro_schedule_screen.dart
+│   │   ├── intro_screen.dart
+│   │   ├── otp_admin_screen.dart
+│   │   ├── otp_screen.dart
 │   │   ├── otp_verification.dart
+│   │   ├── sign_in.dart
+│   │   ├── sign_in_screen.dart
+│   │   ├── welcome_screen.dart
 │   ├── customer/
-│   │   ├──rating/
+│   │   ├── customer_content/
+│   │   │   ├── account_screen.dart
+│   │   │   ├── activity_screen.dart
+│   │   │   ├── add_card_screen.dart
+│   │   │   ├── authenticate_account_screen.dart
+│   │   │   ├── bookmark_screen.dart
+│   │   │   ├── confirm_delete_screen.dart
+│   │   │   ├── delete_account_screen.dart
+│   │   │   ├── edit_profile_screen.dart
+│   │   │   ├── fail_screen.dart
+│   │   │   ├── home.dart
+│   │   │   ├── pass_screen.dart
+│   │   │   ├── payment_history_list.dart
+│   │   │   ├── payment_method_screen.dart
+│   │   │   ├── pending_screen.dart
+│   │   │   ├── reload_pin_screen.dart
+│   │   │   ├── top_up_screen.dart
+│   │   │   ├── upload_selfie_screen.dart
+│   │   ├── emergency_request/
+│   │   │   ├── emergency_request_view.dart
+│   │   │   ├── request_history.dart
+│   │   │   ├── request_payment.dart
+│   │   │   ├── request_payment_history_detail_screen.dart
+│   │   │   ├── request_payment_success_screen.dart
+│   │   │   ├── request_select_payment_screen.dart
+│   │   │   ├── tracking_view.dart
+│   │   ├── notification/
+│   │   │   ├── notification_screen.dart
+│   │   ├── rating/
 │   │   │   ├── customer_complaint.dart
 │   │   │   ├── customer_rating.dart
 │   │   │   ├── customer_review.dart
 │   │   │   ├── manage_complaint.dart
 │   │   │   ├── manage_reviews.dart
-│   │   ├── home.dart
-│   │   ├── customer_profile.dart
+│   │   ├── reward/
+│   │   │   ├── point_history_screen.dart
+│   │   │   ├── reward_screen.dart
+│   │   ├── service/
+│   │   │   ├── chatbot_screen.dart
+│   ├── ezcharge/
+│   │   ├── book_a_charge_screen.dart
+│   │   ├── check_detail.dart
+│   │   ├── check_in_screen.dart
+│   │   ├── check_out_detail.dart
+│   │   ├── check_out_success_screen.dart
+│   │   ├── customer_service_screen.dart
+│   │   ├── filter_screen.dart
+│   │   ├── home_screen.dart
+│   │   ├── map_utils.dart
+│   │   ├── payment_history_detail.dart
+│   │   ├── payment_screen.dart
+│   │   ├── payment_success_screen.dart
+│   │   ├── reservation_screen.dart
+│   │   ├── review_screen.dart
+│   │   ├── reward_select_screen.dart
+│   │   ├── select_payment_screen.dart
+│   │   ├── start_charging.dart
+│   │   ├── station_screen.dart
+│   │   ├── stop_charging.dart
+│   │   ├── timer_screen.dart
+│   ├── reports/
+│   │   ├── admin_report.dart
+│   │   ├── charging_pile_utilization_report.dart
+│   │   ├── charging_usage_report.dart
+│   │   ├── complaint_resolution_report.dart
 │
 ├── models/
 │   ├── admin_model.dart
-│   ├── customer_model.dart
-│   ├── notification_model.dart
+│   ├── charging_bay_model.dart
 │   ├── charging_station_model.dart
-│   ├── reward_model.dart
-│   ├── mechanic_model.dart
-│   ├── analysis_model.dart
-│   ├── complaint_model.dart
+│   ├── customer_model.dart
+│   ├── driver_model.dart
+│   ├── emergency_request_model.dart
+│   ├── notification_model.dart
 │
 ├── viewmodels/
-│   ├── auth_viewmodel.dart
-│   ├── admin_viewmodel.dart
-│   ├── notification_viewmodel.dart
 │   ├── charging_station_viewmodel.dart
-│   ├── reward_viewmodel.dart
-│   ├── mechanic_viewmodel.dart
-│   ├── complaint_viewmodel.dart
-│   ├── analysis_viewmodel.dart
+│   ├── emergency_request_viewmodel.dart
+│   ├── notification_viewmodel.dart
+│   ├── tracking_viewmodel.dart
 │
 ├── services/
 │   ├── auth_service.dart
-│   ├── auth_email_service.dart
-│   ├── auth_google_service.dart
-│   ├── auth_phone_service.dart
-│   ├── auth_user_service.dart
-│   ├── notification_service.dart
-│   ├── charging_station_service.dart
-│   ├── reward_service.dart
-│   ├── mechanic_service.dart
-│   ├── analysis_service.dart
 │
 ├── widgets/
-│   ├── top_app_bar.dart
 │   ├── bottom_app_bar.dart
 │   ├── button.dart
-│   ├── textfield.dart
-│   ├── notification_card.dart
-│   ├── analysis_chart.dart
 │   ├── navbar.dart
+│   ├── notification_card.dart
+│   ├── textfield.dart
+│   ├── top_app_bar.dart
 │
 ├── constants/
 │   ├── colors.dart
 │   ├── text_styles.dart
 │
+├── firebase_options.dart
 ├── main.dart
+├── secrets.dart

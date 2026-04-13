@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/constants/colors.dart';
-import 'package:ezcharge/views/auth/signin_screen.dart';
+import 'package:ezcharge/views/auth/sign_in_screen.dart';
 import 'package:ezcharge/views/reports/admin_report.dart';
 import 'package:ezcharge/views/admin/admin_authenticate.dart';
 import 'package:ezcharge/views/admin/admin_emergency_requests.dart';

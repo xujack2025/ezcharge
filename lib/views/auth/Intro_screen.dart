@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:ezcharge/views/auth/Welcome_screen.dart';
+import 'package:ezcharge/views/auth/welcome_screen.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});

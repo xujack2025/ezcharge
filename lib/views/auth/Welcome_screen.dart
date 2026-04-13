@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ezcharge/views/auth/IntroScheduleScreen.dart';
+import 'package:ezcharge/views/auth/intro_schedule_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
