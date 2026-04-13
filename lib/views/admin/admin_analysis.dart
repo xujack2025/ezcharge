@@ -3,7 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'package:ezcharge/views/admin/admin_charging_station.dart';
+import 'package:ezcharge/views/admin/admin_dashboard.dart';
 
 class AdminAnalyticsPage extends StatefulWidget {
   const AdminAnalyticsPage({super.key});
@@ -17,6 +17,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
   Map<int, int> hourlyUsage = {}; // Stores peak hour data
   String dateRange = ""; // Stores formatted date range (e.g., "7-13 Mar 2025")
   TabController? _tabController;
+  int _expandedUserSection = 0;
 
   @override
   void initState() {
@@ -24,6 +25,12 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
     generateDateRange(); // Generate last 7 days' range
     listenForChargingSessions(); // Listen for live updates from Firestore
     _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController?.dispose();
+    super.dispose();
   }
 
   /// **Generates the last 7 days' date range in "7-13 Mar 2025" format**
@@ -75,7 +82,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
 
             print(
               "Firebase Stored Time: $storedTime | Corrected Local Time: $adjustedTime",
-            ); // Debugging output
+            );
 
             int hour = adjustedTime.hour;
             tempHourlyUsage[hour] = (tempHourlyUsage[hour] ?? 0) + 1;
@@ -337,11 +344,11 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                       onTap: () {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                const AdminChargingStationsPage(),
+                                const AdminDashboard(initialIndex: 3),
                           ),
                         );
                       },
@@ -355,53 +362,81 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
 
   /// **User Behavior Analytics Page**
   Widget _buildUserBehaviorAnalysis() {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// **📍 Top 5 Charging Stations**
-            const Text(
-              "📍 Most Frequently Visited Stations",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(height: 200, child: _buildTopStationsChart()),
-            const SizedBox(height: 15),
+    return CustomScrollView(
+      slivers: [
+        _buildExpandableSectionHeaderSliver(
+          index: 0,
+          title: "📍 Most Frequently Visited Stations",
+        ),
+        if (_expandedUserSection == 0)
+          SliverToBoxAdapter(
+            child: SizedBox(height: 200, child: _buildTopStationsChart()),
+          ),
+        _buildExpandableSectionHeaderSliver(
+          index: 1,
+          title: "📅 Recent Charging Sessions",
+        ),
+        if (_expandedUserSection == 1) _buildRecentSessionsSliver(),
+        _buildExpandableSectionHeaderSliver(
+          index: 2,
+          title: "🔌 Most Used Chargers",
+        ),
+        if (_expandedUserSection == 2)
+          SliverToBoxAdapter(
+            child: SizedBox(height: 200, child: _buildMostUsedChargersChart()),
+          ),
+        _buildExpandableSectionHeaderSliver(
+          index: 3,
+          title: "📄 Charger Usage Details",
+        ),
+        if (_expandedUserSection == 3) _buildChargerUsageSliver(),
+        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+      ],
+    );
+  }
 
-            /// **📅 Recent User Sessions**
-            const Text(
-              "📅 Recent Charging Sessions",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 300, // ✅ Fixed height to prevent overflow
-              child: _buildRecentSessionsTable(),
-            ),
-            const SizedBox(height: 15),
+  SliverToBoxAdapter _buildExpandableSectionHeaderSliver({
+    required int index,
+    required String title,
+  }) {
+    final bool isExpanded = _expandedUserSection == index;
 
-            /// **🔌 Most Used Chargers**
-            const Text(
-              "🔌 Most Used Chargers",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+        child: Material(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          elevation: 1,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () {
+              setState(() {
+                _expandedUserSection = isExpanded ? -1 : index;
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: isExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: const Icon(Icons.keyboard_arrow_down),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            SizedBox(height: 200, child: _buildMostUsedChargersChart()),
-            const SizedBox(height: 15),
-
-            /// **📄 Each Charger Usage List**
-            const Text(
-              "📄 Charger Usage Details",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 300, // ✅ Fixed height to prevent overflow
-              child: _buildChargerUsageTable(),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -467,13 +502,18 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
     );
   }
 
-  /// **3️⃣ Charger Usage Details Table**
-  Widget _buildChargerUsageTable() {
+  /// **3️⃣ Charger Usage Details (SliverList)**
+  Widget _buildChargerUsageSliver() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('attendance').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
         }
 
         // **🔥 Count each SlotID usage**
@@ -505,30 +545,47 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
         List<Map<String, dynamic>> chargers = chargerData.values.toList();
         chargers.sort((a, b) => b["UsageCount"].compareTo(a["UsageCount"]));
 
-        return ListView.builder(
-          itemCount: chargers.length,
-          itemBuilder: (context, index) {
-            var charger = chargers[index];
-
-            return Card(
-              elevation: 2,
-              margin: const EdgeInsets.symmetric(vertical: 5),
-              child: ListTile(
-                leading: Icon(
-                  charger["CurrentType"] == "AC" ? Icons.power : Icons.flash_on,
-                  color: charger["CurrentType"] == "AC"
-                      ? Colors.blue
-                      : Colors.orange,
-                ),
-                title: Text("Charger: ${charger["ChargerID"]}"),
-                subtitle: Text("Usage: ${charger["UsageCount"]} times"),
-                trailing: Text(
-                  "⚡ ${charger["ChargerVoltage"].toStringAsFixed(1)} kWh",
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
+        if (chargers.isEmpty) {
+          return const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                "No charger usage records.",
+                style: TextStyle(color: Colors.grey),
               ),
-            );
-          },
+            ),
+          );
+        }
+
+        // Converted from ListView.builder -> SliverList to keep a single viewport.
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate((context, index) {
+              var charger = chargers[index];
+
+              return Card(
+                elevation: 2,
+                margin: const EdgeInsets.symmetric(vertical: 5),
+                child: ListTile(
+                  leading: Icon(
+                    charger["CurrentType"] == "AC"
+                        ? Icons.power
+                        : Icons.flash_on,
+                    color: charger["CurrentType"] == "AC"
+                        ? Colors.blue
+                        : Colors.orange,
+                  ),
+                  title: Text("Charger: ${charger["ChargerID"]}"),
+                  subtitle: Text("Usage: ${charger["UsageCount"]} times"),
+                  trailing: Text(
+                    "⚡ ${charger["ChargerVoltage"].toStringAsFixed(1)} kWh",
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ),
+              );
+            }, childCount: chargers.length),
+          ),
         );
       },
     );
@@ -594,8 +651,8 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
     );
   }
 
-  /// **3️⃣ Recent Charging Sessions (Table View)**
-  Widget _buildRecentSessionsTable() {
+  /// **3️⃣ Recent Charging Sessions (SliverList)**
+  Widget _buildRecentSessionsSliver() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('attendance')
@@ -604,51 +661,67 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
           .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
         }
 
         var sessions = snapshot.data!.docs;
 
-        return ListView.builder(
-          itemCount: sessions.length,
-          itemBuilder: (context, index) {
-            var session = sessions[index].data() as Map<String, dynamic>;
-
-            String stationName = session["StationID"] ?? "Unknown Station";
-            String durationString =
-                session["Duration"] ?? "0:00:00"; // Default if missing
-
-            // **🔥 Fix: Convert Duration String to Minutes**
-            int durationMinutes = _convertDurationToMinutes(durationString);
-
-            // **🔥 Fix: Convert Firestore Timestamp to readable format**
-            Timestamp? timestamp = session["CheckInTime"];
-            String formattedTime = timestamp != null
-                ? DateTime.fromMillisecondsSinceEpoch(
-                        timestamp.millisecondsSinceEpoch,
-                      ) // ✅ Convert safely
-                      .toLocal()
-                      .toString()
-                : "N/A";
-
-            return Card(
-              elevation: 2,
-              margin: const EdgeInsets.symmetric(vertical: 5),
-              child: ListTile(
-                leading: const Icon(Icons.ev_station, color: Colors.blue),
-                title: Text("Station: $stationName"),
-                subtitle: Text(
-                  "Duration: $durationMinutes mins",
-                  // ✅ Now showing minutes correctly
-                  style: const TextStyle(color: Colors.grey),
-                ),
-                trailing: Text(
-                  formattedTime, // ✅ Fixed timestamp conversion
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
+        if (sessions.isEmpty) {
+          return const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                "No recent charging sessions.",
+                style: TextStyle(color: Colors.grey),
               ),
-            );
-          },
+            ),
+          );
+        }
+
+        // Converted from ListView.builder -> SliverList to avoid nested scroll conflicts.
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate((context, index) {
+              var session = sessions[index].data() as Map<String, dynamic>;
+
+              String stationName = session["StationID"] ?? "Unknown Station";
+              String durationString =
+                  session["Duration"] ?? "0:00:00"; // Default if missing
+
+              // Convert Duration String to Minutes.
+              int durationMinutes = _convertDurationToMinutes(durationString);
+
+              Timestamp? timestamp = session["CheckInTime"];
+              String formattedTime = timestamp != null
+                  ? DateTime.fromMillisecondsSinceEpoch(
+                      timestamp.millisecondsSinceEpoch,
+                    ).toLocal().toString()
+                  : "N/A";
+
+              return Card(
+                elevation: 2,
+                margin: const EdgeInsets.symmetric(vertical: 5),
+                child: ListTile(
+                  leading: const Icon(Icons.ev_station, color: Colors.blue),
+                  title: Text("Station: $stationName"),
+                  subtitle: Text(
+                    "Duration: $durationMinutes mins",
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                  trailing: Text(
+                    formattedTime,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ),
+              );
+            }, childCount: sessions.length),
+          ),
         );
       },
     );

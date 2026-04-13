@@ -5,10 +5,10 @@ class AdminAuthenticatePage extends StatefulWidget {
   const AdminAuthenticatePage({super.key});
 
   @override
-  _AdminAuthenticatePageState createState() => _AdminAuthenticatePageState();
+  AdminAuthenticatePageState createState() => AdminAuthenticatePageState();
 }
 
-class _AdminAuthenticatePageState extends State<AdminAuthenticatePage>
+class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
     with SingleTickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   TabController? _tabController; // ✅ Declare as nullable

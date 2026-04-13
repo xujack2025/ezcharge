@@ -12,14 +12,16 @@ import 'package:ezcharge/views/admin/admin_notification.dart';
 import 'package:ezcharge/views/admin/admin_profile.dart';
 
 class AdminDashboard extends StatefulWidget {
-  const AdminDashboard({super.key});
+  final int initialIndex;
+
+  const AdminDashboard({super.key, this.initialIndex = 0});
 
   @override
   State<AdminDashboard> createState() => _AdminDashboardState();
 }
 
 class _AdminDashboardState extends State<AdminDashboard> {
-  int _selectedIndex = 0; // Default to Dashboard
+  late int _selectedIndex; // Default to Dashboard
 
   final List<Widget> _pages = [
     const AdminHomeContent(), // Dashboard
@@ -41,6 +43,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex.clamp(0, 4);
   }
 
   @override
