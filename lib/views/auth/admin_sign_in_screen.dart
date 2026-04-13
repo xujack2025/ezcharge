@@ -142,22 +142,37 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
                   child: ElevatedButton(
                     onPressed: authViewModel.isLoading ? null : _sendOTP,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: authViewModel.isLoading
+                          ? Colors.grey[400]
+                          : Colors.blue,
                       padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: authViewModel.isLoading ? 0 : 2,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: authViewModel.isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            "SUBMIT",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: authViewModel.isLoading
+                          ? const SizedBox(
+                              key: ValueKey('loading'),
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              "SUBMIT",
+                              key: ValueKey('text'),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
+                    ),
                   ),
                 ),
               ],

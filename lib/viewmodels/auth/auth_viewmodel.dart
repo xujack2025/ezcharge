@@ -1,12 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/models/admin_model.dart';
+import 'package:ezcharge/services/auth_service.dart';
 
 class AuthViewmodel extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final AuthService _authService = AuthService();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -31,20 +31,15 @@ class AuthViewmodel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final querySnapshot = await _firestore
-          .collection('admins')
-          .where('PhoneNumber', isEqualTo: phoneNumber)
-          .get();
+      // 🔥 看到没有？这里直接用 Model，代码超级干净
+      _admin = await _authService.getAdminByPhoneNumber(phoneNumber);
 
-      if (querySnapshot.docs.isEmpty) {
+      if (_admin == null) {
         _isLoading = false;
         _errorMessage = 'Admin phone number not found!';
-        _admin = null;
         notifyListeners();
         return;
       }
-
-      _admin = AdminModel.fromFirestore(querySnapshot.docs.first.data());
 
       await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
