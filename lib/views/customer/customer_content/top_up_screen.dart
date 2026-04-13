@@ -8,14 +8,14 @@ class TopUpScreen extends StatefulWidget {
   const TopUpScreen({super.key});
 
   @override
-  _TopUpScreenState createState() => _TopUpScreenState();
+  TopUpScreenState createState() => TopUpScreenState();
 }
 
-class _TopUpScreenState extends State<TopUpScreen> {
+class TopUpScreenState extends State<TopUpScreen> {
   double _walletBalance = 0.0; // Default wallet balance
   String _accountId = "";
   String _cardNumber = "";
-  bool isLoading = true;
+  bool isLoading = false;
   bool isCardSelected = false;
   bool isReloadPinSelected = false;
   final TextEditingController _amountController = TextEditingController();
@@ -350,7 +350,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isNextButtonEnabled()
+                  onPressed: _isNextButtonEnabled() && !isLoading
                       ? () {
                           double enteredAmount =
                               double.tryParse(_amountController.text) ?? 0.0;
@@ -403,7 +403,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _isNextButtonEnabled()
+                    backgroundColor: _isNextButtonEnabled() && !isLoading
                         ? Colors.blue
                         : Colors.grey,
                     padding: const EdgeInsets.symmetric(vertical: 15),
@@ -415,7 +415,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
                           ),
                         )
                       : const Text(
-                          "NEXT",
+                          "Top Up",
                           style: TextStyle(color: Colors.white, fontSize: 18),
                         ),
                 ),

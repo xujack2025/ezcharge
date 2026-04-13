@@ -327,6 +327,46 @@ class _StationScreenState extends State<StationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Container(
+            decoration: const BoxDecoration(
+              color: Colors.blue,
+              shape: BoxShape.circle,
+            ),
+            padding: const EdgeInsets.all(8),
+            child: const Icon(Icons.arrow_back, color: Colors.white),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          "Stations Details",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 15), // 控制右边间距
+            child: GestureDetector(
+              onTap: () => _showMoreOptions(context, stationData!),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.blue,
+                ),
+                child: const Icon(Icons.more_vert, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+        backgroundColor: Colors.white,
+        elevation: 1,
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : _buildStationDetails(),
@@ -385,44 +425,6 @@ class _StationScreenState extends State<StationScreen> {
                 width: double.infinity,
                 height: 250,
                 fit: BoxFit.cover,
-              ),
-
-              //Back Button (Top Left)
-              Positioned(
-                top: 20,
-                left: 15,
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.blue, // Blue background
-                    ),
-                    child: const Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                ),
-              ),
-
-              //More Button (Top Right)
-              Positioned(
-                top: 20,
-                right: 15,
-                child: GestureDetector(
-                  onTap: () {
-                    _showMoreOptions(context, stationData!); //Pass station data
-                  },
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.blue,
-                    ),
-                    child: const Icon(Icons.more_vert, color: Colors.white),
-                  ),
-                ),
               ),
             ],
           ),
@@ -991,73 +993,71 @@ class _StationScreenState extends State<StationScreen> {
 
   //Bottom Action Buttons (Matching Image)
   Widget _buildBottomButtons() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // 4) Bring Me There button (unchanged)
-          ElevatedButton(
-            onPressed: () {
-              // Safely read and parse the latitude/longitude strings
-              final latString = stationData?["Latitude"]?.toString() ?? '';
-              final lngString = stationData?["Longitude"]?.toString() ?? '';
-
-              // Attempt to parse them as double
-              final lat = double.tryParse(latString);
-              final lng = double.tryParse(lngString);
-
-              if (lat != null && lng != null) {
-                // If parsing succeeded, open the map
-                MapUtils.openMap(lat, lng);
-              } else {
-                // Handle the error case if lat or lng couldn't be parsed
-                print("Error: Could not parse latitude/longitude");
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text(
-              "BRING ME THERE",
-              style: TextStyle(color: Colors.white),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // 4) Bring Me There button (unchanged)
+            ElevatedButton(
+              onPressed: () {
+                // Safely read and parse the latitude/longitude strings
+                final latString = stationData?["Latitude"]?.toString() ?? '';
+                final lngString = stationData?["Longitude"]?.toString() ?? '';
+              
+                // Attempt to parse them as double
+                final lat = double.tryParse(latString);
+                final lng = double.tryParse(lngString);
+              
+                if (lat != null && lng != null) {
+                  // If parsing succeeded, open the map
+                  MapUtils.openMap(lat, lng);
+                } else {
+                  // Handle the error case if lat or lng couldn't be parsed
+                  print("Error: Could not parse latitude/longitude");
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text(
+                "BRING ME THERE",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
-          ),
-
-          //Reserve button with checks
-          ElevatedButton(
-            onPressed: () {
-              // a) If user is not authenticated
-              if (_authStatus != "Pass") {
-                _showAuthReminder(context);
-                return;
-              }
-              // b) If user already has an upcoming or active reservation
-              if (_reservationStatus == "Upcoming" ||
-                  _reservationStatus == "Active") {
-                _showReservationReminder(context);
-                return;
-              }
-
-              // Otherwise, proceed to ReservationScreen
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ReservationScreen(stationId: widget.stationId),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _isReserveButtonEnabled()
-                  ? Colors.blue
-                  : Colors.grey, // Grey if disabled
+              
+            //Reserve button with checks
+            ElevatedButton(
+              onPressed: () {
+                // a) If user is not authenticated
+                if (_authStatus != "Pass") {
+                  _showAuthReminder(context);
+                  return;
+                }
+                // b) If user already has an upcoming or active reservation
+                if (_reservationStatus == "Upcoming" ||
+                    _reservationStatus == "Active") {
+                  _showReservationReminder(context);
+                  return;
+                }
+              
+                // Otherwise, proceed to ReservationScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ReservationScreen(stationId: widget.stationId),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _isReserveButtonEnabled()
+                    ? Colors.blue
+                    : Colors.grey, // Grey if disabled
+              ),
+              child: const Text("RESERVE", style: TextStyle(color: Colors.white)),
             ),
-            child: const Text("RESERVE", style: TextStyle(color: Colors.white)),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

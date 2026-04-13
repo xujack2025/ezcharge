@@ -40,7 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Added for search functionality:
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = "";
 
   @override
   void initState() {
@@ -98,6 +97,8 @@ class _HomeScreenState extends State<HomeScreen> {
           "Description": stationData["Description"] ?? "",
           "Capacity": stationData["Capacity"] ?? 0,
           "Location": stationData["Location"], // if you have a GeoPoint
+          "Latitude": stationData["Latitude"],
+          "Longitude": stationData["Longitude"],
           "Nearby": stationData["Nearby"], // might be string or list
           "ImageUrl":
               stationData["ImageUrl"] ?? "https://via.placeholder.com/80",
@@ -122,7 +123,6 @@ class _HomeScreenState extends State<HomeScreen> {
   //Filter stations based on search query.
   void _filterStations(String query) {
     setState(() {
-      _searchQuery = query;
       if (query.isEmpty) {
         // If user clears the search, show all stations again
         _filteredStations = _stations;
@@ -264,17 +264,25 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Stack(
         children: [
           // Google Map
-          GoogleMap(
-            onMapCreated: (GoogleMapController controller) {
-              _controller.complete(controller);
-            },
-            initialCameraPosition: CameraPosition(
-              target: _currentLocation,
-              zoom: 14.0,
+          Positioned(
+            top: 103,
+            left: 0,
+            right: 0,
+            bottom: 126.2,
+            child: GoogleMap(
+              onMapCreated: (GoogleMapController controller) {
+                if (!_controller.isCompleted) {
+                  _controller.complete(controller);
+                }
+              },
+              initialCameraPosition: CameraPosition(
+                target: _currentLocation,
+                zoom: 14.0,
+              ),
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false,
+              markers: _buildMarkers(),
             ),
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            /*markers: _buildMarkers(),*/
           ),
 
           // EZCHARGE Title
@@ -762,13 +770,43 @@ class _HomeScreenState extends State<HomeScreen> {
 
   //Build Markers for Stations
   Set<Marker> _buildMarkers() {
-    return _stations.map((station) {
-      return Marker(
-        markerId: MarkerId(station["StationID"]),
-        position: station["Location"],
-        infoWindow: InfoWindow(title: station["StationName"]),
+    final Set<Marker> markers = <Marker>{};
+
+    for (final station in _stations) {
+      final dynamic rawLocation = station["Location"];
+      LatLng? markerPosition;
+
+      if (rawLocation is GeoPoint) {
+        markerPosition = LatLng(rawLocation.latitude, rawLocation.longitude);
+      } else if (rawLocation is LatLng) {
+        markerPosition = rawLocation;
+      } else {
+        final double? latitude = double.tryParse(
+          station["Latitude"]?.toString() ?? '',
+        );
+        final double? longitude = double.tryParse(
+          station["Longitude"]?.toString() ?? '',
+        );
+
+        if (latitude != null && longitude != null) {
+          markerPosition = LatLng(latitude, longitude);
+        }
+      }
+
+      if (markerPosition == null) {
+        continue;
+      }
+
+      markers.add(
+        Marker(
+          markerId: MarkerId(station["StationID"].toString()),
+          position: markerPosition,
+          infoWindow: InfoWindow(title: station["StationName"]?.toString()),
+        ),
       );
-    }).toSet();
+    }
+
+    return markers;
   }
 
   // Build Navigation Button (QR / Charging / Gas)

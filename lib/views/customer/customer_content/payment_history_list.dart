@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ezcharge/core/utils/app_logger.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -11,10 +12,10 @@ class PaymentHistoryListScreen extends StatefulWidget {
 
   @override
   State<PaymentHistoryListScreen> createState() =>
-      _PaymentHistoryListScreenState();
+      PaymentHistoryListScreenState();
 }
 
-class _PaymentHistoryListScreenState extends State<PaymentHistoryListScreen> {
+class PaymentHistoryListScreenState extends State<PaymentHistoryListScreen> {
   bool isLoading = false;
   String _accountId = "";
 
@@ -43,7 +44,7 @@ class _PaymentHistoryListScreenState extends State<PaymentHistoryListScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      AppLogger.error("Error fetching customer data: $e");
     }
     setState(() => isLoading = false);
   }
@@ -60,10 +61,7 @@ class _PaymentHistoryListScreenState extends State<PaymentHistoryListScreen> {
           padding: const EdgeInsets.all(8),
           child: InkWell(
             onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
-              );
+              Navigator.pop(context);
             },
             child: Container(
               decoration: const BoxDecoration(

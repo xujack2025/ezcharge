@@ -187,36 +187,32 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Container(
+            decoration: const BoxDecoration(
+              color: Colors.blue,
+              shape: BoxShape.circle,
+            ),
+            padding: const EdgeInsets.all(8),
+            child: const Icon(Icons.arrow_back, color: Colors.white),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          "Authenticate Account",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 1,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ✅ Header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            color: Colors.white,
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: const BoxDecoration(
-                      color: Colors.blue,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Text(
-                  "Authenticate Account",
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-
           //Step Indicator "1/2"
           Container(
             width: double.infinity,

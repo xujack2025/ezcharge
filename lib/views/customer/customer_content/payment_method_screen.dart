@@ -9,10 +9,10 @@ class PaymentMethodScreen extends StatefulWidget {
   const PaymentMethodScreen({super.key});
 
   @override
-  _PaymentMethodScreenState createState() => _PaymentMethodScreenState();
+  PaymentMethodScreenState createState() => PaymentMethodScreenState();
 }
 
-class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
+class PaymentMethodScreenState extends State<PaymentMethodScreen> {
   double _walletBalance = 0.0; // Default wallet balance
   String _accountId = "";
   String _cardNumber = "";

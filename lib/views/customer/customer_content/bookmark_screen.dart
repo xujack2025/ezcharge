@@ -8,10 +8,10 @@ class BookmarkScreen extends StatefulWidget {
   const BookmarkScreen({super.key});
 
   @override
-  _BookmarkScreenState createState() => _BookmarkScreenState();
+  BookmarkScreenState createState() => BookmarkScreenState();
 }
 
-class _BookmarkScreenState extends State<BookmarkScreen> {
+class BookmarkScreenState extends State<BookmarkScreen> {
   List<Map<String, dynamic>> _bookmarkedStations = [];
   String _accountId = "";
   bool _isLoading = true;
