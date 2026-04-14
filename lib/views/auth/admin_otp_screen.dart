@@ -1,97 +1,58 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/views/admin/admin_dashboard.dart';
+import 'package:provider/provider.dart';
 
-class OTPAdminScreen extends StatefulWidget {
+class AdminOtpScreen extends StatefulWidget {
   final String phoneNumber;
   final String verificationID;
 
-  const OTPAdminScreen({
+  const AdminOtpScreen({
     super.key,
     required this.phoneNumber,
     required this.verificationID,
   });
 
   @override
-  OTPAdminScreenState createState() => OTPAdminScreenState();
+  AdminOtpScreenState createState() => AdminOtpScreenState();
 }
 
-class OTPAdminScreenState extends State<OTPAdminScreen> {
+class AdminOtpScreenState extends State<AdminOtpScreen> {
   final TextEditingController _otpController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  bool _isLoading = false;
-  String? _errorMessage;
+  AuthViewmodel get _authViewModel => context.read<AuthViewmodel>();
 
-  //Verify OTP
-  void _verifyOTP() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: widget.verificationID,
-        smsCode: _otpController.text.trim(),
-      );
-
-      UserCredential userCredential = await _auth.signInWithCredential(
-        credential,
-      );
-      await _handleUserSignIn(userCredential.user!);
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = "Invalid OTP. Please try again.";
-      });
-    }
+  @override
+  void dispose() {
+    _otpController.dispose();
+    super.dispose();
   }
 
-  //Handle Sign-In or Account Creation
-  Future<void> _handleUserSignIn(User user) async {
-    print("Checking Firestore for phone number: ${widget.phoneNumber}");
+  Future<void> onVerifyPressed() async {
+    _authViewModel.clearError();
+    final success = await _authViewModel.verifyAdminOtp(
+      widget.verificationID,
+      _otpController.text.trim(),
+      widget.phoneNumber,
+    );
 
-    //Query Firestore for the phone number
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection("admins")
-        .where("PhoneNumber", isEqualTo: widget.phoneNumber)
-        .get();
-
-    if (querySnapshot.docs.isNotEmpty) {
-      // Phone number exists → Allow login
-      print(
-        "Existing user found in Firestore. Redirecting to AccountScreen...",
-      );
-    } else {
-      // Phone number not found → Show error
-      print("Admin phone number not found!");
-      setState(() {
-        _isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Admin phone number not found!")),
+    if (success && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AdminDashboard()),
       );
     }
-
-    //Navigate to AccountScreen
-    setState(() => _isLoading = false);
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const AdminDashboard()),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final authViewModel = context.watch<AuthViewmodel>();
+
     return Scaffold(
       backgroundColor: Colors.grey[200], //Light Grey Background
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //White Header (Back Button + Title)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             color: Colors.white,
@@ -122,7 +83,6 @@ class OTPAdminScreenState extends State<OTPAdminScreen> {
 
           const SizedBox(height: 30),
 
-          //OTP Prompt Text
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
@@ -133,7 +93,6 @@ class OTPAdminScreenState extends State<OTPAdminScreen> {
 
           const SizedBox(height: 20),
 
-          // OTP Input Field
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
@@ -150,41 +109,49 @@ class OTPAdminScreenState extends State<OTPAdminScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    counterText: "", // Hide character counter
+                    counterText: "",
                   ),
                 ),
-
-                //Error Message (if any)
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontSize: 14),
-                    ),
-                  ),
               ],
             ),
           ),
 
           const SizedBox(height: 20),
 
+          if (authViewModel.errorMessage != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                authViewModel.errorMessage!,
+                style: const TextStyle(color: Colors.red, fontSize: 14),
+              ),
+            ),
           // Submit Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _verifyOTP,
+                // 这里改用 authViewModel.isLoading 控制
+                onPressed: authViewModel.isLoading ? null : onVerifyPressed,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: authViewModel.isLoading
+                      ? Colors.grey
+                      : Colors.blue,
                   padding: const EdgeInsets.all(16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                child: authViewModel.isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
                     : const Text(
                         "SUBMIT",
                         style: TextStyle(

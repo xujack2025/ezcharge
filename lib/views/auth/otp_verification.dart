@@ -15,10 +15,10 @@ class OTPScreen extends StatefulWidget {
   });
 
   @override
-  _OTPScreenState createState() => _OTPScreenState();
+  OTPScreenState createState() => OTPScreenState();
 }
 
-class _OTPScreenState extends State<OTPScreen> {
+class OTPScreenState extends State<OTPScreen> {
   final TextEditingController _otpController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;

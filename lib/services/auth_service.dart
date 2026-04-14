@@ -9,6 +9,17 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  Future<UserCredential> signInWithOtp(
+    String verificationId,
+    String smsCode,
+  ) async {
+    PhoneAuthCredential credential = PhoneAuthProvider.credential(
+      verificationId: verificationId,
+      smsCode: smsCode,
+    );
+    return await _auth.signInWithCredential(credential);
+  }
+
   Future<AdminModel?> getAdminByPhoneNumber(String phoneNumber) async {
     try {
       final querySnapshot = await _firestore
@@ -23,9 +34,7 @@ class AuthService {
 
       final adminData = querySnapshot.docs.first.data();
       final admin = AdminModel.fromFirestore(adminData);
-      AppLogger.debug(
-        "Admin Model successfully created: ${admin.firstName}",
-      );
+      AppLogger.debug("Admin Model successfully created: ${admin.firstName}");
       return admin;
     } catch (e) {
       AppLogger.error("Error fetching admin by phone number: $e");
@@ -33,7 +42,7 @@ class AuthService {
     }
   }
 
-  // 📌 Sign Out User
+  // Sign Out User
   Future<void> signout() async {
     try {
       await _auth.signOut();

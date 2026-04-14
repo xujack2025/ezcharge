@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:ezcharge/core/utils/app_logger.dart';
-import 'package:ezcharge/views/auth/otp_admin_screen.dart';
+import 'package:ezcharge/views/auth/admin_otp_screen.dart';
 import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
 
 class AdminSignInScreen extends StatefulWidget {
@@ -23,28 +22,16 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
     super.dispose();
   }
 
-  //Send OTP if phone number exists
-  void _sendOTP() async {
-    String phoneNumber = _phoneController.text.trim();
-    _authViewModel.sendAdminOtp(
+  Future<void> _sendOTP() async {
+    final phoneNumber = _phoneController.text.trim();
+    await _authViewModel.sendAdminOtp(
       phoneNumber,
       onCodeSent: (verificationId) {
-        final admin = _authViewModel.admin;
-        if (admin != null) {
-          // 用 info，蓝色或带 ℹ️ 图标，表示重要的流程节点
-          AppLogger.info(
-            "Admin verified: ${admin.firstName} ${admin.lastName}",
-          );
-        }
-
-        // 用 debug，通常是灰/白色，开发完可以随时在 AppLogger 里关掉
-        AppLogger.debug("VERIFICATION ID: $verificationId");
-
         if (!mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => OTPAdminScreen(
+            builder: (context) => AdminOtpScreen(
               phoneNumber: phoneNumber,
               verificationID: verificationId,
             ),

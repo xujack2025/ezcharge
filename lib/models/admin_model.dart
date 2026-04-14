@@ -18,21 +18,21 @@ class AdminModel extends UserModel {
     required super.phone,
   });
 
-  // ✅ Convert Firestore document to AdminModel
+  // Convert Firestore document to AdminModel
   factory AdminModel.fromFirestore(Map<String, dynamic> data) {
     return AdminModel(
-      id: data['AdminID'] ?? '',
-      firstName: data['FirstName'] ?? '',
-      lastName: data['LastName'] ?? '',
-      gender: data['Gender'] ?? '',
-      email: data['EmailAddress'] ?? '',
-      phone: data['PhoneNumber'] ?? '',
-      dateOfBirth: data['DateOfBirth'] ?? '',
-      createdAt: data['CreatedAt'] ?? Timestamp.now(),
+      id: data['AdminID']?.toString() ?? '',
+      firstName: data['FirstName']?.toString() ?? '',
+      lastName: data['LastName']?.toString() ?? '',
+      gender: data['Gender']?.toString() ?? '',
+      email: data['EmailAddress']?.toString() ?? '',
+      phone: data['PhoneNumber']?.toString() ?? '',
+      dateOfBirth: data['DateOfBirth']?.toString() ?? '',
+      createdAt: data['CreatedAt'] as Timestamp? ?? Timestamp.now(),
     );
   }
 
-  // ✅ Convert AdminModel to Firestore document format
+  // Convert AdminModel to Firestore document format
   Map<String, dynamic> toFirestore() {
     return {
       'AdminID': id,

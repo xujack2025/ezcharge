@@ -3,18 +3,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/services/auth_service.dart';
-import 'package:ezcharge/views/auth/sign_in.dart';
 import 'package:ezcharge/views/admin/admin_authenticate.dart';
 import 'package:ezcharge/views/admin/admin_profile_edit.dart';
+import 'package:ezcharge/views/auth/sign_in_screen.dart';
 
 class AdminProfilePage extends StatefulWidget {
   const AdminProfilePage({super.key});
 
   @override
-  _AdminProfilePageState createState() => _AdminProfilePageState();
+  AdminProfilePageState createState() => AdminProfilePageState();
 }
 
-class _AdminProfilePageState extends State<AdminProfilePage> {
+class AdminProfilePageState extends State<AdminProfilePage> {
   String _adminName = "Admin";
   String _adminId = "ADM25XXXX";
   String _email = "admin@gmail.com";
