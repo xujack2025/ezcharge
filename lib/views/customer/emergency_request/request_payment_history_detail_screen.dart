@@ -152,7 +152,6 @@ class _RequestPaymentHistoryDetailScreenState
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          // TODO: Implement printing logic
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Print not implemented"),

@@ -56,7 +56,6 @@ class _TimerScreenState extends State<TimerScreen> {
   String _chargerName = "";
   String _chargerType = "";
   String _stationName = "";
-  String _reservationStatus = "";
 
   @override
   void initState() {
@@ -149,7 +148,6 @@ class _TimerScreenState extends State<TimerScreen> {
         setState(() {
           _chargerId = doc["ChargerID"];
           _stationId = doc["StationID"];
-          _reservationStatus = doc["Status"];
         });
         _fetchStation();
         _fetchCharger();

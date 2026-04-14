@@ -32,7 +32,6 @@ class _ActivityScreenState extends State<ActivityScreen>
   String _chargerVoltage = " ";
   String _currentType = " ";
   String _pricepervoltage = " ";
-  Timestamp _starttime = Timestamp.now();
 
   late TabController _tabController;
 
@@ -98,7 +97,6 @@ class _ActivityScreenState extends State<ActivityScreen>
           _chargerId = doc["ChargerID"];
           _stationId = doc["StationID"];
           _reservationStatus = doc["Status"];
-          _starttime = doc["StartTime"];
         });
         _fetchStation();
         _fetchCharger();

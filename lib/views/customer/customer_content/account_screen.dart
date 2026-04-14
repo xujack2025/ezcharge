@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/views/ezcharge/home_screen.dart';
-import 'package:ezcharge/views/auth/Intro_screen.dart';
 import 'package:ezcharge/views/customer/notification/notification_screen.dart';
 import 'package:ezcharge/views/customer/reward/reward_screen.dart';
 import 'package:ezcharge/views/customer/customer_content/activity_screen.dart';
@@ -17,15 +16,16 @@ import 'package:ezcharge/views/customer/customer_content/payment_history_list.da
 import 'package:ezcharge/views/customer/customer_content/payment_method_screen.dart';
 import 'package:ezcharge/views/customer/customer_content/pending_screen.dart';
 import 'package:ezcharge/views/customer/customer_content/top_up_screen.dart';
+import 'package:ezcharge/views/welcome/intro_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
 
   @override
-  _AccountScreenState createState() => _AccountScreenState();
+  AccountScreenState createState() => AccountScreenState();
 }
 
-class _AccountScreenState extends State<AccountScreen> {
+class AccountScreenState extends State<AccountScreen> {
   String _customerName = "Loading...";
   String _accountId = "00000000";
   double _walletBalance = 0.0;

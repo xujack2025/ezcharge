@@ -10,10 +10,10 @@ class CheckDetailScreen extends StatefulWidget {
   const CheckDetailScreen({super.key});
 
   @override
-  _CheckDetailScreenState createState() => _CheckDetailScreenState();
+  CheckDetailScreenState createState() => CheckDetailScreenState();
 }
 
-class _CheckDetailScreenState extends State<CheckDetailScreen> {
+class CheckDetailScreenState extends State<CheckDetailScreen> {
   String _accountId = "";
   String _chargerId = "";
   String _stationId = "";
@@ -21,11 +21,8 @@ class _CheckDetailScreenState extends State<CheckDetailScreen> {
   String _stationName = "";
   String _chargerName = "";
   String _chargerType = "";
-  String _currentType = " ";
   String _pricepervoltage = " ";
   Timestamp _startTime = Timestamp.now();
-  Map<String, dynamic>? _reservationData;
-  Map<String, dynamic>? _chargerData;
   bool isLoading = false;
   bool isChecked = false;
 
@@ -127,7 +124,6 @@ class _CheckDetailScreenState extends State<CheckDetailScreen> {
         setState(() {
           _chargerName = doc["ChargerName"];
           _chargerType = doc["ChargerType"];
-          _currentType = doc["CurrentType"];
           _pricepervoltage = doc["PriceperVoltage"].toString();
         });
       }
@@ -373,20 +369,6 @@ class _CheckDetailScreenState extends State<CheckDetailScreen> {
               ),
             ),
     );
-  }
-
-  //Format Date from Timestamp
-  String _formatDateTime(String timestamp) {
-    if (timestamp.isEmpty) return "N/A";
-    DateTime dateTime = DateTime.parse(timestamp);
-    return "${dateTime.day}-${dateTime.month}-${dateTime.year}";
-  }
-
-  //Format Time from Timestamp
-  String _formatTime(String timestamp) {
-    if (timestamp.isEmpty) return "N/A";
-    DateTime dateTime = DateTime.parse(timestamp);
-    return "${dateTime.hour}:${dateTime.minute} ${dateTime.hour >= 12 ? "PM" : "AM"}";
   }
 
   //Handle Check-In Action

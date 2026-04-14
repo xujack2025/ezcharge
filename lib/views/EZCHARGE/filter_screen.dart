@@ -4,13 +4,12 @@ class FilterScreen extends StatefulWidget {
   const FilterScreen({super.key});
 
   @override
-  _FilterScreenState createState() => _FilterScreenState();
+  FilterScreenState createState() => FilterScreenState();
 }
 
-class _FilterScreenState extends State<FilterScreen> {
+class FilterScreenState extends State<FilterScreen> {
   String _selectedPower = ''; // AC / DC
   final List<String> _selectedNearby = []; // Nearby filters
-  double _priceRange = 2; // Default price range
 
   //Toggle Power Supply Filter
   void _togglePowerSupply(String type) {
@@ -33,7 +32,6 @@ class _FilterScreenState extends State<FilterScreen> {
     setState(() {
       _selectedPower = '';
       _selectedNearby.clear();
-      _priceRange = 2;
     });
   }
 

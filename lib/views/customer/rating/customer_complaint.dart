@@ -27,10 +27,8 @@ class CustomerComplaintPage extends StatefulWidget {
 }
 
 class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
-  String? _selectedBay;
   String? _reportReason;
   String? _details;
-  String? _uploadedImage;
   File? _selectedImage;
   bool _isSubmitting = false;
   List<Map<String, String>> _chargingBays =
@@ -210,7 +208,6 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
 
       setState(() {
         _isSubmitting = false;
-        _selectedBay = null;
         _reportReason = null;
         _details = null;
         _selectedImage = null;

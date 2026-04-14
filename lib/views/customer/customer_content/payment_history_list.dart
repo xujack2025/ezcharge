@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'package:ezcharge/views/ezcharge/home_screen.dart';
 import 'package:ezcharge/views/ezcharge/payment_history_detail.dart';
 
 class PaymentHistoryListScreen extends StatefulWidget {

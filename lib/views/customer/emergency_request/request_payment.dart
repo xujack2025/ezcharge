@@ -23,8 +23,6 @@ class RequestPaymentScreen extends StatefulWidget {
 
 class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
   bool isLoading = false;
-  String _accountId = "";
-  final String _stationImageUrl = "";
   double _rewardDiscount = 0.0;
   String _selectedRewardID = "";
   int _rewardPoints = 0;
@@ -42,16 +40,11 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
       if (user != null) {
         String userPhone = user.phoneNumber ?? "";
         if (userPhone.isNotEmpty) {
-          QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          await FirebaseFirestore.instance
               .collection("customers")
               .where("PhoneNumber", isEqualTo: userPhone)
               .limit(1)
               .get();
-
-          if (querySnapshot.docs.isNotEmpty) {
-            var userDoc = querySnapshot.docs.first;
-            _accountId = userDoc["CustomerID"] ?? "";
-          }
         }
       }
     } catch (e) {

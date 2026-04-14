@@ -55,7 +55,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  //Fetch station data from Firestore
   //Fetch all stations and their Charger subcollection
   Future<void> _fetchStations() async {
     try {
@@ -257,6 +256,94 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _showAuthReminder(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Authentication Required"),
+        content: const Text(
+          "Please authenticate your account before making a reservation.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), // Close dialog
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReservationReminder(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Existing Reservation"),
+        content: const Text(
+          "You already have an upcoming or active reservation. "
+          "Please complete or cancel it before making a new one.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _getUserLocation() async {
+    try {
+      bool serviceEnabled;
+      PermissionStatus permissionGranted;
+
+      // Check if location services are enabled
+      serviceEnabled = await _location.serviceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await _location.requestService();
+        if (!serviceEnabled) {
+          print("Location services are disabled.");
+          return;
+        }
+      }
+
+      //Check location permissions
+      permissionGranted = await _location.hasPermission();
+      if (permissionGranted == PermissionStatus.denied) {
+        permissionGranted = await _location.requestPermission();
+        if (permissionGranted != PermissionStatus.granted) {
+          print("Location permission denied.");
+          return;
+        }
+      }
+
+      // Get the current user location
+      LocationData locationData = await _location.getLocation();
+      LatLng userLocation = LatLng(
+        locationData.latitude!,
+        locationData.longitude!,
+      );
+
+      setState(() {
+        _currentLocation = userLocation;
+      });
+
+      //Move camera to user's location
+      final GoogleMapController controller = await _controller.future;
+      controller.animateCamera(
+        CameraUpdate.newLatLngZoom(_currentLocation, 14),
+      );
+    } catch (e) {
+      print("Error getting location: $e");
+    }
+  }
+
+  Future<void> _moveCamera(LatLng position) async {
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newLatLngZoom(position, 14));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -437,7 +524,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   //Build Station Card (Displays Station Name + Button)
-
   Widget _buildStationCard(Map<String, dynamic> station) {
     return StatefulBuilder(
       builder: (context, setState) {
@@ -834,94 +920,5 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }
-
-  void _showAuthReminder(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Authentication Required"),
-        content: const Text(
-          "Please authenticate your account before making a reservation.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context), // Close dialog
-            child: const Text("OK"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showReservationReminder(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Existing Reservation"),
-        content: const Text(
-          "You already have an upcoming or active reservation. "
-          "Please complete or cancel it before making a new one.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _getUserLocation() async {
-    try {
-      bool serviceEnabled;
-      PermissionStatus permissionGranted;
-
-      // Check if location services are enabled
-      serviceEnabled = await _location.serviceEnabled();
-      if (!serviceEnabled) {
-        serviceEnabled = await _location.requestService();
-        if (!serviceEnabled) {
-          print("Location services are disabled.");
-          return;
-        }
-      }
-
-      //Check location permissions
-      permissionGranted = await _location.hasPermission();
-      if (permissionGranted == PermissionStatus.denied) {
-        permissionGranted = await _location.requestPermission();
-        if (permissionGranted != PermissionStatus.granted) {
-          print("Location permission denied.");
-          return;
-        }
-      }
-
-      // Get the current user location
-      LocationData locationData = await _location.getLocation();
-      LatLng userLocation = LatLng(
-        locationData.latitude!,
-        locationData.longitude!,
-      );
-
-      setState(() {
-        _currentLocation = userLocation;
-      });
-
-      //Move camera to user's location
-      final GoogleMapController controller = await _controller.future;
-      controller.animateCamera(
-        CameraUpdate.newLatLngZoom(_currentLocation, 14),
-      );
-    } catch (e) {
-      print("Error getting location: $e");
-    }
-  }
-
-  // Move Camera
-  Future<void> _moveCamera(LatLng position) async {
-    final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newLatLngZoom(position, 14.0));
   }
 }

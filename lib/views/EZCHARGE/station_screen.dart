@@ -1005,11 +1005,11 @@ class _StationScreenState extends State<StationScreen> {
                 // Safely read and parse the latitude/longitude strings
                 final latString = stationData?["Latitude"]?.toString() ?? '';
                 final lngString = stationData?["Longitude"]?.toString() ?? '';
-              
+
                 // Attempt to parse them as double
                 final lat = double.tryParse(latString);
                 final lng = double.tryParse(lngString);
-              
+
                 if (lat != null && lng != null) {
                   // If parsing succeeded, open the map
                   MapUtils.openMap(lat, lng);
@@ -1024,7 +1024,7 @@ class _StationScreenState extends State<StationScreen> {
                 style: TextStyle(color: Colors.white),
               ),
             ),
-              
+
             //Reserve button with checks
             ElevatedButton(
               onPressed: () {
@@ -1039,7 +1039,7 @@ class _StationScreenState extends State<StationScreen> {
                   _showReservationReminder(context);
                   return;
                 }
-              
+
                 // Otherwise, proceed to ReservationScreen
                 Navigator.push(
                   context,
@@ -1054,7 +1054,10 @@ class _StationScreenState extends State<StationScreen> {
                     ? Colors.blue
                     : Colors.grey, // Grey if disabled
               ),
-              child: const Text("RESERVE", style: TextStyle(color: Colors.white)),
+              child: const Text(
+                "RESERVE",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
