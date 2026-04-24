@@ -3,10 +3,9 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ezcharge/core/utils/app_logger.dart';
 import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:intl/intl.dart'; // Import package for date formatting
+import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 
@@ -29,18 +28,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final Completer<GoogleMapController> _controller = Completer();
   final Location _location = Location();
-  LatLng _currentLocation = const LatLng(
-    3.2197929237993033,
-    101.6437936423279,
-  ); // Default: KL
+  LatLng _currentLocation = const LatLng(3.2197929237993033, 101.6437936423279); // Default: KL
   List<Map<String, dynamic>> _stations = [];
-  List<Map<String, dynamic>> _filteredStations = []; // For search results
+  List<Map<String, dynamic>> _filteredStations = [];
   bool _isLoading = true;
-  String _accountId = "";
-  String _authStatus = "";
-  String _reservationStatus = "";
   ValueNotifier<double> sheetSize = ValueNotifier(0.15);
-
   // Added for search functionality:
   final TextEditingController _searchController = TextEditingController();
 
@@ -49,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _getUserLocation();
     _fetchStations();
-    _getCustomerID();
+    context.read<AuthViewModel>().syncUserStatus();
   }
 
   @override
@@ -62,9 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchStations() async {
     try {
       //Get all stations
-      QuerySnapshot stationSnapshot = await FirebaseFirestore.instance
-          .collection("station")
-          .get();
+      QuerySnapshot stationSnapshot = await FirebaseFirestore.instance.collection("station").get();
 
       //Temporary list to hold the final data
       List<Map<String, dynamic>> tempStations = [];
@@ -102,8 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
           "Latitude": stationData["Latitude"],
           "Longitude": stationData["Longitude"],
           "Nearby": stationData["Nearby"], // might be string or list
-          "ImageUrl":
-              stationData["ImageUrl"] ?? "https://via.placeholder.com/80",
+          "ImageUrl": stationData["ImageUrl"] ?? "https://via.placeholder.com/80",
 
           // Store all the charger types found in the subcollection
           "CurrentType": currentTypes,
@@ -131,9 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
       } else {
         // Filter stations whose name contains the query (ignoring case)
         final matches = _stations.where((station) {
-          return station["StationName"].toString().toLowerCase().contains(
-            query.toLowerCase(),
-          );
+          return station["StationName"].toString().toLowerCase().contains(query.toLowerCase());
         }).toList();
 
         if (matches.isNotEmpty) {
@@ -159,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // Expecting a list of strings in station["CurrentTypes"]
             final currentTypes = station["CurrentType"];
             if (currentTypes is List) {
-              // Check if the station’s CurrentTypes list contains the selected power (e.g., "AC" or "DC")
+              // Check CurrentTypes list contains selected power? (e.g., "AC" or "DC")
               matchPower = currentTypes.contains(power);
             } else {
               // If CurrentTypes is missing or not a List, this station doesn't match
@@ -191,82 +178,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _getCustomerID() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-
-          setState(() {
-            _accountId = userDoc["CustomerID"];
-          });
-          _fetchAuthenticationStatus();
-          _fetchReservationStatus();
-        }
-      }
-    } catch (e) {
-      AppLogger.error(" Error fetching customer data: $e");
-    }
-  }
-
-  Future<void> _fetchAuthenticationStatus() async {
-    if (_accountId.isEmpty) return;
-
-    try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("customers")
-          .doc(_accountId)
-          .collection("authenticate")
-          .doc("authentication")
-          .get();
-
-      if (doc.exists) {
-        setState(() {
-          _authStatus = doc["Status"];
-        });
-      }
-    } catch (e) {
-      AppLogger.error("Error fetching authentication status: $e");
-    }
-  }
-
-  Future<void> _fetchReservationStatus() async {
-    if (_accountId.isEmpty) return;
-
-    try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("reservation")
-          .doc(_accountId)
-          .get();
-
-      if (doc.exists) {
-        setState(() {
-          _reservationStatus = doc["Status"] ?? "";
-        });
-      }
-    } catch (e) {
-      AppLogger.error("Error fetching reservation status: $e");
-    }
-  }
-
   void _showAuthReminder(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Authentication Required"),
-        content: const Text(
-          "Please authenticate your account before making a reservation.",
-        ),
+        content: const Text("Please authenticate your account before making a reservation."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context), // Close dialog
@@ -286,12 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
           "You already have an upcoming or active reservation. "
           "Please complete or cancel it before making a new one.",
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          ),
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
       ),
     );
   }
@@ -323,10 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Get the current user location
       LocationData locationData = await _location.getLocation();
-      LatLng userLocation = LatLng(
-        locationData.latitude!,
-        locationData.longitude!,
-      );
+      LatLng userLocation = LatLng(locationData.latitude!, locationData.longitude!);
 
       setState(() {
         _currentLocation = userLocation;
@@ -334,9 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       //Move camera to user's location
       final GoogleMapController controller = await _controller.future;
-      controller.animateCamera(
-        CameraUpdate.newLatLngZoom(_currentLocation, 14),
-      );
+      controller.animateCamera(CameraUpdate.newLatLngZoom(_currentLocation, 14));
     } catch (e) {
       AppLogger.error("Error getting location: $e");
     }
@@ -349,6 +256,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authVM = context.read<AuthViewModel>();
+
+    debugPrint("Current user ID: ${authVM.customerId}");
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -365,10 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _controller.complete(controller);
                 }
               },
-              initialCameraPosition: CameraPosition(
-                target: _currentLocation,
-                zoom: 14.0,
-              ),
+              initialCameraPosition: CameraPosition(target: _currentLocation, zoom: 14.0),
               myLocationEnabled: true,
               myLocationButtonEnabled: false,
               markers: _buildMarkers(),
@@ -415,9 +322,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const CheckInScreen(),
-                        ),
+                        MaterialPageRoute(builder: (context) => const CheckInScreen()),
                       );
                     },
                   ),
@@ -428,9 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => BookAChargeScreen(),
-                        ),
+                        MaterialPageRoute(builder: (context) => BookAChargeScreen()),
                       );
                     },
                   ),
@@ -453,8 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 // If user returns filter data, apply it
                 if (result != null && result is Map<String, dynamic>) {
-                  final selectedPower =
-                      result['power'] as String; // "AC", "DC", or ""
+                  final selectedPower = result['power'] as String; // "AC", "DC", or ""
                   final selectedNearby = result['nearby'] as List<String>;
                   _applyFilters(selectedPower, selectedNearby);
                 }
@@ -477,11 +379,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 10),
-                    Container(
-                      width: 40,
-                      height: 5,
-                      color: Colors.grey[400],
-                    ), // Drag Handle
+                    Container(width: 40, height: 5, color: Colors.grey[400]), // Drag Handle
                     const SizedBox(height: 6),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -493,9 +391,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.search),
                           hintText: "SEARCH",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
                         ),
                       ),
                     ),
@@ -509,7 +405,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               itemCount: _filteredStations.length,
                               itemBuilder: (context, index) {
                                 final station = _filteredStations[index];
-                                return _buildStationCard(station);
+                                return _buildStationCard(station, authVM);
                               },
                             ),
                     ),
@@ -527,8 +423,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   //Build Station Card (Displays Station Name + Button)
-  Widget _buildStationCard(Map<String, dynamic> station) {
-    final authViewModel = context.watch<AuthViewModel>();
+  Widget _buildStationCard(Map<String, dynamic> station, AuthViewModel authVM) {
+    final messenger = ScaffoldMessenger.of(context);
+
     return StatefulBuilder(
       builder: (context, setState) {
         bool isBookmarked = false; // Track bookmark state
@@ -536,16 +433,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
         //Check if the station is already bookmarked
         Future<void> checkBookmark() async {
-          if (_accountId.isEmpty) return;
+          if (authVM.customerId.isEmpty) return;
           try {
             QuerySnapshot bookmarkSnapshot = await FirebaseFirestore.instance
                 .collection("customers")
-                .doc(_accountId)
+                .doc(authVM.customerId)
                 .collection("bookmark")
                 .where("StationID", isEqualTo: station["StationID"])
                 .limit(1)
                 .get();
 
+            if (!context.mounted) return;
+            
             if (bookmarkSnapshot.docs.isNotEmpty) {
               setState(() {
                 isBookmarked = true;
@@ -559,14 +458,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
         /// Toggle Bookmark
         Future<void> toggleBookmark(Function setState) async {
-          if (_accountId.isEmpty) return;
+          if (authVM.customerId.isEmpty) return;
 
           try {
             if (isBookmarked) {
               //Remove bookmark from Firestore
               await FirebaseFirestore.instance
                   .collection("customers")
-                  .doc(_accountId)
+                  .doc(authVM.customerId)
                   .collection("bookmark")
                   .doc(bookmarkId)
                   .delete();
@@ -577,21 +476,19 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             } else {
               // Format date as YYYYMMDD
-              String formattedDate = DateFormat(
-                'yyyyMMdd',
-              ).format(DateTime.now());
+              String formattedDate = DateFormat('yyyyMMdd').format(DateTime.now());
               String newBookmarkId = "BKK$formattedDate"; //BookmarkID format
 
               // Add bookmark to Firestore
               await FirebaseFirestore.instance
                   .collection("customers")
-                  .doc(_accountId)
+                  .doc(authVM.customerId)
                   .collection("bookmark")
                   .doc(newBookmarkId) // Use the formatted ID
                   .set({
                     "BookmarkID": newBookmarkId,
                     "StationID": station["StationID"],
-                    "CustomerID": _accountId,
+                    "CustomerID": authVM.customerId,
                   });
 
               setState(() {
@@ -599,11 +496,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 bookmarkId = newBookmarkId;
               });
 
+              if (!mounted) return;
               // Display SnackBar message after successful addition
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Successful add the station to bookmark"),
-                ),
+              messenger.showSnackBar(
+                const SnackBar(content: Text("Successful add the station to bookmark")),
               );
             }
           } catch (e) {
@@ -618,10 +514,7 @@ class _HomeScreenState extends State<HomeScreen> {
           margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(
-              color: Colors.black,
-              width: 1,
-            ), //Black Border
+            side: const BorderSide(color: Colors.black, width: 1), //Black Border
           ),
           color: Colors.white, // White Background
           child: Padding(
@@ -646,23 +539,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     //Station Name (Centered)
                     Expanded(
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.end, // Aligns text to the right
+                        crossAxisAlignment: CrossAxisAlignment.end, // Aligns text to the right
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
                               color: Colors.grey[200], //Grey background
-                              border: Border.all(
-                                color: Colors.black,
-                                width: 1.5,
-                              ), //Black border
-                              borderRadius: BorderRadius.circular(
-                                8,
-                              ), //Rounded corners
+                              border: Border.all(color: Colors.black, width: 1.5), //Black border
+                              borderRadius: BorderRadius.circular(8), //Rounded corners
                             ),
                             child: Text(
                               station["Nearby"],
@@ -676,18 +560,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           Text(
                             station["StationName"],
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                            ),
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
                             textAlign: TextAlign.right,
                           ),
-                          const SizedBox(
-                            height: 4,
-                          ), // Small spacing between name and description
+                          const SizedBox(height: 4), // Small spacing between name and description
                           Text(
-                            station["Description"] ??
-                                "", // Display description if available
+                            station["Description"] ?? "", // Display description if available
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -700,14 +578,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               const Text(
                                 "Capacity: ",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                               ),
                               Text(
-                                station["Capacity"]
-                                    .toString(), // Convert to String for display
+                                station["Capacity"].toString(), // Convert to String for display
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -724,9 +598,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconButton(
                       icon: Icon(
                         Icons.bookmark,
-                        color: isBookmarked
-                            ? Colors.black
-                            : Colors.grey, //Fix color toggle
+                        color: isBookmarked ? Colors.black : Colors.grey, //Fix color toggle
                       ),
                       onPressed: () => toggleBookmark(setState), //Pass setState
                     ),
@@ -739,20 +611,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: Row(
-                    mainAxisSize: MainAxisSize
-                        .min, // Ensures row only takes required space
+                    mainAxisSize: MainAxisSize.min, // Ensures row only takes required space
                     children: [
                       /// Reserve Button
                       ElevatedButton(
                         onPressed: () {
                           // Check if user is authenticated
-                          if (!authViewModel.isAuthenticated) {
+                          AppLogger.info(
+                            "User ID: ${authVM.customerId}, Auth: ${authVM.isAuthenticated}, Res: ${authVM.hasActiveReservation}",
+                          );
+                          if (!authVM.isAuthenticated) {
                             _showAuthReminder(context);
                             return;
                           }
 
                           // 2. 检查是不是已经有预约在手了
-                          if (authViewModel.hasActiveReservation) {
+                          if (authVM.hasActiveReservation) {
                             _showReservationReminder(context);
                             return;
                           }
@@ -760,27 +634,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ReservationScreen(
-                                stationId: station["StationID"],
-                              ),
+                              builder: (context) =>
+                                  ReservationScreen(stationId: station["StationID"]),
                             ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              (_authStatus == "Pass" &&
-                                  _reservationStatus != "Upcoming" &&
-                                  _reservationStatus != "Active")
+                          backgroundColor: (authVM.isAuthenticated && !authVM.hasActiveReservation)
                               ? Colors.blue
                               : Colors.grey, // Grey if disabled
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                         ),
-                        child: const Text(
-                          "RESERVE",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        child: const Text("RESERVE", style: TextStyle(color: Colors.white)),
                       ),
                       const SizedBox(width: 10),
 
@@ -790,22 +655,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => StationScreen(
-                                stationId: station["StationID"],
-                              ),
+                              builder: (context) => StationScreen(stationId: station["StationID"]),
                             ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                         ),
-                        child: const Text(
-                          "VIEW CHARGERS",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        child: const Text("VIEW CHARGERS", style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),
@@ -827,10 +685,7 @@ class _HomeScreenState extends State<HomeScreen> {
       currentIndex: 0,
       onTap: (index) {
         if (index == 1) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const RewardScreen()),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const RewardScreen()));
         } else if (index == 3) {
           Navigator.pushReplacement(
             context,
@@ -844,14 +699,8 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.directions_car),
-          label: "EZCharge",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.card_giftcard),
-          label: "Rewards",
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.directions_car), label: "EZCharge"),
+        BottomNavigationBarItem(icon: Icon(Icons.card_giftcard), label: "Rewards"),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Me"),
         BottomNavigationBarItem(icon: Icon(Icons.mail), label: "Inbox"),
       ],
@@ -871,12 +720,8 @@ class _HomeScreenState extends State<HomeScreen> {
       } else if (rawLocation is LatLng) {
         markerPosition = rawLocation;
       } else {
-        final double? latitude = double.tryParse(
-          station["Latitude"]?.toString() ?? '',
-        );
-        final double? longitude = double.tryParse(
-          station["Longitude"]?.toString() ?? '',
-        );
+        final double? latitude = double.tryParse(station["Latitude"]?.toString() ?? '');
+        final double? longitude = double.tryParse(station["Longitude"]?.toString() ?? '');
 
         if (latitude != null && longitude != null) {
           markerPosition = LatLng(latitude, longitude);
@@ -900,26 +745,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Build Navigation Button (QR / Charging / Gas)
-  Widget _buildNavButton(
-    IconData icon, {
-    bool isSelected = false,
-    VoidCallback? onTap,
-  }) {
+  Widget _buildNavButton(IconData icon, {bool isSelected = false, VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap, // Assign the onTap function
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.blue
-              : Colors.white, // Background color change
+          color: isSelected ? Colors.blue : Colors.white, // Background color change
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
           icon,
-          color: isSelected
-              ? Colors.white
-              : Colors.black, // White icon when selected
+          color: isSelected ? Colors.white : Colors.black, // White icon when selected
           size: 30,
         ),
       ),

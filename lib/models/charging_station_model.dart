@@ -62,7 +62,6 @@ class ChargingStation {
 
   Map<String, dynamic> toMap() {
     return {
-      // 转换回 Map 时，嵌套列表也要转换
       'StationName': stationName,
       'Description': description,
       'Nearby': nearby,

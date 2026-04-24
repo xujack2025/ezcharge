@@ -423,12 +423,12 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
     return IconButton(
       icon: const Icon(Icons.ev_station, color: Colors.orange),
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AdminChargingBayPage(stationID: stationID),
-          ),
-        );
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) => AdminChargingBayPage(stationID: stationID),
+        //   ),
+        // );
       },
     );
   }

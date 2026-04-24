@@ -72,8 +72,7 @@ class ReservationScreenState extends State<ReservationScreen> {
           return {
             "bay": data["ChargerName"] ?? "Unknown Bay",
             "type": data["ChargerType"] ?? "Unknown Type",
-            "power":
-                "${data["ChargerVoltage"] ?? "0"}kW ${data["CurrentType"] ?? ""}",
+            "power": "${data["ChargerVoltage"] ?? "0"}kW ${data["CurrentType"] ?? ""}",
             "price": "RM ${data["PriceperVoltage"] ?? "0.00"}/kW",
             "status": data["Status"] ?? "Unknown",
             "docId": doc.id, // Store Firestore document ID
@@ -89,10 +88,7 @@ class ReservationScreenState extends State<ReservationScreen> {
 
   Future<void> _selectTime(BuildContext context) async {
     final initialTime = TimeOfDay.fromDateTime(selectedTime.toDate());
-    TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: initialTime,
-    );
+    TimeOfDay? picked = await showTimePicker(context: context, initialTime: initialTime);
 
     if (picked != null) {
       final now = DateTime.now();
@@ -109,29 +105,22 @@ class ReservationScreenState extends State<ReservationScreen> {
 
       // 🔹 Ensure a charger is selected before checking Firestore
       if (selectedCharger == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please select a charger first!")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Please select a charger first!")));
         return;
       }
 
       // Debugging Log
-      debugPrint(
-        "Checking reservations for Charger: $selectedCharger at $pickedDateTime",
-      );
+      debugPrint("Checking reservations for Charger: $selectedCharger at $pickedDateTime");
 
       // Check Firestore for existing reservations
-      bool isSlotTaken = await _checkExistingReservation(
-        selectedCharger!,
-        pickedTimestamp,
-      );
+      bool isSlotTaken = await _checkExistingReservation(selectedCharger!, pickedTimestamp);
 
       if (isSlotTaken) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("The slot has been selected by others!"),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("The slot has been selected by others!")));
       } else {
         setState(() {
           selectedTime = pickedTimestamp;
@@ -141,10 +130,7 @@ class ReservationScreenState extends State<ReservationScreen> {
   }
 
   //Function to Check Firestore for Existing Reservations
-  Future<bool> _checkExistingReservation(
-    String chargerId,
-    Timestamp selectedTimestamp,
-  ) async {
+  Future<bool> _checkExistingReservation(String chargerId, Timestamp selectedTimestamp) async {
     try {
       //Query Firestore for the same charger and start time
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -182,30 +168,24 @@ class ReservationScreenState extends State<ReservationScreen> {
     }
 
     if (!isTermsAccepted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please accept the terms and conditions!"),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please accept the terms and conditions!")));
       return;
     }
 
     try {
       String reservationId = "RSV${DateTime.now().millisecondsSinceEpoch}";
       // Add Reservation Record to Firestore with the new StartTime.
-      await FirebaseFirestore.instance
-          .collection("reservation")
-          .doc(_accountId)
-          .set({
-            "ReservationID": reservationId,
-            "ChargerID": selectedCharger,
-            "StationID": widget.stationId,
-            "StartTime": selectedTime,
-            "ReservedTime": DateTime.now(),
-            "Status": "Upcoming",
-            "CustomerID":
-                _accountId, // Replace with actual user ID if available.
-          });
+      await FirebaseFirestore.instance.collection("reservation").doc(_accountId).set({
+        "ReservationID": reservationId,
+        "ChargerID": selectedCharger,
+        "StationID": widget.stationId,
+        "StartTime": selectedTime,
+        "ReservedTime": DateTime.now(),
+        "Status": "Upcoming",
+        "CustomerID": _accountId, // Replace with actual user ID if available.
+      });
 
       //Navigate to Success Screen
       Navigator.pushReplacement(
@@ -214,11 +194,9 @@ class ReservationScreenState extends State<ReservationScreen> {
       );
     } catch (e) {
       debugPrint("Error submitting reservation: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Failed to reserve the charger. Try again!"),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Failed to reserve the charger. Try again!")));
     }
   }
 
@@ -247,19 +225,13 @@ class ReservationScreenState extends State<ReservationScreen> {
                             shape: BoxShape.circle,
                             color: Colors.blue, // Blue background
                           ),
-                          child: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                          ),
+                          child: const Icon(Icons.arrow_back, color: Colors.white),
                         ),
                       ),
                       const SizedBox(width: 10),
                       const Text(
                         "Reservation",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -285,10 +257,7 @@ class ReservationScreenState extends State<ReservationScreen> {
                   GestureDetector(
                     onTap: () => _selectTime(context),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 15,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey),
                         borderRadius: BorderRadius.circular(8),
@@ -333,8 +302,7 @@ class ReservationScreenState extends State<ReservationScreen> {
                           ? _submitReservation
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            (selectedCharger != null && isTermsAccepted)
+                        backgroundColor: (selectedCharger != null && isTermsAccepted)
                             ? Colors.blue
                             : Colors.grey,
                         padding: const EdgeInsets.symmetric(vertical: 15),
@@ -369,9 +337,7 @@ class ReservationScreenState extends State<ReservationScreen> {
           color: isAvailable ? Colors.white : Colors.grey[300],
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: selectedCharger == charger["docId"]
-                ? Colors.blue
-                : Colors.grey,
+            color: selectedCharger == charger["docId"] ? Colors.blue : Colors.grey,
           ),
         ),
         child: Row(
@@ -393,9 +359,7 @@ class ReservationScreenState extends State<ReservationScreen> {
             const SizedBox(width: 10),
             Text(
               charger["status"],
-              style: TextStyle(
-                color: isAvailable ? Colors.green : Colors.orange,
-              ),
+              style: TextStyle(color: isAvailable ? Colors.green : Colors.orange),
             ),
           ],
         ),
@@ -441,25 +405,17 @@ class ReservationScreenState extends State<ReservationScreen> {
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const ActivityScreen(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const ActivityScreen()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 ),
                 child: const Text(
                   "FINISH",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
             ),

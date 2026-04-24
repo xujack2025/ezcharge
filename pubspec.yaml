@@ -77,8 +77,10 @@ flutter:
       fonts:
         - asset: assets/fonts/Roboto-Regular.ttf
 
-flutter_icons:
+flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   remove_alpha_ios: true
   image_path: "assets/images/ezcharge_logo.png"
+  adaptive_icon_background: "#1e1e1e" 
+  adaptive_icon_foreground: "assets/images/ezcharge_logo_foreground.png" 

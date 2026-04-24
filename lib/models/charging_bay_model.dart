@@ -54,7 +54,7 @@ class ChargingBay {
     return {
       'ChargerID': chargerID,
       'ChargerName': chargerName,
-      'ChargerType': chargerType.name, 
+      'ChargerType': chargerType.name,
       'ChargerVoltage': chargerVoltage,
       'CurrentType': currentType.name,
       'PriceperVoltage': pricePerVoltage,

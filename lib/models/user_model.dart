@@ -13,4 +13,3 @@ abstract class UserModel {
     required this.phone,
   });
 }
-

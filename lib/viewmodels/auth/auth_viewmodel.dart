@@ -29,6 +29,7 @@ class AuthViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   AdminModel? get admin => _admin;
   CustomerModel? get customer => _customer;
+  String get customerId => _customer?.id ?? "";
   bool get isAuthenticated => _authStatus == "Pass";
   bool get hasActiveReservation =>
       _reservationStatus == "Upcoming" || _reservationStatus == "Active";
@@ -43,20 +44,32 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> syncUserStatus(String phoneNumber) async {
+  Future<void> syncUserStatus() async {
+    if (_customer == null) {
+      AppLogger.error("Sync failed: No customer data found in memory.");
+      return;
+    }
+
     _setLoading(true);
     _setError(null);
 
-    _customer = await _authService.getCustomerByPhoneNumber(phoneNumber);
+    try {
+      final String currentId = _customer!.id;
 
-    if (_customer != null) {
-      _authStatus = await _authService.getAuthStatus(_customer!.id);
-      _reservationStatus = await _stationService.getReservationStatus(
-        _customer!.id,
-      );
+      final results = await Future.wait([
+        _authService.getAuthStatus(currentId),
+        _stationService.getReservationStatus(currentId),
+      ]);
+
+      _authStatus = results[0];
+      _reservationStatus = results[1];
+
+      AppLogger.info("Status synced for user: $currentId");
+    } catch (e) {
+      _setError("Failed to sync status: $e");
+    } finally {
+      _setLoading(false);
     }
-
-    _setLoading(false);
   }
 
   Future<bool> verifyOtp(
@@ -173,7 +186,6 @@ class AuthViewModel extends ChangeNotifier {
     } catch (e) {
       AppLogger.error("Failed to fetch user: $e");
     } finally {
-      // 3. 无论成功失败，最后都要关闭 Loading
       _setLoading(false);
       notifyListeners();
     }
