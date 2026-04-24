@@ -76,7 +76,7 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -111,7 +111,7 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
 
       // Track upload progress
       uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-        print(
+        debugPrint(
           "Uploading: ${snapshot.bytesTransferred} / ${snapshot.totalBytes}",
         );
       });
@@ -128,7 +128,7 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
     } catch (error) {
       Navigator.pop(context); // Close Loading Dialog
       _showErrorDialog("Failed to upload image. Please try again.");
-      print("Upload error: $error");
+      debugPrint("Upload error: $error");
     }
   }
 

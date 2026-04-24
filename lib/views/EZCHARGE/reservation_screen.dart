@@ -53,7 +53,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
       }
       _submitReservation();
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -82,7 +82,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         isLoading = false;
       });
     } catch (e) {
-      print("Error fetching chargers: $e");
+      debugPrint("Error fetching chargers: $e");
       setState(() => isLoading = false);
     }
   }
@@ -116,7 +116,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
       }
 
       // Debugging Log
-      print(
+      debugPrint(
         "Checking reservations for Charger: $selectedCharger at $pickedDateTime",
       );
 
@@ -157,7 +157,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         Timestamp storedTimestamp = reservationData["StartTime"];
 
         //Debugging Log
-        print("Found reservation: ${reservationData["StartTime"]}");
+        debugPrint("Found reservation: ${reservationData["StartTime"]}");
 
         // Compare timestamps properly
         if (storedTimestamp.seconds == selectedTimestamp.seconds) {
@@ -167,7 +167,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
       return false; // Slot is available
     } catch (e) {
-      print("Error checking reservations: $e");
+      debugPrint("Error checking reservations: $e");
       return false;
     }
   }
@@ -213,7 +213,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         MaterialPageRoute(builder: (context) => _buildSuccessScreen(context)),
       );
     } catch (e) {
-      print("Error submitting reservation: $e");
+      debugPrint("Error submitting reservation: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Failed to reserve the charger. Try again!"),

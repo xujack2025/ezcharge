@@ -14,7 +14,7 @@ class EmergencyRequestViewModel extends ChangeNotifier {
   DateTime? scheduledDateTime;
   bool isLoading = false;
 
-  /// ✅ Get Emergency Requests as a Stream (Real-time Updates)
+  /// Get Emergency Requests as a Stream (Real-time Updates)
   Stream<List<EmergencyRequest>> getRequests(String customerID) {
     return _firestore
         .collection('emergency_requests')
@@ -27,13 +27,13 @@ class EmergencyRequestViewModel extends ChangeNotifier {
         );
   }
 
-  /// ✅ Create Emergency Request
+  /// Create Emergency Request
   Future<void> createRequest(EmergencyRequest request) async {
     try {
       // Generate a unique request ID in the format: EMQ_<timestamp>
       String requestID = "EMQ${DateTime.now().millisecondsSinceEpoch}";
 
-      // ✅ Ensure request ID is updated before saving
+      // Ensure request ID is updated before saving
       request = EmergencyRequest(
         requestID: requestID,
         customerID: request.customerID,
@@ -47,75 +47,75 @@ class EmergencyRequestViewModel extends ChangeNotifier {
 
       await _firestore
           .collection('emergency_requests')
-          .doc(requestID) // ✅ Use generated request ID
+          .doc(requestID) // Use generated request ID
           .set(request.toMap());
 
-      print("✅ Emergency request created successfully: $requestID");
+      debugPrint("Emergency request created successfully: $requestID");
     } catch (e) {
-      print("❌ Error creating request: $e");
+      debugPrint("❌ Error creating request: $e");
     }
   }
 
-  /// ✅ Update Request Status (Real-time Changes)
+  /// Update Request Status (Real-time Changes)
   Future<void> updateRequestStatus(String requestID, String status) async {
     try {
       await _firestore.collection('emergency_requests').doc(requestID).update({
         'status': status,
       });
     } catch (e) {
-      print("Error updating status: $e");
+      debugPrint("Error updating status: $e");
     }
   }
 
-  /// ✅ Select Image (Gallery or Camera)
+  /// Select Image (Gallery or Camera)
   Future<void> pickImage(ImageSource source) async {
     final pickedFile = await ImagePicker().pickImage(source: source);
     if (pickedFile != null) {
       selectedImage = File(pickedFile.path);
-      uploadedImageUrl = null; // ✅ Reset URL (New Image Needs Upload)
+      uploadedImageUrl = null; // Reset URL (New Image Needs Upload)
       notifyListeners();
     }
   }
 
-  /// ✅ Upload Image to Firebase Storage
+  /// Upload Image to Firebase Storage
   Future<String?> uploadImageToFirebase() async {
     if (selectedImage == null) {
-      print("⚠️ No image selected. Skipping upload.");
+      debugPrint("⚠️ No image selected. Skipping upload.");
       return null;
     }
 
     try {
       isLoading = true;
-      notifyListeners(); // ✅ Show loading state
+      notifyListeners(); // Show loading state
 
       String fileName =
           "requests/RQImage${DateTime.now().millisecondsSinceEpoch}.jpg";
       Reference ref = FirebaseStorage.instance.ref().child(fileName);
       UploadTask uploadTask = ref.putFile(selectedImage!);
 
-      // ✅ Wait for upload to complete
+      // Wait for upload to complete
       TaskSnapshot taskSnapshot = await uploadTask;
 
-      // ✅ Get the uploaded image URL
+      // Get the uploaded image URL
       String imageUrl = await taskSnapshot.ref.getDownloadURL();
       uploadedImageUrl = imageUrl;
 
-      print("✅ Image uploaded successfully: $imageUrl");
+      debugPrint("Image uploaded successfully: $imageUrl");
 
-      return imageUrl; // ✅ Return image URL for Firestore
+      return imageUrl; // Return image URL for Firestore
     } catch (e) {
-      print("❌ Image Upload Error: $e");
-      return null; // ✅ Handle failure case
+      debugPrint("❌ Image Upload Error: $e");
+      return null; // Handle failure case
     } finally {
       isLoading = false;
-      notifyListeners(); // ✅ Ensure UI updates after upload (success or failure)
+      notifyListeners(); // Ensure UI updates after upload (success or failure)
     }
   }
 
-  /// ✅ Show DateTime Picker for Scheduling
+  /// Show DateTime Picker for Scheduling
   Future<void> pickDateTime(BuildContext context) async {
     DateTime now = DateTime.now().toUtc().add(const Duration(hours: 8));
-    //DateTime now = DateTime.now().toUtc().add(const Duration(hours: 8)); // ✅ Convert to UTC+8
+    //DateTime now = DateTime.now().toUtc().add(const Duration(hours: 8)); // Convert to UTC+8
     DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: now,
@@ -136,7 +136,7 @@ class EmergencyRequestViewModel extends ChangeNotifier {
           pickedDate.day,
           pickedTime.hour,
           pickedTime.minute,
-        ); //.toUtc().add(const Duration(hours: 8)); // ✅ Ensure selected time is also UTC+8
+        ); //.toUtc().add(const Duration(hours: 8)); // Ensure selected time is also UTC+8
 
         notifyListeners();
       }

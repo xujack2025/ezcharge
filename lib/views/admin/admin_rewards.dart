@@ -28,18 +28,18 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
           .where((doc) {
             var user = doc.data() as Map<String, dynamic>;
 
-            print("User: ${doc.id}, DateOfBirth: ${user['DateOfBirth']}");
+            debugPrint("User: ${doc.id}, DateOfBirth: ${user['DateOfBirth']}");
 
             if (user['DateOfBirth'] != null) {
               DateTime? dob;
 
-              // ✅ Check if DateOfBirth is a Firestore Timestamp
+              // Check if DateOfBirth is a Firestore Timestamp
               if (user['DateOfBirth'] is Timestamp) {
                 dob = (user['DateOfBirth'] as Timestamp).toDate().add(
                   Duration(hours: 8),
-                ); // ✅ Convert to UTC+8
+                ); // Convert to UTC+8
               }
-              // ✅ Handle DateOfBirth stored as a String (e.g., "21/2/2025")
+              // Handle DateOfBirth stored as a String (e.g., "21/2/2025")
               else if (user['DateOfBirth'] is String) {
                 try {
                   List<String> parts = user['DateOfBirth'].split('/');
@@ -47,19 +47,19 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                   int month = int.parse(parts[1]);
                   int year = int.parse(parts[2]);
 
-                  // ✅ Create DateTime in UTC and convert to UTC+8
+                  // Create DateTime in UTC and convert to UTC+8
                   dob = DateTime.utc(year, month, day).add(Duration(hours: 8));
                 } catch (e) {
-                  print("Invalid Date Format for User: ${doc.id}");
+                  debugPrint("Invalid Date Format for User: ${doc.id}");
                   return false; // Skip users with invalid dates
                 }
               }
 
-              // ✅ If dob is valid, check the birth month & day
+              // If dob is valid, check the birth month & day
               if (dob != null) {
                 int birthMonth = dob.month;
 
-                print(
+                debugPrint(
                   "Converted Date: $dob, Birth Month: $birthMonth, Expected: $currentMonth",
                 );
 
@@ -72,7 +72,7 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
           .toList();
     });
 
-    print("Selected Users: $selectedUsers");
+    debugPrint("Selected Users: $selectedUsers");
   }
 
   /// Selects all users who registered after a given date
@@ -255,7 +255,7 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                         selectedDate != null) {
                       List<String> finalSelectedUsers = [];
 
-                      // ✅ If no users are selected, add all users
+                      // If no users are selected, add all users
                       if (selectedUsers.isEmpty) {
                         QuerySnapshot querySnapshot = await usersCollection
                             .get();
@@ -283,7 +283,7 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
                             "RWD${DateTime.now().millisecondsSinceEpoch}";
                         newReward['RewardID'] = newId;
 
-                        // ✅ Ensure selectedUsers list is actually stored
+                        // Ensure selectedUsers list is actually stored
                         if (selectedUsers.isNotEmpty) {
                           newReward['SelectedUsers'] = List<String>.from(
                             selectedUsers,
@@ -294,7 +294,7 @@ class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
 
                         rewardsCollection.doc(newId).set(newReward);
                       } else {
-                        // ✅ Update the reward with selectedUsers
+                        // Update the reward with selectedUsers
                         newReward['SelectedUsers'] = List<String>.from(
                           selectedUsers,
                         );

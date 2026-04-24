@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class EmergencyRequest {
   String requestID;
   String customerID;
-  GeoPoint location; // ✅ Store as GeoPoint in Firestore
-  String address; // ✅ Separate field to store the human-readable address
+  GeoPoint location; // Store as GeoPoint in Firestore
+  String address; // Separate field to store the human-readable address
   String bookingReason;
   String? imageUrl;
   String preferredTime;
@@ -17,8 +17,8 @@ class EmergencyRequest {
   EmergencyRequest({
     required this.requestID,
     required this.customerID,
-    required this.location, // ✅ GeoPoint for Firestore
-    required this.address, // ✅ String for UI display
+    required this.location, // GeoPoint for Firestore
+    required this.address, // String for UI display
     required this.bookingReason,
     this.imageUrl,
     required this.preferredTime,
@@ -29,33 +29,14 @@ class EmergencyRequest {
     this.chatID,
   });
 
-  /// 🔹 Convert to Firestore
-  Map<String, dynamic> toMap() {
-    return {
-      'requestID': requestID,
-      'CustomerID': customerID,
-      'location': location, // ✅ Store as GeoPoint
-      'address': address, // ✅ Store human-readable address
-      'bookingReason': bookingReason,
-      'imageUrl': imageUrl,
-      'preferredTime': preferredTime,
-      'status': status,
-      'driverID': driverID,
-      'eta': eta,
-      'kWhUsed': kWhUsed,
-      'chatID': chatID,
-    };
-  }
-
-  /// 🔹 Convert from Firestore
   factory EmergencyRequest.fromMap(Map<String, dynamic> map) {
     return EmergencyRequest(
       requestID: map['requestID'] ?? '',
       customerID: map['CustomerID'] ?? '',
       location: map['location'] is GeoPoint
           ? map['location'] as GeoPoint
-          : GeoPoint(0, 0), // ✅ Handle GeoPoint
-      address: map['address'] ?? '', // ✅ Readable address for UI
+          : GeoPoint(0, 0), // Handle GeoPoint
+      address: map['address'] ?? '', // Readable address for UI
       bookingReason: map['bookingReason'] ?? '',
       imageUrl: map['imageUrl'],
       preferredTime: map['preferredTime'] ?? '',
@@ -65,5 +46,22 @@ class EmergencyRequest {
       kWhUsed: (map['kWhUsed'] as num?)?.toDouble() ?? 0.0,
       chatID: map['chatID'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'requestID': requestID,
+      'CustomerID': customerID,
+      'location': location, // Store as GeoPoint
+      'address': address, // Store human-readable address
+      'bookingReason': bookingReason,
+      'imageUrl': imageUrl,
+      'preferredTime': preferredTime,
+      'status': status,
+      'driverID': driverID,
+      'eta': eta,
+      'kWhUsed': kWhUsed,
+      'chatID': chatID,
+    };
   }
 }

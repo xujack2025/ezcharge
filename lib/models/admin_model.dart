@@ -18,7 +18,6 @@ class AdminModel extends UserModel {
     required super.phone,
   });
 
-  // Convert Firestore document to AdminModel
   factory AdminModel.fromFirestore(Map<String, dynamic> data) {
     return AdminModel(
       id: data['AdminID']?.toString() ?? '',
@@ -32,7 +31,6 @@ class AdminModel extends UserModel {
     );
   }
 
-  // Convert AdminModel to Firestore document format
   Map<String, dynamic> toFirestore() {
     return {
       'AdminID': id,

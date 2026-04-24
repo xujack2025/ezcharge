@@ -281,6 +281,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
+  dlibphonenumber:
+    dependency: transitive
+    description:
+      name: dlibphonenumber
+      sha256: "0dfe6a48823a1624b00c4547ae3dbad53bec6e7fd6f5bc99e6e1d58cd2d37d18"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.61"
   equatable:
     dependency: transitive
     description:
@@ -864,6 +872,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.19.0"
+  intl_phone_number_input:
+    dependency: "direct main"
+    description:
+      name: intl_phone_number_input
+      sha256: "9d4d7f174cfc3a85b238e0b465ec0e7232fc0815a779e5a58fbf118dee26dfa0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.5"
   jni:
     dependency: transitive
     description:
@@ -1192,6 +1208,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.14.3"
+  protobuf:
+    dependency: transitive
+    description:
+      name: protobuf
+      sha256: "75ec242d22e950bdcc79ee38dd520ce4ee0bc491d7fadc4ea47694604d22bf06"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.0"
   provider:
     dependency: "direct main"
     description:

@@ -68,7 +68,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
     setState(() => isLoading = false);
   }
@@ -95,7 +95,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching reservation record: $e");
+      debugPrint("Error fetching reservation record: $e");
     }
   }
 
@@ -114,7 +114,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         setState(() {});
       }
     } catch (e) {
-      print("Error fetching station: $e");
+      debugPrint("Error fetching station: $e");
     }
   }
 
@@ -136,7 +136,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       // Trigger a rebuild to show the updated fields
       setState(() {});
     } catch (e) {
-      print("Error fetching charger: $e");
+      debugPrint("Error fetching charger: $e");
     }
   }
 

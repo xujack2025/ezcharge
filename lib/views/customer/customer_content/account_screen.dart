@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'package:ezcharge/views/auth/sign_in_screen.dart';
 import 'package:ezcharge/views/ezcharge/home_screen.dart';
 import 'package:ezcharge/views/customer/notification/notification_screen.dart';
 import 'package:ezcharge/views/customer/reward/reward_screen.dart';
@@ -16,7 +17,6 @@ import 'package:ezcharge/views/customer/customer_content/payment_history_list.da
 import 'package:ezcharge/views/customer/customer_content/payment_method_screen.dart';
 import 'package:ezcharge/views/customer/customer_content/pending_screen.dart';
 import 'package:ezcharge/views/customer/customer_content/top_up_screen.dart';
-import 'package:ezcharge/views/welcome/intro_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -65,7 +65,7 @@ class AccountScreenState extends State<AccountScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -87,7 +87,7 @@ class AccountScreenState extends State<AccountScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching authentication status: $e");
+      debugPrint("Error fetching authentication status: $e");
     }
   }
 
@@ -468,7 +468,7 @@ class AccountScreenState extends State<AccountScreen> {
     FirebaseAuth.instance.signOut();
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const IntroScreen()),
+      MaterialPageRoute(builder: (context) => const SignInScreen()),
     );
   }
 }

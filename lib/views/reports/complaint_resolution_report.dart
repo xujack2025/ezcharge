@@ -27,42 +27,42 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
   /// **Fetch the Current Admin's Name & ID using Phone Number**
   Future<void> _fetchAdminDetails() async {
     try {
-      // ✅ Get the currently logged-in user from Firebase Auth
+      // Get the currently logged-in user from Firebase Auth
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user == null || user.phoneNumber == null) {
-        print("❌ No admin is logged in or phone number is not available.");
+        debugPrint("❌ No admin is logged in or phone number is not available.");
         return;
       }
 
-      String phoneNumber = user.phoneNumber!; // ✅ Get phone number
+      String phoneNumber = user.phoneNumber!; // Get phone number
 
-      // ✅ Fetch admin details from Firestore using the phone number
+      // Fetch admin details from Firestore using the phone number
       final adminQuery = await FirebaseFirestore.instance
-          .collection('admins') // ✅ Ensure correct collection name
+          .collection('admins') // Ensure correct collection name
           .where(
             'PhoneNumber',
             isEqualTo: phoneNumber,
-          ) // ✅ Search by phone number
+          ) // Search by phone number
           .limit(1)
           .get();
 
       if (adminQuery.docs.isNotEmpty) {
         final adminData = adminQuery.docs.first.data();
 
-        print("✅ Admin Data Retrieved: $adminData"); // 🔹 Debugging output
+        debugPrint("Admin Data Retrieved: $adminData"); // 🔹 Debugging output
 
         if (mounted) {
           setState(() {
             adminNameAndID =
-                "${adminData['FirstName']} (#${adminData['AdminID']})"; // ✅ Corrected format
+                "${adminData['FirstName']} (#${adminData['AdminID']})"; // Corrected format
           });
         }
       } else {
-        print("❌ Admin data not found for phone number: $phoneNumber");
+        debugPrint("❌ Admin data not found for phone number: $phoneNumber");
       }
     } catch (e) {
-      print("❌ Error fetching admin details: $e");
+      debugPrint("❌ Error fetching admin details: $e");
     }
   }
 
@@ -92,7 +92,7 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
 
       await Printing.layoutPdf(onLayout: (format) async => pdf.save());
     } catch (e) {
-      print("❌ Report generation failed: $e");
+      debugPrint("❌ Report generation failed: $e");
     }
 
     setState(() => isLoading = false);
@@ -101,18 +101,18 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
   Future<String> _fetchCustomerName(String customerID) async {
     try {
       final customerSnapshot = await FirebaseFirestore.instance
-          .collection('customers') // ✅ Query the `customers` collection
+          .collection('customers') // Query the `customers` collection
           .doc(customerID)
           .get();
 
       if (customerSnapshot.exists) {
         return customerSnapshot.data()?['FirstName'] ??
-            "Unknown User"; // ✅ Get correct userName
+            "Unknown User"; // Get correct userName
       } else {
         return "Unknown User";
       }
     } catch (e) {
-      print("❌ Error fetching userName for Customer ID $customerID: $e");
+      debugPrint("❌ Error fetching userName for Customer ID $customerID: $e");
       return "Unknown User";
     }
   }
@@ -124,7 +124,7 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
         .where(
           "status",
           whereIn: ["Resolved", "Pending", "In Progress"],
-        ) // ✅ Include 'status' to match the index
+        ) // Include 'status' to match the index
         .where(
           "ComplaintDate",
           isGreaterThanOrEqualTo: Timestamp.fromDate(
@@ -137,7 +137,7 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
             adjustedEndDate /*.subtract(const Duration(hours: 8))*/,
           ),
         )
-        .orderBy("ComplaintDate", descending: true) // ✅ Must match index order
+        .orderBy("ComplaintDate", descending: true) // Must match index order
         .get();
 
     List<Map<String, dynamic>> complaints = [];
@@ -145,7 +145,7 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
     for (var doc in snapshot.docs) {
       var data = doc.data();
       String customerID =
-          doc.reference.parent.parent!.id; // ✅ Get customer ID from Firestore
+          doc.reference.parent.parent!.id; // Get customer ID from Firestore
 
       DateTime submittedAt = (data['ComplaintDate'] as Timestamp).toDate();
       /*.add(const Duration(hours: 8));*/
@@ -155,13 +155,13 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
           : null;
       Duration? resolutionTime = resolvedAt?.difference(submittedAt);
 
-      // ✅ Fetch userName from the corresponding `customers` document
+      // Fetch userName from the corresponding `customers` document
       String userName = await _fetchCustomerName(customerID);
 
       complaints.add({
-        "complaintID": doc.id, // ✅ Complaint ID
-        "customerID": customerID, // ✅ Store Customer ID
-        "userName": userName, // ✅ Now retrieved from `customers` collection
+        "complaintID": doc.id, // Complaint ID
+        "customerID": customerID, // Store Customer ID
+        "userName": userName, // Now retrieved from `customers` collection
         "issueType": data['Reason'] ?? "N/A",
         "status": data['status'] ?? "Pending",
         "submittedAt": submittedAt,

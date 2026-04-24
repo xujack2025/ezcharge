@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:ezcharge/models/charging_bay_model.dart';
@@ -34,7 +35,7 @@ class ChargingStationViewModel {
     });
   }
 
-  // ✅ Real-time Fetch Charging Bays (Uses Stream)
+  // Real-time Fetch Charging Bays (Uses Stream)
   Stream<List<ChargingBay>> fetchChargingBaysStream(String stationID) {
     return _firestore
         .collection('station')
@@ -48,7 +49,7 @@ class ChargingStationViewModel {
         );
   }
 
-  // ✅ Create Charging Station (Capacity Initially 0, Occupied Bays 0)
+  // Create Charging Station (Capacity Initially 0, Occupied Bays 0)
   Future<void> createChargingStation({
     required String stationName,
     required String description,
@@ -80,13 +81,13 @@ class ChargingStationViewModel {
         "ImageUrl": imageUrl,
       });
     } catch (e) {
-      print("Error adding charging station: $e");
+      debugPrint("Error adding charging station: $e");
     }
   }
 
   Future<String> generateNewStationID() async {
     try {
-      // ✅ Query Firestore to get the latest station ID
+      // Query Firestore to get the latest station ID
       QuerySnapshot snapshot = await _firestore
           .collection('station')
           .orderBy('StationID', descending: true)
@@ -94,23 +95,23 @@ class ChargingStationViewModel {
           .get();
 
       if (snapshot.docs.isEmpty) {
-        return "STT100001"; // ✅ First station ID if no records exist
+        return "STT100001"; // First station ID if no records exist
       }
 
-      // ✅ Extract the latest ID
+      // Extract the latest ID
       String lastID = snapshot.docs.first['StationID']; // Example: "STT100010"
       int lastNumber = int.parse(lastID.substring(3)); // Extracts "100010"
       int newNumber = lastNumber + 1; // Increment by 1
 
-      // ✅ Format new ID (STT100011)
+      // Format new ID (STT100011)
       return "STT${newNumber.toString().padLeft(6, '0')}";
     } catch (e) {
-      print("Error generating new StationID: $e");
+      debugPrint("Error generating new StationID: $e");
       return "STT100001"; // Fallback if an error occurs
     }
   }
 
-  // ✅ Update Charging Station Details
+  // Update Charging Station Details
   Future<void> updateChargingStation({
     required String stationID,
     required String stationName,
@@ -142,20 +143,20 @@ class ChargingStationViewModel {
 
       await _firestore.collection('station').doc(stationID).update(updatedData);
     } catch (e) {
-      print("Error updating charging station: $e");
+      debugPrint("Error updating charging station: $e");
     }
   }
 
-  // ✅ Delete Charging Station
+  // Delete Charging Station
   Future<void> deleteChargingStation(String stationID) async {
     try {
       await _firestore.collection('station').doc(stationID).delete();
     } catch (e) {
-      print("Error deleting charging station: $e");
+      debugPrint("Error deleting charging station: $e");
     }
   }
 
-  // ✅ Fetch Charging Bays with Detailed Data
+  // Fetch Charging Bays with Detailed Data
   Future<List<ChargingBay>> fetchChargingBays(String stationID) async {
     try {
       QuerySnapshot snapshot = await _firestore
@@ -165,19 +166,19 @@ class ChargingStationViewModel {
           .get();
 
       for (var doc in snapshot.docs) {
-        print("🔍 Raw Firestore Data: ${doc.data()}"); // ✅ Debugging line
+        debugPrint("🔍 Raw Firestore Data: ${doc.data()}"); // Debugging line
       }
 
       return snapshot.docs
           .map((doc) => ChargingBay.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print("❌ Error fetching charging bays: $e");
+      debugPrint("❌ Error fetching charging bays: $e");
       return [];
     }
   }
 
-  // ✅ Add Charging Bay with Full Details
+  // Add Charging Bay with Full Details
   Future<void> addChargingBay(String stationID, ChargingBay bay) async {
     try {
       await _firestore
@@ -187,16 +188,16 @@ class ChargingStationViewModel {
           .doc(bay.chargerID)
           .set({
             ...bay.toMap(),
-            "Status": "Available", // ✅ Ensure "status" field exists
-          }, SetOptions(merge: true)); // ✅ Merge to prevent overwriting
+            "Status": "Available", // Ensure "status" field exists
+          }, SetOptions(merge: true)); // Merge to prevent overwriting
 
-      await updateCapacity(stationID); // ✅ Update capacity after adding bay
+      await updateCapacity(stationID); // Update capacity after adding bay
     } catch (e) {
-      print("❌ Error adding charging bay: $e");
+      debugPrint("❌ Error adding charging bay: $e");
     }
   }
 
-  // ✅ Update Charging Bay Details
+  // Update Charging Bay Details
   Future<void> updateChargingBay(String stationID, ChargingBay bay) async {
     try {
       await _firestore
@@ -206,11 +207,11 @@ class ChargingStationViewModel {
           .doc(bay.chargerID)
           .update(bay.toMap());
     } catch (e) {
-      print("Error updating charging bay: $e");
+      debugPrint("Error updating charging bay: $e");
     }
   }
 
-  // ✅ Delete Charging Bay
+  // Delete Charging Bay
   Future<void> deleteChargingBay(String stationID, String chargerID) async {
     try {
       await _firestore
@@ -222,11 +223,11 @@ class ChargingStationViewModel {
 
       await updateCapacity(stationID); // Update Capacity Automatically
     } catch (e) {
-      print("Error deleting charging bay: $e");
+      debugPrint("Error deleting charging bay: $e");
     }
   }
 
-  // ✅ Pick Image from Gallery or Camera
+  // Pick Image from Gallery or Camera
   Future<File?> pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(
@@ -249,35 +250,35 @@ class ChargingStationViewModel {
         return doc['ImageUrl'];
       }
     } catch (e) {
-      print("Error fetching station image: $e");
+      debugPrint("Error fetching station image: $e");
     }
     return null;
   }
 
-  // ✅ Upload Image to Firebase Storage and Get URL
+  // Upload Image to Firebase Storage and Get URL
   Future<String?> uploadImage(File imageFile, String stationID) async {
     try {
       Reference ref = _storage.ref().child(
         'charging_stations/$stationID.jpg',
-      ); // ✅ Correct path
+      ); // Correct path
       UploadTask uploadTask = ref.putFile(imageFile);
 
       TaskSnapshot snapshot = await uploadTask.whenComplete(() => {});
 
       if (snapshot.state == TaskState.success) {
-        // ✅ Ensure upload is successful
-        return await snapshot.ref.getDownloadURL(); // ✅ Get image URL
+        // Ensure upload is successful
+        return await snapshot.ref.getDownloadURL(); // Get image URL
       } else {
-        print("Image upload failed");
+        debugPrint("Image upload failed");
         return null;
       }
     } catch (e) {
-      print("Error uploading image: $e");
+      debugPrint("Error uploading image: $e");
       return null;
     }
   }
 
-  // ✅ Auto Update Capacity, Occupied Bays & Capacity Status
+  // Auto Update Capacity, Occupied Bays & Capacity Status
   Future<void> updateCapacity(String stationID) async {
     try {
       QuerySnapshot chargerSnapshot = await _firestore
@@ -288,13 +289,13 @@ class ChargingStationViewModel {
 
       int totalBays = chargerSnapshot.docs.length;
 
-      // ✅ Count occupied bays based on "status"
+      // Count occupied bays based on "status"
       int occupiedBays = chargerSnapshot.docs.where((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         return data.containsKey("Status") && data["Status"] == "Occupied";
       }).length;
 
-      // ✅ Determine Capacity Status
+      // Determine Capacity Status
       String capacityStatus;
       if (occupiedBays == totalBays && totalBays > 0) {
         capacityStatus = "Overloaded";
@@ -306,18 +307,18 @@ class ChargingStationViewModel {
         capacityStatus = "Optimal";
       }
 
-      // ✅ Update Firestore Document
+      // Update Firestore Document
       await _firestore.collection('station').doc(stationID).update({
         "Capacity": totalBays,
         "OccupiedBays": occupiedBays,
         "CapacityStatus": capacityStatus,
       });
 
-      print(
-        "✅ Updated Station $stationID → Capacity: $totalBays, Occupied: $occupiedBays, Status: $capacityStatus",
+      debugPrint(
+        "Updated Station $stationID → Capacity: $totalBays, Occupied: $occupiedBays, Status: $capacityStatus",
       );
     } catch (e) {
-      print("❌ Error updating capacity: $e");
+      debugPrint("❌ Error updating capacity: $e");
     }
   }
 }

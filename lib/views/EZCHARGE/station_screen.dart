@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:ezcharge/core/utils/map_utils.dart';
 import 'package:ezcharge/views/customer/rating/customer_complaint.dart';
 import 'package:ezcharge/views/customer/rating/customer_review.dart';
 import 'package:ezcharge/views/ezcharge/reservation_screen.dart';
-import 'package:ezcharge/core/utils/map_utils.dart';
 
 class StationScreen extends StatefulWidget {
   final String stationId;
@@ -82,13 +82,10 @@ class _StationScreenState extends State<StationScreen> {
         .snapshots()
         .listen((snapshot) {
           if (snapshot.docs.isEmpty) {
-            // ✅ If no data, ensure the first hour has a minimum bar
+            // If no data, ensure the first hour has a minimum bar
             setState(() {
-              busyTimes = List.filled(
-                24,
-                0.2,
-              ); // ✅ Set at least 0.2 for all bars
-              trafficStatus = "No data available"; // ✅ Display message
+              busyTimes = List.filled(24, 0.2); // Set at least 0.2 for all bars
+              trafficStatus = "No data available"; // Display message
             });
             return;
           }
@@ -98,7 +95,7 @@ class _StationScreenState extends State<StationScreen> {
           for (var doc in snapshot.docs) {
             Map<String, dynamic> data = doc.data();
 
-            // ✅ Convert Firestore timestamp to UTC+8
+            // Convert Firestore timestamp to UTC+8
             DateTime checkInTime = (data['CheckInTime'] as Timestamp)
                 .toDate() /*.toUtc()*/;
             /*.add(Duration(hours: 8));*/
@@ -111,13 +108,13 @@ class _StationScreenState extends State<StationScreen> {
           double totalUsage = hourlyUsage.reduce((a, b) => a + b);
           double avgUsage = totalUsage > 0
               ? totalUsage / 24
-              : 0; // ✅ Prevent division by zero
+              : 0; // Prevent division by zero
 
-          // ✅ Ensure at least 0.2 height for all bars (so they are visible)
+          // Ensure at least 0.2 height for all bars (so they are visible)
           setState(() {
             busyTimes = maxUsage > 0
                 ? hourlyUsage.map((val) => (val / maxUsage) * 10).toList()
-                : List.filled(24, 0.2); // ✅ Minimum bar height
+                : List.filled(24, 0.2); // Minimum bar height
             trafficStatus = totalUsage == 0
                 ? "No data available"
                 : (hourlyUsage[currentHour] >= avgUsage * 1.2
@@ -153,7 +150,7 @@ class _StationScreenState extends State<StationScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -174,7 +171,7 @@ class _StationScreenState extends State<StationScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching authentication status: $e");
+      debugPrint("Error fetching authentication status: $e");
     }
   }
 
@@ -193,7 +190,7 @@ class _StationScreenState extends State<StationScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching reservation status: $e");
+      debugPrint("Error fetching reservation status: $e");
     }
   }
 
@@ -219,13 +216,13 @@ class _StationScreenState extends State<StationScreen> {
           .collection("Charger")
           .get();
 
-      int availableChargers = 0; // ✅ Count available chargers
+      int availableChargers = 0; // Count available chargers
 
       chargerList = querySnapshot.docs.map((doc) {
         var data = doc.data() as Map<String, dynamic>;
         bool isAvailable = data["Status"] == "Available";
 
-        if (isAvailable) availableChargers++; // ✅ Count only available chargers
+        if (isAvailable) availableChargers++; // Count only available chargers
 
         return {
           "bay": data["ChargerName"] ?? "Unknown Bay",
@@ -251,7 +248,7 @@ class _StationScreenState extends State<StationScreen> {
         isLoading = false;
       });
     } catch (e) {
-      print("Error fetching station details: $e");
+      debugPrint("Error fetching station details: $e");
       setState(() => isLoading = false);
     }
   }
@@ -712,7 +709,7 @@ class _StationScreenState extends State<StationScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ✅ Title
+            // Title
             const Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -728,7 +725,7 @@ class _StationScreenState extends State<StationScreen> {
             ),
             const SizedBox(height: 4),
 
-            // ✅ Current Time Subtitle (Dynamic)
+            // Current Time Subtitle (Dynamic)
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -749,10 +746,10 @@ class _StationScreenState extends State<StationScreen> {
             ),
             const SizedBox(height: 12),
 
-            // ✅ Centered Chart inside Scrollable View
+            // Centered Chart inside Scrollable View
             SizedBox(
-              width: double.infinity, // ✅ Makes the chart fit the screen
-              height: 150, // ✅ Fixed height
+              width: double.infinity, // Makes the chart fit the screen
+              height: 150, // Fixed height
               child: BarChart(
                 BarChartData(
                   maxY: 15,
@@ -776,7 +773,7 @@ class _StationScreenState extends State<StationScreen> {
                           int hour24 = value
                               .toInt(); // Convert to integer hour (0-23)
 
-                          // ✅ Convert 24-hour format to 12-hour format
+                          // Convert 24-hour format to 12-hour format
                           String hourLabel;
                           if (hour24 == 0) {
                             hourLabel = "12 AM";
@@ -788,7 +785,7 @@ class _StationScreenState extends State<StationScreen> {
                             hourLabel = "${hour24 - 12} PM";
                           }
 
-                          // ✅ Show labels for every 4 hours + last hour (11 PM)
+                          // Show labels for every 4 hours + last hour (11 PM)
                           if (hour24 % 4 == 0 || hour24 == 23) {
                             return Column(
                               children: [
@@ -839,18 +836,18 @@ class _StationScreenState extends State<StationScreen> {
     );
   }
 
-  /// ✅ Generate Bar Chart Data
+  /// Generate Bar Chart Data
   List<BarChartGroupData> _getBarChartData() {
     return List.generate(busyTimes.length, (index) {
       double barHeight = busyTimes[index] > 0
           ? busyTimes[index]
-          : 0.2; // ✅ Ensure visible bars
+          : 0.2; // Ensure visible bars
 
       return BarChartGroupData(
         x: index,
         barRods: [
           BarChartRodData(
-            toY: barHeight, // ✅ Prevent zero-height bars
+            toY: barHeight, // Prevent zero-height bars
             width: 13,
             borderRadius: BorderRadius.circular(3),
             color: index == currentHour
@@ -867,20 +864,19 @@ class _StationScreenState extends State<StationScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start, // ✅ Ensures left alignment
+        crossAxisAlignment: CrossAxisAlignment.start, // Ensures left alignment
         children: [
           const Text(
             "Location Info",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.left, // ✅ Explicitly aligns text left
+            textAlign: TextAlign.left, // Explicitly aligns text left
           ),
           const SizedBox(height: 10),
           Text(
             stationData?["Location"] ??
-                "Location not available", // ✅ Fixes data fetch
+                "Location not available", // Fixes data fetch
             style: const TextStyle(fontSize: 12),
-            textAlign: TextAlign.left, // ✅ Ensures text aligns left
+            textAlign: TextAlign.left, // Ensures text aligns left
           ),
         ],
       ),
@@ -891,7 +887,7 @@ class _StationScreenState extends State<StationScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // ✅ Left Align
+        crossAxisAlignment: CrossAxisAlignment.start, // Left Align
         children: [
           const Text(
             "Operation",
@@ -900,14 +896,14 @@ class _StationScreenState extends State<StationScreen> {
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment:
-                MainAxisAlignment.spaceBetween, // ✅ Space Between Boxes
+                MainAxisAlignment.spaceBetween, // Space Between Boxes
             children: [
               // 🔹 Operation Hours Box
               _buildInfoBox("Operation Hour", "24 Hours"),
 
               // 🔹 24-hour Hotline Box (Tap to Call)
               GestureDetector(
-                onTap: () => launch('tel: +03-123456789'), // ✅ Call when tapped
+                onTap: () => launch('tel: +03-123456789'), // Call when tapped
                 child: _buildInfoBox("24-hours Hotline", "03-123456789"),
               ),
             ],
@@ -1015,7 +1011,7 @@ class _StationScreenState extends State<StationScreen> {
                   MapUtils.openMap(lat, lng);
                 } else {
                   // Handle the error case if lat or lng couldn't be parsed
-                  print("Error: Could not parse latitude/longitude");
+                  debugPrint("Error: Could not parse latitude/longitude");
                 }
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),

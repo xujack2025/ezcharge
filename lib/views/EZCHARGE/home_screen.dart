@@ -7,14 +7,14 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart'; // Import package for date formatting
 import 'package:location/location.dart';
 
+import 'package:ezcharge/views/customer/customer_content/account_screen.dart';
 import 'package:ezcharge/views/customer/notification/notification_screen.dart';
 import 'package:ezcharge/views/customer/reward/reward_screen.dart';
-import 'package:ezcharge/views/customer/customer_content/account_screen.dart';
+import 'package:ezcharge/views/ezcharge/book_a_charge_screen.dart';
 import 'package:ezcharge/views/ezcharge/check_in_screen.dart';
 import 'package:ezcharge/views/ezcharge/filter_screen.dart';
 import 'package:ezcharge/views/ezcharge/reservation_screen.dart';
 import 'package:ezcharge/views/ezcharge/station_screen.dart';
-import 'package:ezcharge/views/ezcharge/book_a_charge_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -114,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print("Error fetching stations: $e");
+      debugPrint("Error fetching stations: $e");
       setState(() => _isLoading = false);
     }
   }
@@ -212,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     } catch (e) {
-      print(" Error fetching customer data: $e");
+      debugPrint(" Error fetching customer data: $e");
     }
   }
 
@@ -233,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching authentication status: $e");
+      debugPrint("Error fetching authentication status: $e");
     }
   }
 
@@ -252,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching reservation status: $e");
+      debugPrint("Error fetching reservation status: $e");
     }
   }
 
@@ -303,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!serviceEnabled) {
         serviceEnabled = await _location.requestService();
         if (!serviceEnabled) {
-          print("Location services are disabled.");
+          debugPrint("Location services are disabled.");
           return;
         }
       }
@@ -313,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (permissionGranted == PermissionStatus.denied) {
         permissionGranted = await _location.requestPermission();
         if (permissionGranted != PermissionStatus.granted) {
-          print("Location permission denied.");
+          debugPrint("Location permission denied.");
           return;
         }
       }
@@ -335,7 +335,7 @@ class _HomeScreenState extends State<HomeScreen> {
         CameraUpdate.newLatLngZoom(_currentLocation, 14),
       );
     } catch (e) {
-      print("Error getting location: $e");
+      debugPrint("Error getting location: $e");
     }
   }
 
@@ -549,7 +549,7 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             }
           } catch (e) {
-            print("Error checking bookmark: $e");
+            debugPrint("Error checking bookmark: $e");
           }
         }
 
@@ -603,7 +603,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }
           } catch (e) {
-            print("Error toggling bookmark: $e");
+            debugPrint("Error toggling bookmark: $e");
           }
         }
 

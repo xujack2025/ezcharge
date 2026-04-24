@@ -48,7 +48,7 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
     setState(() => isLoading = false);
   }

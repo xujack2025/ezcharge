@@ -34,7 +34,7 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
         .snapshots() // Real-time listener
         .listen((snapshot) {
           if (snapshot.docChanges.isNotEmpty) {
-            print("📢 Charger Status Updated! Auto-updating capacity...");
+            debugPrint("📢 Charger Status Updated! Auto-updating capacity...");
             _chargingStationViewModel.updateCapacity(
               widget.stationID,
             ); // Auto-run updateCapacity()
@@ -65,7 +65,7 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
 
       return "CRR${newNumber.toString().padLeft(5, '0')}"; // Format: CRR00011
     } catch (e) {
-      print("Error generating ChargerID: $e");
+      debugPrint("Error generating ChargerID: $e");
       return "CRR00001"; // Fallback
     }
   }

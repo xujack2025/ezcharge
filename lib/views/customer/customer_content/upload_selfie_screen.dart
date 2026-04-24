@@ -51,7 +51,7 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -110,7 +110,7 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
 
       // Track upload progress
       uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-        print(
+        debugPrint(
           "Uploading: ${snapshot.bytesTransferred} / ${snapshot.totalBytes}",
         );
       });
@@ -127,7 +127,7 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
     } catch (error) {
       Navigator.pop(context); // Close Loading Dialog
       _showErrorDialog("Failed to upload image. Please try again.");
-      print("Upload error: $error");
+      debugPrint("Upload error: $error");
     }
   }
 

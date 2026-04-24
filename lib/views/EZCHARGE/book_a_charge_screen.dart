@@ -7,12 +7,12 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/models/emergency_request_model.dart';
-import 'package:ezcharge/views/customer/notification/notification_screen.dart';
-import 'package:ezcharge/views/customer/reward/reward_screen.dart';
 import 'package:ezcharge/views/customer/customer_content/account_screen.dart';
 import 'package:ezcharge/views/customer/emergency_request/emergency_request_view.dart';
 import 'package:ezcharge/views/customer/emergency_request/request_history.dart';
 import 'package:ezcharge/views/customer/emergency_request/tracking_view.dart';
+import 'package:ezcharge/views/customer/notification/notification_screen.dart';
+import 'package:ezcharge/views/customer/reward/reward_screen.dart';
 import 'package:ezcharge/views/ezcharge/check_in_screen.dart';
 import 'package:ezcharge/views/ezcharge/home_screen.dart';
 
@@ -49,7 +49,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
 
     String? customerID = FirebaseAuth.instance.currentUser?.uid;
     if (customerID != null) {
-      _checkActiveRequest(); // ✅ Use the real customerID dynamically
+      _checkActiveRequest(); // Use the real customerID dynamically
     }
 
     _loadImage();
@@ -60,7 +60,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
     _controller.dispose();
     super.dispose();
     _requestSubscription
-        ?.cancel(); // ✅ Prevent memory leaks when widget is disposed
+        ?.cancel(); // Prevent memory leaks when widget is disposed
     super.dispose();
   }
 
@@ -70,20 +70,20 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
           .ref("images/power_bank.png") // Ensure this is the correct path
           .getDownloadURL();
 
-      print("✅ New Image URL: $url"); // Print the URL for debugging
+      debugPrint("New Image URL: $url"); // Print the URL for debugging
 
       setState(() {
         imageUrl = url;
       });
     } catch (e) {
-      print("❌ Error loading image: $e");
+      debugPrint("❌ Error loading image: $e");
     }
   }
 
   void _checkActiveRequest() {
     String? phoneNumber = FirebaseAuth.instance.currentUser?.phoneNumber;
     if (phoneNumber == null) {
-      print("❌ No phone number found for user.");
+      debugPrint("❌ No phone number found for user.");
       return;
     }
 
@@ -94,15 +94,15 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
         .snapshots() // 🔹 Listen for real-time changes
         .listen((customerQuery) {
           if (customerQuery.docs.isEmpty) {
-            print("❌ No customer found with this phone number.");
+            debugPrint("❌ No customer found with this phone number.");
             return;
           }
 
-          // ✅ Extract CustomerID
+          // Extract CustomerID
           String customerID = customerQuery.docs.first['CustomerID'];
-          print("✅ Found CustomerID: $customerID");
+          debugPrint("Found CustomerID: $customerID");
 
-          // ✅ Listen for active requests in real-time
+          // Listen for active requests in real-time
           FirebaseFirestore.instance
               .collection('emergency_requests')
               .where('CustomerID', isEqualTo: customerID)
@@ -120,11 +120,13 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
               .snapshots() // 🔹 Real-time listener for request updates
               .listen((activeRequests) {
                 if (activeRequests.docs.isNotEmpty) {
-                  // ✅ Extract active request ID
+                  // Extract active request ID
                   String fetchedRequestID = activeRequests.docs.first.id;
-                  print("🔄 Request Updated! New requestID: $fetchedRequestID");
+                  debugPrint(
+                    "🔄 Request Updated! New requestID: $fetchedRequestID",
+                  );
 
-                  // ✅ Update state with the new request in real-time
+                  // Update state with the new request in real-time
                   if (mounted) {
                     setState(() {
                       activeRequestExists = true;
@@ -133,7 +135,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
                     });
                   }
                 } else {
-                  print("✅ No active request found.");
+                  debugPrint("No active request found.");
                   if (mounted) {
                     setState(() {
                       activeRequestExists = false;
@@ -147,42 +149,42 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
   }
 
   Future<void> navigateToTrackingView(String requestID) async {
-    print("🔍 Fetching driverID for request: $requestID");
+    debugPrint("🔍 Fetching driverID for request: $requestID");
 
     try {
-      // ✅ Fetch the request document from Firestore
+      // Fetch the request document from Firestore
       DocumentSnapshot requestSnapshot = await FirebaseFirestore.instance
           .collection('emergency_requests')
           .doc(requestID)
           .get();
 
       if (!requestSnapshot.exists) {
-        print("❌ Error: Request not found in Firestore.");
+        debugPrint("❌ Error: Request not found in Firestore.");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Request not found. Please try again.")),
         );
         return;
       }
 
-      // ✅ Extract request data
+      // Extract request data
       Map<String, dynamic> requestData =
           requestSnapshot.data() as Map<String, dynamic>;
 
-      // ✅ Ensure `driverID` exists in Firestore
+      // Ensure `driverID` exists in Firestore
       String driverID = requestData.containsKey('driverID')
           ? requestData['driverID'] ?? "Unknown"
           : "Unknown";
 
-      print("✅ Retrieved driverID: $driverID");
+      debugPrint("Retrieved driverID: $driverID");
 
       // 🔹 If `driverID` is still unknown, listen for updates
       if (driverID == "Unknown" || driverID.isEmpty) {
-        print("⏳ Waiting for driver assignment...");
+        debugPrint("⏳ Waiting for driver assignment...");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Waiting for driver assignment...")),
         );
 
-        // ✅ Listen for real-time updates
+        // Listen for real-time updates
         FirebaseFirestore.instance
             .collection('emergency_requests')
             .doc(requestID)
@@ -197,7 +199,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
 
                 if (updatedDriverID != "Unknown" &&
                     updatedDriverID.isNotEmpty) {
-                  print("✅ Driver assigned: $updatedDriverID");
+                  debugPrint("Driver assigned: $updatedDriverID");
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -211,10 +213,10 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
               }
             });
 
-        return; // ✅ Prevents immediate navigation when driver is missing
+        return; // Prevents immediate navigation when driver is missing
       }
 
-      // ✅ Navigate immediately if driver is already assigned
+      // Navigate immediately if driver is already assigned
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -223,7 +225,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
         ),
       );
     } catch (e) {
-      print("❌ Error fetching request details: $e");
+      debugPrint("❌ Error fetching request details: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error fetching request details.")),
       );
@@ -236,22 +238,22 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          /// ✅ Background Image Instead of Google Maps
+          /// Background Image Instead of Google Maps
           Positioned.fill(
             child: CachedNetworkImage(
               imageUrl: imageUrl ?? "",
-              // ✅ Avoids null error
+              // Avoids null error
               fit: BoxFit.contain,
               placeholder: (context, url) =>
                   const Center(child: CircularProgressIndicator()),
-              // ✅ Loading indicator
+              // Loading indicator
               errorWidget: (context, url, error) => const Center(
                 child: Icon(Icons.error, color: Colors.red, size: 50),
-              ), // ✅ Shows error icon if image fails to load
+              ), // Shows error icon if image fails to load
             ),
           ),
 
-          /// ✅ Dark Overlay for Better Contrast
+          /// Dark Overlay for Better Contrast
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -264,7 +266,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
             ),
           ),
 
-          /// ✅ EZCHARGE Title
+          /// EZCHARGE Title
           Positioned(
             top: 0,
             left: 0,
@@ -291,7 +293,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
             ),
           ),
 
-          // ✅ Top Navigation Buttons
+          // Top Navigation Buttons
           Positioned(
             top: 80,
             left: 20,
@@ -336,7 +338,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
             ),
           ),
 
-          /// ✅ Track Request Icon Button (Top-Right)
+          /// Track Request Icon Button (Top-Right)
           Positioned(
             top: 240,
             right: 20,
@@ -369,7 +371,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
                         }
 
                         if (requestID == null || requestID!.isEmpty) {
-                          print("❌ Error: Request ID is missing.");
+                          debugPrint("❌ Error: Request ID is missing.");
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Request ID is missing."),
@@ -403,7 +405,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
             ),
           ),
 
-          /// ✅ Request History Button (Below "Track Request")
+          /// Request History Button (Below "Track Request")
           Positioned(
             top: 300,
             right: 20,
@@ -433,7 +435,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
             ),
           ),
 
-          /// ✅ Informative Text for Users
+          /// Informative Text for Users
           const Positioned(
             bottom: 180, // Position above the "BOOK A CHARGE" button
             left: 20,
@@ -461,7 +463,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
             ),
           ),
 
-          /// ✅ Book a Charge Button
+          /// Book a Charge Button
           Positioned(
             bottom: 100,
             left: 20,
@@ -492,7 +494,7 @@ class _BookAChargeScreenState extends State<BookAChargeScreen>
             ),
           ),
 
-          /// ✅ Bottom Navigation Bar
+          /// Bottom Navigation Bar
           _buildBottomNavBar(context),
         ],
       ),

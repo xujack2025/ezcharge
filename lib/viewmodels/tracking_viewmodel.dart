@@ -13,12 +13,12 @@ class TrackingViewModel extends ChangeNotifier {
   LatLng? customerLocation;
   int estimatedTime = 0;
 
-  /// ✅ Stream to Track Driver's Live Location
+  /// Stream to Track Driver's Live Location
   Stream<DocumentSnapshot> trackDriverLocation(String driverID) {
     return _firestore.collection('drivers').doc(driverID).snapshots();
   }
 
-  /// ✅ Extracts Driver Location from Firestore (Handles GeoPoint)
+  /// Extracts Driver Location from Firestore (Handles GeoPoint)
   LatLng? parseDriverLocation(DocumentSnapshot snapshot) {
     if (snapshot.exists && snapshot.data() != null) {
       final Map<String, dynamic> driverData =
@@ -34,7 +34,7 @@ class TrackingViewModel extends ChangeNotifier {
     return null;
   }
 
-  /// ✅ Stream to Get Tracking Info (Customer Request)
+  /// Stream to Get Tracking Info (Customer Request)
   Stream<DocumentSnapshot> getTrackingInfo(String requestID) {
     return _firestore
         .collection('emergency_requests')
@@ -42,7 +42,7 @@ class TrackingViewModel extends ChangeNotifier {
         .snapshots();
   }
 
-  /// ✅ Convert Address to LatLng Using Google Geocoding API
+  /// Convert Address to LatLng Using Google Geocoding API
   Future<LatLng?> convertAddressToLatLng(String address) async {
     final String url =
         "https://maps.googleapis.com/maps/api/geocode/json?address=${Uri.encodeComponent(address)}&key=${Secrets.googleMapsApiKey}";
@@ -56,11 +56,11 @@ class TrackingViewModel extends ChangeNotifier {
           double lng = data["results"][0]["geometry"]["location"]["lng"];
           return LatLng(lat, lng);
         } else {
-          print("❌ Geocoding API Error: ${data["status"]}");
+          debugPrint("❌ Geocoding API Error: ${data["status"]}");
         }
       }
     } catch (e) {
-      print("❌ Error fetching LatLng: $e");
+      debugPrint("❌ Error fetching LatLng: $e");
     }
     return null;
   }

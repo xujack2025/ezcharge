@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
+import 'package:ezcharge/core/constants/colors.dart';
 import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
 import 'package:ezcharge/viewmodels/emergency_request_viewmodel.dart';
 import 'package:ezcharge/viewmodels/tracking_viewmodel.dart';
 import 'package:ezcharge/views/auth/sign_in_screen.dart';
 // ignore: unused_import
-import 'package:ezcharge/views/auth/Intro_screen.dart';
+import 'package:ezcharge/views/welcome/intro_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,7 +39,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'EzCharge',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.textBlue,
+          primary: AppColors.textBlue,
+        ),
+      ),
       // home: IntroScreen(),
       home: SignInScreen(),
     );

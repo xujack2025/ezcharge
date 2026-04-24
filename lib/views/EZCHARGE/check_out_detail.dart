@@ -136,7 +136,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
     setState(() {
       isLoading = false;
@@ -164,7 +164,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
         await _fetchCharger();
       }
     } catch (e) {
-      print("Error fetching reservation record: $e");
+      debugPrint("Error fetching reservation record: $e");
     }
   }
 
@@ -181,7 +181,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
         _stationName = doc["StationName"] ?? "";
       }
     } catch (e) {
-      print("Error fetching station: $e");
+      debugPrint("Error fetching station: $e");
     }
   }
 
@@ -204,7 +204,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
         _currentType = doc["CurrentType"] ?? "";
       }
     } catch (e) {
-      print("Error fetching charger: $e");
+      debugPrint("Error fetching charger: $e");
     }
   }
 
@@ -282,7 +282,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
         context,
       ).showSnackBar(const SnackBar(content: Text("Check-out successful!")));
     } catch (e) {
-      print("Error creating attendance record: $e");
+      debugPrint("Error creating attendance record: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Check-out failed. Try again!")),
       );
@@ -437,7 +437,9 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
                                         ),
                                       );
                                     } catch (error) {
-                                      print("Error during checkout: $error");
+                                      debugPrint(
+                                        "Error during checkout: $error",
+                                      );
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(

@@ -47,7 +47,7 @@ class _ChatbotscreenState extends State<Chatbotscreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -103,7 +103,7 @@ class _ChatbotscreenState extends State<Chatbotscreen> {
 
       return reply;
     } catch (e) {
-      print("Error fetching chatbot response: $e");
+      debugPrint("Error fetching chatbot response: $e");
       return "I can't understand your question";
     }
   }

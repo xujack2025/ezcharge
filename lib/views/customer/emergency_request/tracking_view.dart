@@ -8,10 +8,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
+import 'package:ezcharge/secrets.dart';
 import 'package:ezcharge/viewmodels/tracking_viewmodel.dart';
 import 'package:ezcharge/views/ezcharge/book_a_charge_screen.dart';
 import 'package:ezcharge/views/customer/emergency_request/request_payment.dart';
-import 'package:ezcharge/secrets.dart';
 
 class TrackingView extends StatefulWidget {
   final String driverID;
@@ -47,7 +47,7 @@ class TrackingViewState extends State<TrackingView> {
     super.initState();
 
     if (widget.driverID.isEmpty || widget.requestID.isEmpty) {
-      print("❌ Error: Driver ID or Request ID is null/empty.");
+      debugPrint("❌ Error: Driver ID or Request ID is null/empty.");
       return;
     }
 
@@ -58,9 +58,9 @@ class TrackingViewState extends State<TrackingView> {
 
   StreamSubscription<DocumentSnapshot>? _requestSubscription;
 
-  /// ✅ Listen for request status changes in real-time
+  /// Listen for request status changes in real-time
   void _listenToRequestStatus() {
-    // ✅ Cancel previous listener if it exists to prevent duplicate listeners
+    // Cancel previous listener if it exists to prevent duplicate listeners
     _requestSubscription?.cancel();
 
     _requestSubscription = FirebaseFirestore.instance
@@ -69,13 +69,13 @@ class TrackingViewState extends State<TrackingView> {
         .snapshots()
         .listen((snapshot) {
           if (!snapshot.exists) {
-            print("❌ Error: Request not found in Firestore.");
+            debugPrint("❌ Error: Request not found in Firestore.");
             return;
           }
 
           Map<String, dynamic>? requestData = snapshot.data();
           if (requestData == null) {
-            print("❌ Error: Firestore data is null.");
+            debugPrint("❌ Error: Firestore data is null.");
             return;
           }
 
@@ -83,9 +83,9 @@ class TrackingViewState extends State<TrackingView> {
               ? requestData['status']
               : "Unknown";
 
-          print("🔄 Firestore Update Detected: Status = $status");
+          debugPrint("🔄 Firestore Update Detected: Status = $status");
 
-          // ✅ Update state only if status actually changed
+          // Update state only if status actually changed
           if (mounted) {
             setState(() {
               isDriverArrived =
@@ -100,7 +100,7 @@ class TrackingViewState extends State<TrackingView> {
             if (requestData['chargingStartTime'] != null) {
               _startTimer(requestData['chargingStartTime']);
             } else {
-              print("⏳ Waiting for chargingStartTime to sync...");
+              debugPrint("⏳ Waiting for chargingStartTime to sync...");
             }
           } else if (status == "Payment") {
             _navigateToPayment();
@@ -113,18 +113,20 @@ class TrackingViewState extends State<TrackingView> {
   @override
   void dispose() {
     _requestSubscription
-        ?.cancel(); // ✅ Ensure listener is removed when widget is disposed
-    _timer?.cancel(); // ✅ Cancel timer if active
+        ?.cancel(); // Ensure listener is removed when widget is disposed
+    _timer?.cancel(); // Cancel timer if active
     super.dispose();
   }
 
-  /// ✅ Redirect when request is "Completed"
+  /// Redirect when request is "Completed"
   void _handleCompletedRequest() {
-    print("✅ Request marked as 'Completed'. Navigating back to home screen...");
+    debugPrint(
+      "Request marked as 'Completed'. Navigating back to home screen...",
+    );
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("✅ Charging session completed! Returning to home..."),
+        content: Text("Charging session completed! Returning to home..."),
       ),
     );
 
@@ -140,7 +142,7 @@ class TrackingViewState extends State<TrackingView> {
     });
   }
 
-  /// ✅ Start a charging timer once status is "Charging"
+  /// Start a charging timer once status is "Charging"
   void _startTimer(Timestamp startTimestamp) {
     DateTime startTime = startTimestamp.toDate();
     _timer?.cancel(); // Reset any existing timer
@@ -158,7 +160,7 @@ class TrackingViewState extends State<TrackingView> {
     });
   }
 
-  /// ✅ Redirect to Payment Page when charging stops
+  /// Redirect to Payment Page when charging stops
   void _navigateToPayment() async {
     _timer?.cancel(); // Stop the timer
 
@@ -169,14 +171,14 @@ class TrackingViewState extends State<TrackingView> {
     );
 
     try {
-      // ✅ Fetch emergency request details from Firestore
+      // Fetch emergency request details from Firestore
       DocumentSnapshot requestDoc = await FirebaseFirestore.instance
           .collection("emergency_requests")
           .doc(widget.requestID)
           .get();
 
       if (!requestDoc.exists) {
-        print("❌ Error: Emergency request not found.");
+        debugPrint("❌ Error: Emergency request not found.");
         return;
       }
 
@@ -185,7 +187,7 @@ class TrackingViewState extends State<TrackingView> {
       String emergencyDuration =
           requestDoc["chargingFormattedTime"] ?? "00:00:00";
 
-      // ✅ Navigate directly to PaymentScreen
+      // Navigate directly to PaymentScreen
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -199,24 +201,24 @@ class TrackingViewState extends State<TrackingView> {
         ),
       );
     } catch (e) {
-      print("❌ Error fetching emergency payment details: $e");
+      debugPrint("❌ Error fetching emergency payment details: $e");
     }
   }
 
-  /// ✅ Setup Live Tracking from Firestore
+  /// Setup Live Tracking from Firestore
   void _setupTracking() {
-    print("🔍 Received driverID from widget: ${widget.driverID}");
+    debugPrint("🔍 Received driverID from widget: ${widget.driverID}");
 
     if (widget.driverID == "Unknown" || widget.driverID.isEmpty) {
       setState(() {
         errorMessage = "❌ No driver assigned to this request.";
         isLoading = false;
       });
-      print("❌ Error: Driver ID is 'Unknown' or empty.");
+      debugPrint("❌ Error: Driver ID is 'Unknown' or empty.");
       return;
     }
 
-    // ✅ Fetch Driver Location
+    // Fetch Driver Location
     trackingViewModel.trackDriverLocation(widget.driverID).listen((snapshot) {
       if (!mounted || !snapshot.exists || snapshot.data() == null) return;
 
@@ -244,7 +246,7 @@ class TrackingViewState extends State<TrackingView> {
       }
     });
 
-    // ✅ Fetch Customer Location
+    // Fetch Customer Location
     trackingViewModel.getTrackingInfo(widget.requestID).listen((snapshot) {
       if (!mounted || !snapshot.exists || snapshot.data() == null) return;
 
@@ -252,7 +254,7 @@ class TrackingViewState extends State<TrackingView> {
 
       if (requestData != null && requestData.containsKey('location')) {
         final GeoPoint location =
-            requestData['location']; // ✅ Use GeoPoint directly
+            requestData['location']; // Use GeoPoint directly
 
         setState(() {
           customerLocation = LatLng(location.latitude, location.longitude);
@@ -263,12 +265,12 @@ class TrackingViewState extends State<TrackingView> {
           _drawRoute();
         }
       } else {
-        print("❌ Error: No customer location found.");
+        debugPrint("❌ Error: No customer location found.");
       }
     });
   }
 
-  /// ✅ Function to Calculate ETA Using Google Distance Matrix API
+  /// Function to Calculate ETA Using Google Distance Matrix API
   Future<void> _calculateETA() async {
     if (driverLocation == null || customerLocation == null) return;
 
@@ -288,14 +290,14 @@ class TrackingViewState extends State<TrackingView> {
           estimatedTime = eta;
         });
 
-        print("✅ ETA: $estimatedTime min");
+        debugPrint("ETA: $estimatedTime min");
       }
     } catch (e) {
-      print("❌ Error fetching ETA: $e");
+      debugPrint("❌ Error fetching ETA: $e");
     }
   }
 
-  /// ✅ Function to Draw Route Between Driver & Customer
+  /// Function to Draw Route Between Driver & Customer
   Future<void> _drawRoute() async {
     if (driverLocation == null || customerLocation == null) return;
 
@@ -312,11 +314,11 @@ class TrackingViewState extends State<TrackingView> {
         if (data["routes"].isNotEmpty) {
           List<LatLng> routePoints = [];
 
-          // ✅ Extract encoded polyline from API response
+          // Extract encoded polyline from API response
           String encodedPolyline =
               data["routes"][0]["overview_polyline"]["points"];
 
-          // ✅ Decode the polyline
+          // Decode the polyline
           routePoints = _decodePolyline(encodedPolyline);
 
           setState(() {
@@ -331,17 +333,17 @@ class TrackingViewState extends State<TrackingView> {
             );
           });
 
-          print("✅ Route drawn on map.");
+          debugPrint("Route drawn on map.");
         } else {
-          print("❌ No route found.");
+          debugPrint("❌ No route found.");
         }
       }
     } catch (e) {
-      print("❌ Error fetching route: $e");
+      debugPrint("❌ Error fetching route: $e");
     }
   }
 
-  /// ✅ Function to Decode Google Maps Polyline
+  /// Function to Decode Google Maps Polyline
   List<LatLng> _decodePolyline(String encoded) {
     List<PointLatLng> result = PolylinePoints.decodePolyline(encoded);
 
@@ -361,11 +363,11 @@ class TrackingViewState extends State<TrackingView> {
             child: isLoading
                 ? const Center(
                     child: CircularProgressIndicator(),
-                  ) // ✅ Show loading only initially
+                  ) // Show loading only initially
                 : isDriverArrived && !isCharging
                 ? const Center(
                     child: Text(
-                      "✅ Driver has arrived. Waiting for charging...",
+                      "Driver has arrived. Waiting for charging...",
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,

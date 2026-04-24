@@ -1,7 +1,15 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import 'package:ezcharge/views/auth/admin_sign_in_screen.dart'; // Import the Admin Sign-In Screen
+import 'package:ezcharge/core/constants/colors.dart';
+import 'package:ezcharge/core/constants/text_styles.dart';
+import 'package:ezcharge/core/widgets/button.dart';
+import 'package:ezcharge/core/widgets/custom_divider.dart';
+import 'package:ezcharge/core/widgets/phone_input.dart';
+import 'package:ezcharge/core/widgets/top_app_bar.dart';
+import 'package:ezcharge/models/user_model.dart';
+import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
+import 'package:ezcharge/views/auth/admin_sign_in_screen.dart';
 import 'package:ezcharge/views/auth/otp_screen.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -12,207 +20,121 @@ class SignInScreen extends StatefulWidget {
 }
 
 class SignInScreenState extends State<SignInScreen> {
+  String _fullPhoneNumber = "";
   final TextEditingController _phoneController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  bool _isLoading = false;
 
-  //Send OTP and navigate to OTPScreen
-  void _sendOTP() async {
-    String phoneNumber = _phoneController.text.trim();
-    if (phoneNumber.isEmpty || phoneNumber.length < 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter a valid phone number")),
-      );
-      return;
-    }
+  AuthViewmodel get _authViewModel => context.read<AuthViewmodel>();
 
-    setState(() => _isLoading = true);
+  /// Send OTP and navigate to OTPScreen
+  Future<void> _sendOTP() async {
+    if (_fullPhoneNumber.isEmpty) return;
 
-    await _auth.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      timeout: const Duration(seconds: 60),
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await _auth.signInWithCredential(credential);
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error: ${e.message}")));
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        print("VERIFICATION ID: $verificationId"); // Debugging
-        setState(() => _isLoading = false);
+    await _authViewModel.sendOtp(
+      _fullPhoneNumber,
+      UserRole.customer,
+      onCodeSent: (verificationId) {
+        if (!mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => OTPScreen(
-              phoneNumber: phoneNumber,
-              verificationId: verificationId,
+              phoneNumber: _fullPhoneNumber,
+              verificationID: verificationId,
+              role: UserRole.customer,
             ),
           ),
         );
       },
-      codeAutoRetrievalTimeout: (String verificationId) {},
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final authViewModel = context.watch<AuthViewmodel>();
+
     return Scaffold(
-      backgroundColor: Colors.grey[200], //Light Grey Background
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // White Container for Back Button + Title
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            color: Colors.white, //White background for title section
-            child: Row(
-              children: [
-                //Back Button inside a Blue Circle
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: const BoxDecoration(
-                      color: Colors.blue, //Blue Circle
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white,
-                    ), // White Back Icon
+      backgroundColor: Colors.grey[200],
+      appBar: CustomAppBar(
+        title: "Sign In",
+        showBackButton: true,
+        onBackPress: () {
+          authViewModel.clearError();
+          Navigator.maybePop(context);
+        },
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Sign in or create account with your phone number",
+                style: AppTextStyles.titleLarge,
+              ),
+              const SizedBox(height: 5),
+
+              const Text(
+                "A verification code will be sent to this phone number",
+                style: AppTextStyles.labelLarge,
+              ),
+              const SizedBox(height: 16),
+
+              // Phone Number Input
+              AppPhoneInput(
+                controller: _phoneController,
+                onInputChanged: (number) {
+                  _fullPhoneNumber = number.phoneNumber ?? "";
+                },
+              ),
+              if (authViewModel.errorMessage != null) ...[
+                const SizedBox(height: 5),
+                Text(
+                  authViewModel.errorMessage!,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: AppColors.danger,
                   ),
-                ),
-                const SizedBox(width: 15), // Spacing between icon and text
-                const SizedBox(height: 50),
-                // "Sign In" Title
-                const Text(
-                  "Sign In",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 ),
               ],
-            ),
-          ),
+              const SizedBox(height: 16),
 
-          // Grey Background Content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  //Sign In Description
-                  const SizedBox(height: 10),
-                  const Text(
-                    "Sign in or create account with your phone number",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  const Text(
-                    "A verification code will be sent to this phone number",
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Phone Number Input
-                  TextField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      hintText: "Enter phone number",
-                      hintStyle: TextStyle(color: Colors.grey),
-                      prefixIcon: const Icon(Icons.phone),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  //Proceed Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _sendOTP,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // ✅ Button color
-                        padding: const EdgeInsets.all(8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "PROCEED",
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: 3,
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // "Or" Divider Line
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10),
-                          height: 1,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const Text("Or", style: TextStyle(color: Colors.grey)),
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10),
-                          height: 1,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  //"Sign In as Admin" Button
-                  Center(
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AdminSignInScreen(),
-                          ), // Navigate to Admin Screen
-                        );
-                      },
-                      child: const Text(
-                        "Sign In as Admin",
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              /// Submit Button
+              CustomButton(
+                text: "Submit",
+                isLoading: authViewModel.isLoading,
+                onPressed: _sendOTP,
+                borderRadius: 22,
               ),
-            ),
+
+              /// Divider
+              const SizedBox(height: 16),
+              LabeledDivider(label: "Or"),
+              const SizedBox(height: 16),
+
+              // Admin Sign In Button
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    authViewModel.clearError();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AdminSignInScreen(),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    "Sign In as Admin",
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

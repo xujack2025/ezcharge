@@ -5,7 +5,7 @@ class NotificationModel {
   final String title;
   final String description;
   final DateTime createdTime;
-  final String? readTime; // Nullable because it might be unread
+  final String? readTime;
 
   NotificationModel({
     required this.notificationID,
@@ -15,7 +15,6 @@ class NotificationModel {
     this.readTime,
   });
 
-  // ✅ Convert Firestore document to `NotificationModel` object
   factory NotificationModel.fromFirestore(
     Map<String, dynamic> data,
     String documentId,
@@ -29,7 +28,6 @@ class NotificationModel {
     );
   }
 
-  // ✅ Convert `NotificationModel` object to Firestore data
   Map<String, dynamic> toFirestore() {
     return {
       'NotificationID': notificationID,

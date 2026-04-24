@@ -13,12 +13,12 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     with SingleTickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String? _selectedStaffId; // Stores selected staff for assignment
-  TabController? _tabController; // ✅ Nullable TabController
+  TabController? _tabController; // Nullable TabController
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this); // ✅ Three tabs
+    _tabController = TabController(length: 3, vsync: this); // Three tabs
   }
 
   @override
@@ -27,7 +27,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     super.dispose();
   }
 
-  // ✅ Fetch complaints based on status
+  // Fetch complaints based on status
   Stream<QuerySnapshot> fetchComplaintsByStatus(String status) {
     return _firestore
         .collectionGroup('complaints')
@@ -35,22 +35,22 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
         .orderBy(
           'ComplaintDate',
           descending: true,
-        ) // ✅ Order by date (newest first)
+        ) // Order by date (newest first)
         .snapshots();
   }
 
-  // ✅ Fetch all complaints from customer documents
+  // Fetch all complaints from customer documents
   Future<List<QueryDocumentSnapshot>> fetchAllComplaints() async {
     List<QueryDocumentSnapshot> allComplaints = [];
 
     try {
-      // ✅ Fetch all customers
+      // Fetch all customers
       QuerySnapshot customersSnapshot = await _firestore
           .collection('customers')
           .get();
 
       for (var customerDoc in customersSnapshot.docs) {
-        // ✅ Fetch complaints from each customer's subcollection
+        // Fetch complaints from each customer's subcollection
         QuerySnapshot complaintSnapshot = await customerDoc.reference
             .collection('complaints')
             .get();
@@ -64,7 +64,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     return allComplaints;
   }
 
-  // ✅ Fetch all available staff for assignment
+  // Fetch all available staff for assignment
   Future<List<QueryDocumentSnapshot>> fetchAllStaff() async {
     try {
       QuerySnapshot staffSnapshot = await _firestore
@@ -78,7 +78,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     }
   }
 
-  // ✅ Assign staff and update complaint status
+  // Assign staff and update complaint status
   Future<void> assignStaffToComplaint(
     String customerId,
     String complaintId,
@@ -97,7 +97,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     }
 
     try {
-      // ✅ Fetch logged-in admin details
+      // Fetch logged-in admin details
       var adminQuery = await _firestore
           .collection("admins")
           .where("PhoneNumber", isEqualTo: user.phoneNumber)
@@ -111,9 +111,9 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
         return;
       }
 
-      String adminID = adminQuery.docs.first.id; // ✅ Get logged-in Admin ID
+      String adminID = adminQuery.docs.first.id; // Get logged-in Admin ID
 
-      // ✅ Update complaint with assigned staff
+      // Update complaint with assigned staff
       await _firestore
           .collection('customers')
           .doc(customerId)
@@ -126,7 +126,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
             'updatedAt': FieldValue.serverTimestamp(),
           });
 
-      // ✅ Update staff status to "Busy"
+      // Update staff status to "Busy"
       await _firestore.collection('staff').doc(staffId).update({
         'status': 'Busy',
       });
@@ -145,10 +145,10 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     }
   }
 
-  // ✅ Mark complaint as resolved
+  // Mark complaint as resolved
   Future<void> resolveComplaint(String customerId, String complaintId) async {
     try {
-      // ✅ Get complaint details to find assigned staff
+      // Get complaint details to find assigned staff
       DocumentSnapshot complaintSnapshot = await _firestore
           .collection('customers')
           .doc(customerId)
@@ -165,7 +165,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
 
       String? staffId = complaintSnapshot['AssignedStaffID'];
 
-      // ✅ Mark complaint as resolved
+      // Mark complaint as resolved
       await _firestore
           .collection('customers')
           .doc(customerId)
@@ -176,7 +176,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
             'resolvedAt': FieldValue.serverTimestamp(),
           });
 
-      // ✅ Update staff status back to "Available"
+      // Update staff status back to "Available"
       if (staffId != null) {
         await _firestore.collection('staff').doc(staffId).update({
           'status': 'Available',
@@ -200,11 +200,11 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3, // ✅ 3 tabs
+      length: 3, // 3 tabs
       child: Scaffold(
         appBar: AppBar(
           bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(18.0), // ✅ Set proper height
+            preferredSize: const Size.fromHeight(18.0), // Set proper height
             child: TabBar(
               controller: _tabController,
               indicatorColor: Colors.blue,
@@ -230,7 +230,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     );
   }
 
-  // ✅ Build Complaint List UI
+  // Build Complaint List UI
   Widget _buildComplaintList(Stream<QuerySnapshot> complaintsStream) {
     return StreamBuilder<QuerySnapshot>(
       stream: complaintsStream,
@@ -266,7 +266,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ✅ Complaint ID & Status
+                    // Complaint ID & Status
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -285,7 +285,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
                     ),
                     const Divider(height: 20),
 
-                    // ✅ Complaint Details
+                    // Complaint Details
                     _buildDetailRow(Icons.person, "Customer ID", customerId),
                     _buildDetailRow(
                       Icons.location_on,
@@ -322,7 +322,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
 
                     const SizedBox(height: 10),
 
-                    // ✅ Action Buttons
+                    // Action Buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -396,7 +396,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     );
   }
 
-  /// ✅ Builds a styled status badge with colors/icons
+  /// Builds a styled status badge with colors/icons
   Widget _buildStatusBadge(String? status) {
     Color bgColor;
     IconData icon;
@@ -435,7 +435,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     );
   }
 
-  /// ✅ Reusable Detail Row with Icons
+  /// Reusable Detail Row with Icons
   Widget _buildDetailRow(IconData icon, String title, dynamic value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
@@ -455,7 +455,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     );
   }
 
-  /// ✅ Dropdown for assigning staff
+  /// Dropdown for assigning staff
   Widget _buildAssignStaffDropdown(
     List<QueryDocumentSnapshot> staffDocs,
     String customerId,

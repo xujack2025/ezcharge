@@ -15,9 +15,9 @@ class _AdminEmergencyRequestsPageState
     extends State<AdminEmergencyRequestsPage> {
   String selectedStatus = "All"; // Default filter
 
-  /// ✅ Fetch Emergency Requests from Firestore
+  /// Fetch Emergency Requests from Firestore
   Stream<QuerySnapshot> _fetchRequests() {
-    print("🔄 Listening for real-time updates on emergency requests...");
+    debugPrint("🔄 Listening for real-time updates on emergency requests...");
 
     // Fetch all requests if "All" is selected
     if (selectedStatus == "All") {
@@ -25,7 +25,9 @@ class _AdminEmergencyRequestsPageState
           .collection('emergency_requests')
           .snapshots()
           .map((snapshot) {
-            print("✅ Firestore Update: Found ${snapshot.docs.length} requests");
+            debugPrint(
+              "Firestore Update: Found ${snapshot.docs.length} requests",
+            );
             return snapshot;
           });
     } else {
@@ -34,13 +36,15 @@ class _AdminEmergencyRequestsPageState
           .where('status', isEqualTo: selectedStatus)
           .snapshots()
           .map((snapshot) {
-            print("✅ Firestore Update: Found ${snapshot.docs.length} requests");
+            debugPrint(
+              "Firestore Update: Found ${snapshot.docs.length} requests",
+            );
             return snapshot;
           });
     }
   }
 
-  /// ✅ Dropdown to Filter Requests by Status
+  /// Dropdown to Filter Requests by Status
   Widget _statusFilterDropdown() {
     return DropdownButton<String>(
       value: selectedStatus,
@@ -72,7 +76,7 @@ class _AdminEmergencyRequestsPageState
       appBar: AppBar(title: const Text("Emergency Requests")),
       body: Column(
         children: [
-          // ✅ Filter Card for better UI
+          // Filter Card for better UI
           Card(
             margin: const EdgeInsets.all(16),
             elevation: 3,
@@ -88,17 +92,17 @@ class _AdminEmergencyRequestsPageState
                     "Filter by Status:",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  _statusFilterDropdown(), // ✅ Dropdown Filter
+                  _statusFilterDropdown(), // Dropdown Filter
                 ],
               ),
             ),
           ),
 
-          // ✅ Request List
+          // Request List
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.grey[100], // ✅ Subtle background color
+                color: Colors.grey[100], // Subtle background color
                 borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
               ),
               child: StreamBuilder<QuerySnapshot>(
@@ -181,7 +185,7 @@ class _AdminEmergencyRequestsPageState
                                 selectedStatus == "Upcoming" ||
                                 selectedStatus == "Charging" ||
                                 selectedStatus == "Arrived") {
-                              // ✅ Navigate to Assign Driver Page
+                              // Navigate to Assign Driver Page
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -191,7 +195,7 @@ class _AdminEmergencyRequestsPageState
                                 ),
                               );
                             } else {
-                              // ✅ Show Progress if Already Assigned
+                              // Show Progress if Already Assigned
                               _showRequestProgress(context, request);
                             }
                           },
@@ -208,7 +212,7 @@ class _AdminEmergencyRequestsPageState
     );
   }
 
-  /// ✅ Get Color for Request Status
+  /// Get Color for Request Status
   Color _getStatusColor(String status) {
     switch (status) {
       case "Pending":
@@ -228,7 +232,7 @@ class _AdminEmergencyRequestsPageState
     }
   }
 
-  /// ✅ Improved Request Progress UI
+  /// Improved Request Progress UI
   void _showRequestProgress(
     BuildContext context,
     Map<String, dynamic> request,
@@ -266,7 +270,7 @@ class _AdminEmergencyRequestsPageState
     );
   }
 
-  /// ✅ Enhanced Progress Tracker with Step Indicator
+  /// Enhanced Progress Tracker with Step Indicator
   Widget _statusProgress(String status) {
     List<String> statuses = [
       "Pending",

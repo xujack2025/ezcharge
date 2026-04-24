@@ -19,11 +19,11 @@ class _RequestHistoryScreenState extends State<RequestHistoryScreen> {
     _fetchCustomerID();
   }
 
-  /// ✅ Fetch CustomerID from Firestore Using Phone Number
+  /// Fetch CustomerID from Firestore Using Phone Number
   Future<void> _fetchCustomerID() async {
     String? phoneNumber = FirebaseAuth.instance.currentUser?.phoneNumber;
     if (phoneNumber == null) {
-      print("❌ Error: No phone number found.");
+      debugPrint("❌ Error: No phone number found.");
       setState(() => isLoading = false);
       return;
     }
@@ -39,9 +39,9 @@ class _RequestHistoryScreenState extends State<RequestHistoryScreen> {
         customerID = customerQuery.docs.first['CustomerID'];
         isLoading = false;
       });
-      print("✅ Customer ID is $customerID");
+      debugPrint("Customer ID is $customerID");
     } else {
-      print("❌ No customer found with this phone number.");
+      debugPrint("❌ No customer found with this phone number.");
       setState(() => isLoading = false);
     }
   }
@@ -60,8 +60,8 @@ class _RequestHistoryScreenState extends State<RequestHistoryScreen> {
                   .where(
                     'CustomerID',
                     isEqualTo: customerID,
-                  ) // ✅ Use `customerID`
-                  //.orderBy('preferredTime', descending: true) // ✅ Sort by most recent
+                  ) // Use `customerID`
+                  //.orderBy('preferredTime', descending: true) // Sort by most recent
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -89,7 +89,7 @@ class _RequestHistoryScreenState extends State<RequestHistoryScreen> {
                       child: ExpansionTile(
                         key: PageStorageKey('${request['requestID']}'),
                         initiallyExpanded: true,
-                        // ✅ Force expand to check if details are there
+                        // Force expand to check if details are there
                         title: Text("Status: $status"),
                         subtitle: Text(
                           "Location: ${request['address'] ?? 'Unknown'}",

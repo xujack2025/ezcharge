@@ -51,7 +51,7 @@ class _ReloadPINScreenState extends State<ReloadPINScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
       setState(() => _isLoading = false);
     }
   }
@@ -65,10 +65,10 @@ class _ReloadPINScreenState extends State<ReloadPINScreen> {
         phoneNumber: _userPhone,
         timeout: const Duration(seconds: 60),
         verificationCompleted: (PhoneAuthCredential credential) async {
-          print("Auto verification completed");
+          debugPrint("Auto verification completed");
         },
         verificationFailed: (FirebaseAuthException e) {
-          print("Verification Failed: ${e.message}");
+          debugPrint("Verification Failed: ${e.message}");
           setState(() => _isLoading = false);
         },
         codeSent: (String verificationId, int? resendToken) {
@@ -76,14 +76,14 @@ class _ReloadPINScreenState extends State<ReloadPINScreen> {
             _verificationId = verificationId; // Store verification ID
             _isLoading = false;
           });
-          print("OTP Sent to $_userPhone");
+          debugPrint("OTP Sent to $_userPhone");
         },
         codeAutoRetrievalTimeout: (String verificationId) {
-          print("Auto retrieval timeout");
+          debugPrint("Auto retrieval timeout");
         },
       );
     } catch (e) {
-      print("Error sending OTP: $e");
+      debugPrint("Error sending OTP: $e");
     }
   }
 
@@ -120,7 +120,7 @@ class _ReloadPINScreenState extends State<ReloadPINScreen> {
 
       Navigator.pop(context);
     } catch (e) {
-      print("Invalid Reload OTP: $e");
+      debugPrint("Invalid Reload OTP: $e");
       setState(() => _isOtpValid = false); // Show invalid code message
     } finally {
       setState(() => _isLoading = false);

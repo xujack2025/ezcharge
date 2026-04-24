@@ -9,15 +9,12 @@ class NotificationViewModel extends ChangeNotifier {
 
   List<NotificationModel> get notifications => _notifications;
 
-  // ✅ Fetch All Notifications (Real-time Updates)
+  // Fetch All Notifications (Real-time Updates)
   Future<void> fetchNotifications() async {
     try {
       QuerySnapshot snapshot = await _firestore
-          .collection('notification') // ✅ Ensure collection name is correct
-          .orderBy(
-            'CreatedTime',
-            descending: true,
-          ) // ✅ Ensure correct field name
+          .collection('notification') // Ensure collection name is correct
+          .orderBy('CreatedTime', descending: true) // Ensure correct field name
           .get();
 
       _notifications = snapshot.docs
@@ -29,13 +26,13 @@ class NotificationViewModel extends ChangeNotifier {
           )
           .toList();
 
-      notifyListeners(); // ✅ Notify UI to update
+      notifyListeners(); // Notify UI to update
     } catch (e) {
-      print("Error fetching notifications: $e");
+      debugPrint("Error fetching notifications: $e");
     }
   }
 
-  // ✅ Create a New Notification
+  // Create a New Notification
   Future<void> createNotification(String title, String message) async {
     try {
       int epochTime = DateTime.now().millisecondsSinceEpoch;
@@ -60,7 +57,7 @@ class NotificationViewModel extends ChangeNotifier {
     }
   }
 
-  // ✅ Update a Notification
+  // Update a Notification
   Future<void> updateNotification(
     String notificationId,
     String title,
@@ -78,7 +75,7 @@ class NotificationViewModel extends ChangeNotifier {
     }
   }
 
-  // ✅ Delete a Notification
+  // Delete a Notification
   Future<void> deleteNotification(String notificationId) async {
     try {
       await _firestore.collection('notification').doc(notificationId).delete();
@@ -88,7 +85,7 @@ class NotificationViewModel extends ChangeNotifier {
     }
   }
 
-  // ✅ Send Notification to All Users
+  // Send Notification to All Users
   Future<void> sendNotificationToAll(String title, String message) async {
     try {
       QuerySnapshot usersSnapshot = await _firestore.collection('users').get();
@@ -110,7 +107,7 @@ class NotificationViewModel extends ChangeNotifier {
     }
   }
 
-  // ✅ Mark Notification as Read
+  // Mark Notification as Read
   Future<void> markAsRead(String notificationId) async {
     try {
       await _firestore.collection('notification').doc(notificationId).update({

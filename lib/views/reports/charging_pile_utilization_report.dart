@@ -28,42 +28,42 @@ class _ChargingPileUtilizationReportState
   /// **Fetch the Current Admin's Name & ID using Phone Number**
   Future<void> _fetchAdminDetails() async {
     try {
-      // ✅ Get the currently logged-in user from Firebase Auth
+      // Get the currently logged-in user from Firebase Auth
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user == null || user.phoneNumber == null) {
-        print("❌ No admin is logged in or phone number is not available.");
+        debugPrint("❌ No admin is logged in or phone number is not available.");
         return;
       }
 
-      String phoneNumber = user.phoneNumber!; // ✅ Get phone number
+      String phoneNumber = user.phoneNumber!; // Get phone number
 
-      // ✅ Fetch admin details from Firestore using the phone number
+      // Fetch admin details from Firestore using the phone number
       final adminQuery = await FirebaseFirestore.instance
-          .collection('admins') // ✅ Ensure correct collection name
+          .collection('admins') // Ensure correct collection name
           .where(
             'PhoneNumber',
             isEqualTo: phoneNumber,
-          ) // ✅ Search by phone number
+          ) // Search by phone number
           .limit(1)
           .get();
 
       if (adminQuery.docs.isNotEmpty) {
         final adminData = adminQuery.docs.first.data();
 
-        print("✅ Admin Data Retrieved: $adminData"); // 🔹 Debugging output
+        debugPrint("Admin Data Retrieved: $adminData"); // 🔹 Debugging output
 
         if (mounted) {
           setState(() {
             adminNameAndID =
-                "${adminData['FirstName']} (#${adminData['AdminID']})"; // ✅ Corrected format
+                "${adminData['FirstName']} (#${adminData['AdminID']})"; // Corrected format
           });
         }
       } else {
-        print("❌ Admin data not found for phone number: $phoneNumber");
+        debugPrint("❌ Admin data not found for phone number: $phoneNumber");
       }
     } catch (e) {
-      print("❌ Error fetching admin details: $e");
+      debugPrint("❌ Error fetching admin details: $e");
     }
   }
 
@@ -93,7 +93,7 @@ class _ChargingPileUtilizationReportState
 
       await Printing.layoutPdf(onLayout: (format) async => pdf.save());
     } catch (e) {
-      print("❌ Report generation failed: $e");
+      debugPrint("❌ Report generation failed: $e");
     }
 
     setState(() => isLoading = false);
@@ -136,7 +136,7 @@ class _ChargingPileUtilizationReportState
       double energyUsed = (data['EnergyUsed'] ?? 0).toDouble();
       Duration sessionDuration = endTime.difference(
         startTime,
-      ); // ✅ Calculate session duration
+      ); // Calculate session duration
       double sessionHours =
           sessionDuration.inMinutes / 60.0; // Convert to hours
 
@@ -149,7 +149,7 @@ class _ChargingPileUtilizationReportState
           "pileID": pileID,
           "totalSessions": 0,
           "totalEnergy": 0.0,
-          "totalHoursUsed": 0.0, // ✅ Add total hours used
+          "totalHoursUsed": 0.0, // Add total hours used
           "usageByHour": {}, // Track usage by hour
         };
       }
@@ -237,7 +237,7 @@ class _ChargingPileUtilizationReportState
           "Slot ID",
           "Total Sessions",
           "Total Energy Used",
-          "Total Hours Used", // ✅ New column
+          "Total Hours Used", // New column
           "Peak Usage Hour",
         ],
         data: pileData.map((pile) {
@@ -263,7 +263,7 @@ class _ChargingPileUtilizationReportState
             pile['totalSessions'].toString(),
             "${pile['totalEnergy'].toStringAsFixed(2)} kWh",
             "${pile['totalHoursUsed'].toStringAsFixed(2)} h",
-            // ✅ Display total hours
+            // Display total hours
             "$peakHour:00 ($maxSessions sessions)",
           ];
         }).toList(),

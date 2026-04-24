@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:ezcharge/views/ezcharge/home_screen.dart';
-import 'package:ezcharge/views/customer/reward/reward_screen.dart';
 import 'package:ezcharge/views/customer/customer_content/account_screen.dart';
+import 'package:ezcharge/views/customer/reward/reward_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -57,9 +57,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
             "id": doc.id,
             "title": data["Title"],
             "description": data["Description"],
-            "createdTime": formattedCreatedTime, // ✅ Now a formatted String
-            "readTime":
-                formattedReadTime, // ✅ Now a formatted String (nullable)
+            "createdTime": formattedCreatedTime, // Now a formatted String
+            "readTime": formattedReadTime, // Now a formatted String (nullable)
           };
         }).toList();
 
@@ -67,7 +66,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print("Error fetching notifications: $e");
+      debugPrint("Error fetching notifications: $e");
       setState(() => _isLoading = false);
     }
   }

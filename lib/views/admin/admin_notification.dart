@@ -21,10 +21,10 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
   @override
   void initState() {
     super.initState();
-    _loadNotifications(); // ✅ Load Notifications on Init
+    _loadNotifications(); // Load Notifications on Init
   }
 
-  // ✅ Load Notifications and Refresh UI
+  // Load Notifications and Refresh UI
   Future<void> _loadNotifications() async {
     await _notificationViewModel.fetchNotifications();
     setState(() {
@@ -56,7 +56,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
     );
   }
 
-  // ✅ Build Notification List
+  // Build Notification List
   Widget _buildNotificationList() {
     return _notifications.isEmpty
         ? const Center(
@@ -75,7 +75,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
           );
   }
 
-  // ✅ Build Each Notification Card
+  // Build Each Notification Card
   Widget _buildNotificationCard(NotificationModel notification) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -115,7 +115,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
     );
   }
 
-  // ✅ Edit Notification Button
+  // Edit Notification Button
   Widget _buildEditButton(NotificationModel notification) {
     return IconButton(
       icon: const Icon(Icons.edit, color: Colors.blue),
@@ -127,18 +127,18 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
     );
   }
 
-  // ✅ Delete Notification Button
+  // Delete Notification Button
   Widget _buildDeleteButton(String notificationID) {
     return IconButton(
       icon: const Icon(Icons.delete, color: Colors.red),
       onPressed: () async {
         await _notificationViewModel.deleteNotification(notificationID);
-        _loadNotifications(); // ✅ Refresh List After Deletion
+        _loadNotifications(); // Refresh List After Deletion
       },
     );
   }
 
-  // ✅ Show Notification Dialog for Create/Update
+  // Show Notification Dialog for Create/Update
   void _showNotificationDialog({
     String? notificationId,
     String? title,
@@ -169,7 +169,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
     );
   }
 
-  // ✅ Build Dialog Content (Text Fields)
+  // Build Dialog Content (Text Fields)
   Widget _buildDialogContent() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -194,7 +194,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
     );
   }
 
-  // ✅ Build Dialog Actions (Create/Update & Cancel)
+  // Build Dialog Actions (Create/Update & Cancel)
   List<Widget> _buildDialogActions() {
     return [
       TextButton(
@@ -212,7 +212,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
     ];
   }
 
-  // ✅ Save or Update Notification
+  // Save or Update Notification
   Future<void> _saveNotification() async {
     if (_titleController.text.isEmpty || _messageController.text.isEmpty) {
       return;
@@ -231,7 +231,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
       );
     }
 
-    _loadNotifications(); // ✅ Refresh List After Saving
+    _loadNotifications(); // Refresh List After Saving
     Navigator.pop(context);
   }
 }

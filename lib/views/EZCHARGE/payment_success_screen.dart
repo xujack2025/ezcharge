@@ -59,7 +59,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
       // Once we have the _accountId, fetch the latest attendance record
       await _fetchReservationRecord();
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
     setState(() => isLoading = false);
   }
@@ -81,7 +81,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
         await _fetchLatestAttendance();
       }
     } catch (e) {
-      print("Error fetching reservation record: $e");
+      debugPrint("Error fetching reservation record: $e");
     }
   }
 
@@ -104,12 +104,12 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
         _stationId = docData["StationID"] ?? "";
         _chargerId = docData["SlotID"] ?? "";
 
-        // ✅ Wait for both fetches to complete before proceeding
+        // Wait for both fetches to complete before proceeding
         await _fetchStation();
         await _fetchCharger();
       }
     } catch (e) {
-      print("Error fetching attendance: $e");
+      debugPrint("Error fetching attendance: $e");
     }
   }
 
@@ -125,7 +125,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
         _stationName = doc["StationName"] ?? "";
       }
     } catch (e) {
-      print(" Error fetching station: $e");
+      debugPrint(" Error fetching station: $e");
     }
   }
 
@@ -145,7 +145,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
         _chargerType = doc["ChargerType"] ?? "";
       }
     } catch (e) {
-      print("Error fetching charger: $e");
+      debugPrint("Error fetching charger: $e");
     }
   }
 
@@ -171,10 +171,12 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
             "Payment ID": paymentID,
           });
 
-      print("Payment history record created successfully with ID $paymentID.");
+      debugPrint(
+        "Payment history record created successfully with ID $paymentID.",
+      );
       return paymentID;
     } catch (e) {
-      print("Error creating payment history record: $e");
+      debugPrint("Error creating payment history record: $e");
       return null;
     }
   }
@@ -224,7 +226,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                       height: 45,
                       child: ElevatedButton(
                         onPressed: () async {
-                          print(
+                          debugPrint(
                             "Station: $_stationName, Charger: $_chargerName, Type: $_chargerType, Duration: $_duration",
                           );
                           final paymentID = await _createPaymentHistoryRecord();

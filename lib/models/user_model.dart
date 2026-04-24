@@ -11,3 +11,5 @@ abstract class UserModel {
     required this.phone,
   });
 }
+
+enum UserRole { admin, customer }

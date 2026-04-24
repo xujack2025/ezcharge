@@ -1,110 +1,72 @@
 import 'package:flutter/material.dart';
 
-class CustomTextField extends StatefulWidget {
+import 'package:ezcharge/core/constants/colors.dart';
+import 'package:ezcharge/core/constants/text_styles.dart';
+
+class CustomTextField extends StatelessWidget {
+  final String? label;
   final String hint;
-  final String label;
+  final String? prefixText;
   final TextEditingController controller;
+  final TextInputType keyboardType;
   final bool isPassword;
-  final IconData? icon;
+  final String? Function(String?)? validator;
+  final IconData? prefixIcon;
 
   const CustomTextField({
     super.key,
+    this.label,
     required this.hint,
-    required this.label,
     required this.controller,
+    this.keyboardType = TextInputType.text,
     this.isPassword = false,
-    this.icon,
-  });
-
-  @override
-  CustomTextFieldState createState() => CustomTextFieldState();
-}
-
-class CustomTextFieldState extends State<CustomTextField> {
-  final FocusNode _focusNode = FocusNode();
-  Color borderColor = Colors.grey;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode.addListener(() {
-      setState(() {
-        borderColor = _focusNode.hasFocus ? Colors.blueAccent : Colors.grey;
-      });
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: widget.controller,
-      obscureText: widget.isPassword,
-      focusNode: _focusNode,
-      decoration: InputDecoration(
-        labelText: widget.label,
-        hintText: widget.hint,
-        labelStyle: TextStyle(
-          color: _focusNode.hasFocus ? Colors.blueAccent : Colors.grey,
-        ),
-        prefixIcon: widget.icon != null
-            ? Icon(widget.icon, color: borderColor)
-            : null,
-        filled: true,
-        fillColor: Colors.grey[200],
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.blueAccent, width: 2.0),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey, width: 1.5),
-        ),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
-}
-
-// 📌 Custom Phone Number TextField
-class CustomPhoneTextField extends StatelessWidget {
-  final String hint;
-  final String label;
-  final TextEditingController controller;
-  final String prefixText;
-
-  const CustomPhoneTextField({
-    super.key,
-    required this.hint,
-    required this.label,
-    required this.controller,
-    this.prefixText = "",
+    this.validator,
+    this.prefixIcon,
+    this.prefixText,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: TextInputType.phone,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixText: prefixText,
-        filled: true,
-        fillColor: Colors.grey[200],
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 12,
-          horizontal: 16,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (label != null) ...[
+          Text(label!, style: AppTextStyles.labelLarge),
+          const SizedBox(height: 8),
+        ],
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          obscureText: isPassword,
+          keyboardType: keyboardType,
+          validator: validator,
+          style: AppTextStyles.bodyLarge,
+          cursorColor: AppColors.black,
+          decoration: InputDecoration(
+            hintText: hint,
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+            prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(
+                color: Colors.grey, // 普通时的颜色
+                width: 2.0,
+              ),
+            ),
+
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 2.0,
+              ),
+            ),
+            hintStyle: AppTextStyles.bodyLarge.copyWith(color: Colors.grey),
+            prefixText: prefixText,
+            prefixStyle: AppTextStyles.bodyLarge,
+          ),
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-      ),
+      ],
     );
   }
 }

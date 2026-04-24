@@ -14,28 +14,25 @@ class Driver extends UserModel {
     required super.phone,
   });
 
-  // Convert to Firestore
-  Map<String, dynamic> toMap() {
-    return {
-      'driverID': id,
-      'FirstName': firstName,
-      'LastName': lastName,
-      'phone': phone,
-      'location': location, // ✅ Now storing as GeoPoint
-      'status': status,
-    };
-  }
-
-  // Convert from Firestore
   factory Driver.fromMap(Map<String, dynamic> map) {
     return Driver(
       id: map['driverID'] ?? '',
       firstName: map['FirstName'] ?? '',
       lastName: map['LastName'] ?? '',
       phone: map['PhoneNumber'] ?? '',
-      location:
-          map['location'] ?? GeoPoint(0.0, 0.0), // ✅ Ensure default GeoPoint
+      location: map['location'] ?? GeoPoint(0.0, 0.0),
       status: map['status'] ?? 'Offline',
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'driverID': id,
+      'FirstName': firstName,
+      'LastName': lastName,
+      'phone': phone,
+      'location': location,
+      'status': status,
+    };
   }
 }

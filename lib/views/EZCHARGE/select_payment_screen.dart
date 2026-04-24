@@ -58,7 +58,7 @@ class _SelectPaymentScreenState extends State<SelectPaymentScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching wallet balance: $e");
+      debugPrint("Error fetching wallet balance: $e");
     }
     setState(() => isLoading = false);
   }
@@ -77,7 +77,7 @@ class _SelectPaymentScreenState extends State<SelectPaymentScreen> {
         _cardNumber = querySnapshot.docs.first["CardNumber"];
       }
     } catch (e) {
-      print("Error fetching card number: $e");
+      debugPrint("Error fetching card number: $e");
     }
   }
 

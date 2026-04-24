@@ -9,7 +9,7 @@ class ChargingStation {
   String latitude;
   String longitude;
   int capacity;
-  String imageUrl; // ✅ New field for image
+  String imageUrl;
 
   ChargingStation({
     required this.stationID,
@@ -23,7 +23,6 @@ class ChargingStation {
     required this.imageUrl,
   });
 
-  // Convert Firestore DocumentSnapshot to ChargingStation object
   factory ChargingStation.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return ChargingStation(
@@ -35,11 +34,10 @@ class ChargingStation {
       latitude: data['Latitude'] ?? '',
       longitude: data['Longitude'] ?? '',
       capacity: data['Capacity'] ?? 0,
-      imageUrl: data['ImageUrl'] ?? '', // ✅ Load image URL from Firestore
+      imageUrl: data['ImageUrl'] ?? '',
     );
   }
 
-  // Convert ChargingStation object to Map for Firestore
   Map<String, dynamic> toMap() {
     return {
       'StationID': stationID,
@@ -50,7 +48,7 @@ class ChargingStation {
       'Latitude': latitude,
       'Longitude': longitude,
       'Capacity': capacity,
-      'ImageUrl': imageUrl, // ✅ Store image URL in Firestore
+      'ImageUrl': imageUrl, // Store image URL in Firestore
     };
   }
 }

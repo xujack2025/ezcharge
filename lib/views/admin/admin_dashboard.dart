@@ -27,7 +27,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     const AdminHomeContent(), // Dashboard
     const AdminAnalyticsPage(), // Analytics
     const AdminComplaintPage(), // Complaints
-    const AdminChargingStationsPage(), // ✅ Charging Stations Management
+    const AdminChargingStationsPage(), // Charging Stations Management
     const AdminProfilePage(), // Profile
   ];
 
@@ -72,17 +72,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ],
       ),
       drawer: AdminDrawer(
-        // ✅ Use the new AdminDrawer widget
+        // Use the new AdminDrawer widget
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
       ), // Sidebar Navigation
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
-        // ✅ Smooth transition effect
+        // Smooth transition effect
         transitionBuilder: (child, animation) {
           return FadeTransition(opacity: animation, child: child);
         },
-        child: _pages[_selectedIndex], // ✅ Animated Page Switching
+        child: _pages[_selectedIndex], // Animated Page Switching
       ),
       bottomNavigationBar: CustomBottomAppBar(
         selectedIndex: _selectedIndex,
@@ -93,7 +93,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 }
 
-// ✅ Admin Home Dashboard Content
+// Admin Home Dashboard Content
 class AdminHomeContent extends StatelessWidget {
   const AdminHomeContent({super.key});
 
@@ -104,7 +104,7 @@ class AdminHomeContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ✅ Real-time Dashboard Stats Grid
+          // Real-time Dashboard Stats Grid
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -153,14 +153,14 @@ class AdminHomeContent extends StatelessWidget {
           ),
 
           const SizedBox(height: 20),
-          // ✅ Active Emergency Requests Section
+          // Active Emergency Requests Section
           _activeEmergencyRequestsWidget(context),
         ],
       ),
     );
   }
 
-  // ✅ Real-Time Dashboard Cards
+  // Real-Time Dashboard Cards
   Widget _dashboardStatCard(
     String title,
     IconData icon,
@@ -184,7 +184,7 @@ class AdminHomeContent extends StatelessWidget {
             ),
             const SizedBox(height: 6),
 
-            // ✅ StreamBuilder for Real-Time Updates
+            // StreamBuilder for Real-Time Updates
             StreamBuilder<int>(
               stream: _getStatCountStream(type),
               builder: (context, snapshot) {
@@ -207,7 +207,7 @@ class AdminHomeContent extends StatelessWidget {
     );
   }
 
-  /// ✅ Widget to Display Active Emergency Requests
+  /// Widget to Display Active Emergency Requests
   Widget _activeEmergencyRequestsWidget(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,7 +225,7 @@ class AdminHomeContent extends StatelessWidget {
               .where(
                 'status',
                 isEqualTo: "Pending",
-              ) // ✅ Show only unassigned requests
+              ) // Show only unassigned requests
               .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -271,7 +271,7 @@ class AdminHomeContent extends StatelessWidget {
     );
   }
 
-  // ✅ Convert Future to Firestore Stream for Real-Time Updates
+  // Convert Future to Firestore Stream for Real-Time Updates
   Stream<int> _getStatCountStream(String type) {
     final firestore = FirebaseFirestore.instance;
     switch (type) {

@@ -46,7 +46,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -77,7 +77,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching wallet balance: $e");
+      debugPrint("Error fetching wallet balance: $e");
     }
   }
 
@@ -99,7 +99,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching card number: $e");
+      debugPrint("Error fetching card number: $e");
     }
   }
 

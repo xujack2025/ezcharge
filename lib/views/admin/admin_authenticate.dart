@@ -11,7 +11,7 @@ class AdminAuthenticatePage extends StatefulWidget {
 class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
     with SingleTickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  TabController? _tabController; // ✅ Declare as nullable
+  TabController? _tabController; // Declare as nullable
 
   @override
   void initState() {
@@ -21,7 +21,7 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
 
   @override
   void dispose() {
-    _tabController?.dispose(); // ✅ Dispose only if not null
+    _tabController?.dispose(); // Dispose only if not null
     super.dispose();
   }
 
@@ -80,7 +80,7 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
           title: Text("Customer Authentication"),
           bottom:
               _tabController ==
-                  null // ✅ Null-check before using controller
+                  null // Null-check before using controller
               ? null
               : TabBar(
                   controller: _tabController,
@@ -104,7 +104,7 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
             }
 
             return _tabController ==
-                    null // ✅ Handle null case
+                    null // Handle null case
                 ? Center(child: CircularProgressIndicator())
                 : TabBarView(
                     controller: _tabController!,

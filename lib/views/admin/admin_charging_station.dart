@@ -50,7 +50,7 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
     _longitudeController.text = longitude ?? "";
     _imageUrl = imageUrl;
     _selectedImage = null;
-    _editingStationID = stationID; // ✅ Correctly assigns station ID for editing
+    _editingStationID = stationID; // Correctly assigns station ID for editing
 
     showDialog(
       context: context,
@@ -186,14 +186,14 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
     );
   }
 
-  // ✅ Save Charging Station (With Auto Capacity & Status Update)
+  // Save Charging Station (With Auto Capacity & Status Update)
   Future<void> _saveChargingStation(Function setDialogState) async {
     if (_stationNameController.text.isEmpty ||
         _locationController.text.isEmpty) {
-      return; // ✅ Prevent saving with empty fields
+      return; // Prevent saving with empty fields
     }
 
-    // ✅ Upload image if new image is selected
+    // Upload image if new image is selected
     if (_selectedImage != null) {
       String? uploadedImageUrl = await _chargingStationViewModel.uploadImage(
         _selectedImage!,
@@ -207,7 +207,7 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
       }
     }
 
-    // ✅ Keep previous image if no new one is selected
+    // Keep previous image if no new one is selected
     if (_imageUrl == null && _editingStationID != null) {
       _imageUrl = await _chargingStationViewModel.getStationImage(
         _editingStationID!,
@@ -215,7 +215,7 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
     }
 
     if (_editingStationID == null) {
-      // ✅ Generate ID and create new station (Capacity is auto-managed)
+      // Generate ID and create new station (Capacity is auto-managed)
       String newStationID = await _chargingStationViewModel
           .generateNewStationID();
       await _chargingStationViewModel.createChargingStation(
@@ -228,10 +228,10 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
         imageFile: _selectedImage,
       );
 
-      // ✅ Automatically set capacity and occupied bays
+      // Automatically set capacity and occupied bays
       await _chargingStationViewModel.updateCapacity(newStationID);
     } else {
-      // ✅ Update existing station (Capacity auto-updated)
+      // Update existing station (Capacity auto-updated)
       await _chargingStationViewModel.updateChargingStation(
         stationID: _editingStationID!,
         stationName: _stationNameController.text,
@@ -243,7 +243,7 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
         imageFile: _selectedImage,
       );
 
-      // ✅ Automatically update capacity and occupied bays
+      // Automatically update capacity and occupied bays
       await _chargingStationViewModel.updateCapacity(_editingStationID!);
     }
   }
@@ -259,18 +259,18 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: _chargingStationViewModel.fetchChargingStationsStream(),
-        // ✅ Stream-based fetching
+        // Stream-based fetching
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
-            ); // ✅ Show loading
+            ); // Show loading
           }
 
           if (snapshot.hasError) {
             return Center(
               child: Text("Error: ${snapshot.error}"),
-            ); // ✅ Handle error
+            ); // Handle error
           }
 
           final stations = snapshot.data ?? [];
@@ -297,7 +297,7 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
     );
   }
 
-  // ✅ Build Charging Station Card
+  // Build Charging Station Card
   Widget _buildChargingStationCard(Map<String, dynamic> station) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -397,7 +397,7 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
     );
   }
 
-  // ✅ Build Text Field Widget
+  // Build Text Field Widget
   Widget _buildStyledTextField(
     String label,
     TextEditingController controller, {
@@ -418,7 +418,7 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
     );
   }
 
-  // ✅ Manage Charging Bays Button
+  // Manage Charging Bays Button
   Widget _buildBayManagementButton(String stationID) {
     return IconButton(
       icon: const Icon(Icons.ev_station, color: Colors.orange),
@@ -433,7 +433,7 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
     );
   }
 
-  // ✅ Edit Button
+  // Edit Button
   Widget _buildEditButton(Map<String, dynamic> station) {
     return IconButton(
       icon: const Icon(Icons.edit, color: Colors.blue),
@@ -450,7 +450,7 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
     );
   }
 
-  // ✅ Delete Button
+  // Delete Button
   Widget _buildDeleteButton(String stationID) {
     return IconButton(
       icon: const Icon(Icons.delete, color: Colors.red),

@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/core/utils/app_logger.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'package:ezcharge/core/utils/app_logger.dart';
 import 'package:ezcharge/views/ezcharge/payment_history_detail.dart';
 
 class PaymentHistoryListScreen extends StatefulWidget {

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ezcharge/views/auth/Intro_screen.dart';
+import 'package:ezcharge/views/welcome/intro_screen.dart';
 
 class ConfirmDeleteScreen extends StatelessWidget {
   const ConfirmDeleteScreen({super.key});
@@ -169,10 +169,10 @@ class ConfirmDeleteScreen extends StatelessWidget {
         // Sign out after deletion
         await FirebaseAuth.instance.signOut();
 
-        print("Account deleted successfully.");
+        debugPrint("Account deleted successfully.");
       }
     } catch (e) {
-      print("Error deleting account: $e");
+      debugPrint("Error deleting account: $e");
     }
   }
 }

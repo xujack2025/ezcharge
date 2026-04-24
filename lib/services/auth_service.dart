@@ -1,9 +1,11 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:ezcharge/core/utils/app_logger.dart';
 import 'package:ezcharge/models/admin_model.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ezcharge/models/customer_model.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -42,7 +44,30 @@ class AuthService {
     }
   }
 
-  // Sign Out User
+  Future<CustomerModel?> getCustomerByPhoneNumber(String phoneNumber) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('customers')
+          .where('PhoneNumber', isEqualTo: phoneNumber)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        AppLogger.info("No customer found with phone number: $phoneNumber");
+        return null;
+      }
+
+      final customerData = querySnapshot.docs.first.data();
+      final customer = CustomerModel.fromFirestore(customerData);
+      AppLogger.debug(
+        "Customer Model successfully created: ${customer.firstName}",
+      );
+      return customer;
+    } catch (e) {
+      AppLogger.error("Error fetching customer by phone number: $e");
+      return null;
+    }
+  }
+
   Future<void> signout() async {
     try {
       await _auth.signOut();

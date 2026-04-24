@@ -66,7 +66,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
         });
       }
     } catch (e) {
-      print("Error fetching charging bays: $e");
+      debugPrint("Error fetching charging bays: $e");
       if (mounted) {
         setState(() {
           _chargingBays = [];
@@ -99,7 +99,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
 
       return await snapshot.ref.getDownloadURL(); // Returns image URL
     } catch (e) {
-      print("Error uploading image: $e");
+      debugPrint("Error uploading image: $e");
       return null;
     }
   }
@@ -108,7 +108,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
   Future<void> _submitComplaint() async {
     if (_isSubmitting) return;
 
-    // ✅ Ensure both fields are selected
+    // Ensure both fields are selected
     if (_selectedBayID == null || _reportReason == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please select a bay and report reason.")),
@@ -119,7 +119,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
     setState(() => _isSubmitting = true);
 
     try {
-      // ✅ Get Current User
+      // Get Current User
       User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         ScaffoldMessenger.of(
@@ -129,7 +129,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
         return;
       }
 
-      // ✅ Retrieve Customer ID
+      // Retrieve Customer ID
       var customerQuery = await FirebaseFirestore.instance
           .collection("customers")
           .where("PhoneNumber", isEqualTo: user.phoneNumber)
@@ -146,7 +146,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
 
       String customerID = customerQuery.docs.first["CustomerID"];
 
-      // ✅ Generate Complaint ID
+      // Generate Complaint ID
       QuerySnapshot complaintSnapshot = await FirebaseFirestore.instance
           .collection("customers")
           .doc(customerID)
@@ -173,13 +173,13 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
       String complaintDocID =
           "$customerID-$newComplaintID"; // Format: CTMxxxxx-CMPxxxx
 
-      // ✅ Upload Image (If Selected)
+      // Upload Image (If Selected)
       String? imageUrl;
       if (_selectedImage != null) {
         imageUrl = await _uploadImage(_selectedImage!, complaintDocID);
       }
 
-      // ✅ Save Complaint to Firestore
+      // Save Complaint to Firestore
       await FirebaseFirestore.instance
           .collection("customers")
           .doc(customerID)
@@ -189,8 +189,8 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
             'ComplaintID': newComplaintID,
             'CustomerID': customerID,
             'StationID': widget.stationId,
-            'SlotID': _selectedBayID, // ✅ Save ChargerID
-            'ChargerBay': _selectedBayName, // ✅ Save ChargerName
+            'SlotID': _selectedBayID, // Save ChargerID
+            'ChargerBay': _selectedBayName, // Save ChargerName
             'Reason': _reportReason,
             'Description': _details ?? "",
             'ImageUrl': imageUrl ?? "",
@@ -213,7 +213,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
         _selectedImage = null;
       });
 
-      Navigator.pop(context); // ✅ Close after submission
+      Navigator.pop(context); // Close after submission
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -324,19 +324,19 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
               hint: const Text("Select Bay"),
               items: _chargingBays.map((bay) {
                 return DropdownMenuItem(
-                  value: bay["ChargerID"], // ✅ Store ChargerID
+                  value: bay["ChargerID"], // Store ChargerID
                   child: Text(
                     bay["ChargerName"] ?? "Unknown Bay",
-                  ), // ✅ Show ChargerName
+                  ), // Show ChargerName
                 );
               }).toList(),
               onChanged: (value) {
                 setState(() {
-                  _selectedBayID = value; // ✅ Store ChargerID
+                  _selectedBayID = value; // Store ChargerID
                   _selectedBayName = _chargingBays.firstWhere(
                     (bay) => bay["ChargerID"] == value,
                     orElse: () => {"ChargerName": "Unknown"},
-                  )["ChargerName"]; // ✅ Get the name for display
+                  )["ChargerName"]; // Get the name for display
                 });
               },
               decoration: const InputDecoration(border: OutlineInputBorder()),

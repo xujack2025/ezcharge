@@ -35,11 +35,11 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
 
   @override
   void dispose() {
-    _stopTrackingDriverLocation(); // ✅ Ensure tracking is stopped when page is disposed
+    _stopTrackingDriverLocation(); // Ensure tracking is stopped when page is disposed
     super.dispose();
   }
 
-  /// ✅ Convert seconds to HH:MM:SS format
+  /// Convert seconds to HH:MM:SS format
   String _formatDuration(int seconds) {
     int hours = seconds ~/ 3600; // Get hours
     int minutes = (seconds % 3600) ~/ 60; // Get minutes
@@ -50,9 +50,9 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         "${secs.toString().padLeft(2, '0')}";
   }
 
-  /// ✅ Start tracking driver location
+  /// Start tracking driver location
   void _startTrackingDriverLocation(String driverID) {
-    // ✅ Ensure any previous tracking is stopped
+    // Ensure any previous tracking is stopped
     _stopTrackingDriverLocation();
 
     positionStream =
@@ -66,14 +66,14 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         });
   }
 
-  /// ✅ Stop tracking driver location
+  /// Stop tracking driver location
   void _stopTrackingDriverLocation() {
     positionStream?.cancel();
     positionStream = null;
-    print("📍 Driver location tracking stopped.");
+    debugPrint("📍 Driver location tracking stopped.");
   }
 
-  /// ✅ Update driver location in Firestore
+  /// Update driver location in Firestore
   Future<void> _updateDriverLocation(String driverID, Position position) async {
     try {
       await FirebaseFirestore.instance
@@ -83,11 +83,11 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
             'location': GeoPoint(position.latitude, position.longitude),
             'lastUpdated': FieldValue.serverTimestamp(),
           });
-      print(
-        "✅ Driver location updated: ${position.latitude}, ${position.longitude}",
+      debugPrint(
+        "Driver location updated: ${position.latitude}, ${position.longitude}",
       );
     } catch (e) {
-      print("❌ Error updating driver location: $e");
+      debugPrint("❌ Error updating driver location: $e");
     }
   }
 
@@ -98,13 +98,13 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         .snapshots()
         .listen((snapshot) {
           if (!snapshot.exists) {
-            print("❌ Error: Request not found in Firestore.");
+            debugPrint("❌ Error: Request not found in Firestore.");
             return;
           }
 
           Map<String, dynamic>? requestData = snapshot.data();
           if (requestData == null) {
-            print("❌ Error: Firestore data is null.");
+            debugPrint("❌ Error: Firestore data is null.");
             return;
           }
 
@@ -113,7 +113,7 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
               : "Unknown";
           String? driverID = requestData['driverID'];
 
-          print("🔄 Firestore Update Detected: Status = $status");
+          debugPrint("🔄 Firestore Update Detected: Status = $status");
 
           setState(() {
             isDriverAssigned =
@@ -124,23 +124,25 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
           });
 
           if (status == "Arrived") {
-            print("✅ Driver has arrived! Stopping location tracking.");
-            _stopTrackingDriverLocation(); // ✅ Stop tracking when driver arrives
+            debugPrint("Driver has arrived! Stopping location tracking.");
+            _stopTrackingDriverLocation(); // Stop tracking when driver arrives
           }
 
-          // ✅ Debugging: Confirm if this block is running
+          // Debugging: Confirm if this block is running
           if (status == "Payment" && driverID != null) {
-            print(
-              "✅ Status is 'Completed', calling _updateDriverStatus($driverID)",
+            debugPrint(
+              "Status is 'Completed', calling _updateDriverStatus($driverID)",
             );
             _updateDriverStatus(driverID);
           } else {
-            print("⚠️ Status is NOT 'Completed' yet, skipping driver update.");
+            debugPrint(
+              "⚠️ Status is NOT 'Completed' yet, skipping driver update.",
+            );
           }
         });
   }
 
-  /// ✅ Fetch Available Drivers from Firestore
+  /// Fetch Available Drivers from Firestore
   Future<void> _fetchAvailableDrivers() async {
     try {
       QuerySnapshot driverSnapshot = await FirebaseFirestore.instance
@@ -159,11 +161,11 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         isLoading = false;
       });
     } catch (e) {
-      print("❌ Error fetching drivers: $e");
+      debugPrint("❌ Error fetching drivers: $e");
     }
   }
 
-  /// ✅ Assign Driver & Update Firestore
+  /// Assign Driver & Update Firestore
   Future<void> _assignDriver() async {
     if (selectedDriverID == null) return;
 
@@ -172,7 +174,7 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         .doc(widget.requestID)
         .update({'driverID': selectedDriverID, 'status': 'Upcoming'});
 
-    // ✅ Update driver status to "Busy"
+    // Update driver status to "Busy"
     await FirebaseFirestore.instance
         .collection('drivers')
         .doc(selectedDriverID)
@@ -182,7 +184,7 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
       isDriverAssigned = true;
     });
 
-    // ✅ Start tracking location
+    // Start tracking location
     _startTrackingDriverLocation(selectedDriverID!);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -190,7 +192,7 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
     );
   }
 
-  /// ✅ Admin starts charging
+  /// Admin starts charging
   Future<void> _startCharging() async {
     DateTime startTime = DateTime.now();
     DateTime clientNow = DateTime.now();
@@ -202,10 +204,10 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
           'status': 'Charging',
           'chargingStartTime': FieldValue.serverTimestamp(), // For accuracy
           'chargingClientStartTime': clientNow, // For immediate local use
-          // ✅ Ensure Firestore stores this timestamp
+          // Ensure Firestore stores this timestamp
         });
 
-    print("✅ Firestore Updated: Status changed to Charging at $startTime");
+    debugPrint("Firestore Updated: Status changed to Charging at $startTime");
 
     setState(() {
       isCharging = true;
@@ -213,18 +215,18 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
     });
   }
 
-  /// ✅ Admin stops charging & calculates fee
+  /// Admin stops charging & calculates fee
   Future<void> _stopCharging() async {
-    print("🔴 Stop Charging button clicked!");
+    debugPrint("🔴 Stop Charging button clicked!");
 
-    // ✅ Fetch latest Firestore data to get the chargingStartTime
+    // Fetch latest Firestore data to get the chargingStartTime
     DocumentSnapshot requestSnapshot = await FirebaseFirestore.instance
         .collection('emergency_requests')
         .doc(widget.requestID)
         .get();
 
     if (!requestSnapshot.exists) {
-      print("❌ Error: Request document does not exist.");
+      debugPrint("❌ Error: Request document does not exist.");
       return;
     }
 
@@ -232,7 +234,7 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         requestSnapshot.data() as Map<String, dynamic>?;
 
     if (requestData == null || !requestData.containsKey('chargingStartTime')) {
-      print("❌ Error: Charging start time not found in Firestore.");
+      debugPrint("❌ Error: Charging start time not found in Firestore.");
       return;
     }
 
@@ -241,13 +243,15 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         requestData['chargingStartTime'];
     DateTime chargingStartTime = startTimestamp.toDate();
 
-    print("✅ Retrieved charging start time from Firestore: $chargingStartTime");
+    debugPrint(
+      "Retrieved charging start time from Firestore: $chargingStartTime",
+    );
 
     DateTime endTime = DateTime.now();
     Duration duration = endTime.difference(chargingStartTime);
     int chargingTime = duration.inSeconds; // 🔹 Track in seconds
 
-    print("⏳ Charging time: $chargingTime seconds");
+    debugPrint("⏳ Charging time: $chargingTime seconds");
 
     // Limit to 30 minutes max (1800 seconds)
     chargingTime = chargingTime > 1800 ? 1800 : chargingTime;
@@ -273,8 +277,8 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
             'totalCost': totalCost,
           });
 
-      print(
-        "✅ Firestore updated: Charging stopped & status changed to Payment. Formatted time: $formattedChargingTime",
+      debugPrint(
+        "Firestore updated: Charging stopped & status changed to Payment. Formatted time: $formattedChargingTime",
       );
 
       setState(() {
@@ -289,11 +293,11 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         ),
       );
     } catch (e) {
-      print("❌ Firestore Update Failed: $e");
+      debugPrint("❌ Firestore Update Failed: $e");
     }
   }
 
-  /// ✅ Confirm Driver Arrival Only if Close to Customer
+  /// Confirm Driver Arrival Only if Close to Customer
   Future<void> _confirmDriverArrival() async {
     try {
       DocumentSnapshot requestSnapshot = await FirebaseFirestore.instance
@@ -302,36 +306,36 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
           .get();
 
       if (!requestSnapshot.exists) {
-        print("❌ Request not found.");
+        debugPrint("❌ Request not found.");
         return;
       }
 
-      // ✅ Get Firestore document data
+      // Get Firestore document data
       Map<String, dynamic>? requestData =
           requestSnapshot.data() as Map<String, dynamic>?;
 
       if (requestData == null) {
-        print("❌ Error: requestData is null.");
+        debugPrint("❌ Error: requestData is null.");
         return;
       }
 
       String? driverID = requestData['driverID'] as String?;
 
       if (driverID == null || driverID.isEmpty) {
-        print("❌ No driver assigned yet.");
+        debugPrint("❌ No driver assigned yet.");
         return;
       }
 
       if (!requestData.containsKey('location') ||
           requestData['location'] == null) {
-        print("❌ Customer location not available in emergency request.");
+        debugPrint("❌ Customer location not available in emergency request.");
         return;
       }
 
-      // ✅ Fetch Customer GeoPoint Directly (No Need for Address Conversion)
+      // Fetch Customer GeoPoint Directly (No Need for Address Conversion)
       GeoPoint customerGeoPoint = requestData['location'] as GeoPoint;
 
-      // ✅ Fetch driver location from Firestore
+      // Fetch driver location from Firestore
       DocumentSnapshot driverSnapshot = await FirebaseFirestore.instance
           .collection('drivers')
           .doc(driverID)
@@ -341,14 +345,14 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
           driverSnapshot.data() as Map<String, dynamic>?;
 
       if (driverData == null || !driverData.containsKey('location')) {
-        print("❌ Driver location not available.");
+        debugPrint("❌ Driver location not available.");
         return;
       }
 
       GeoPoint driverLocation =
-          driverData['location'] as GeoPoint; // ✅ Driver is stored as GeoPoint
+          driverData['location'] as GeoPoint; // Driver is stored as GeoPoint
 
-      // ✅ Calculate distance (meters)
+      // Calculate distance (meters)
       double distance = Geolocator.distanceBetween(
         driverLocation.latitude,
         driverLocation.longitude,
@@ -356,11 +360,11 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         customerGeoPoint.longitude,
       );
 
-      print(
+      debugPrint(
         "📍 Distance between driver and customer: ${distance.toStringAsFixed(2)} meters",
       );
 
-      // ✅ Only allow confirmation if within 100 meters
+      // Only allow confirmation if within 100 meters
       if (distance <= 100) {
         await FirebaseFirestore.instance
             .collection('emergency_requests')
@@ -371,11 +375,11 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
           isDriverArrived = true;
         });
 
-        // ✅ Stop tracking when driver arrives
+        // Stop tracking when driver arrives
         _stopTrackingDriverLocation();
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("✅ Driver marked as arrived!")),
+          const SnackBar(content: Text("Driver marked as arrived!")),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -387,26 +391,26 @@ class _AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         );
       }
     } catch (e) {
-      print("❌ Error checking driver arrival: $e");
+      debugPrint("❌ Error checking driver arrival: $e");
     }
   }
 
-  /// ✅ Update the driver's status and remove requestID in the drivers collection
+  /// Update the driver's status and remove requestID in the drivers collection
   Future<void> _updateDriverStatus(String driverID) async {
     try {
-      print("🔄 Updating driver $driverID status to 'Available'...");
+      debugPrint("🔄 Updating driver $driverID status to 'Available'...");
 
       await FirebaseFirestore.instance
           .collection('drivers')
           .doc(driverID)
           .update({
-            'status': 'Available', // ✅ Set driver as Available
-            'requestID': FieldValue.delete(), // ✅ Remove requestID field
+            'status': 'Available', // Set driver as Available
+            'requestID': FieldValue.delete(), // Remove requestID field
           });
 
-      print("✅ Driver $driverID status updated successfully!");
+      debugPrint("Driver $driverID status updated successfully!");
     } catch (error) {
-      print("❌ Error updating driver status: $error");
+      debugPrint("❌ Error updating driver status: $error");
     }
   }
 

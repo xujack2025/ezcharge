@@ -3,9 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/services/auth_service.dart';
+import 'package:ezcharge/views/auth/sign_in_screen.dart';
 import 'package:ezcharge/views/admin/admin_authenticate.dart';
 import 'package:ezcharge/views/admin/admin_profile_edit.dart';
-import 'package:ezcharge/views/auth/sign_in_screen.dart';
 
 class AdminProfilePage extends StatefulWidget {
   const AdminProfilePage({super.key});
@@ -41,7 +41,7 @@ class AdminProfilePageState extends State<AdminProfilePage> {
             .get();
 
         if (adminDoc.exists) {
-          // ✅ Found admin data using UID
+          // Found admin data using UID
           _setAdminData(adminDoc);
           return;
         }
@@ -55,16 +55,16 @@ class AdminProfilePageState extends State<AdminProfilePage> {
               .get();
 
           if (querySnapshot.docs.isNotEmpty) {
-            // ✅ Found admin data using Phone Number
+            // Found admin data using Phone Number
             _setAdminData(querySnapshot.docs.first);
             return;
           }
         }
 
-        print("❌ Admin document not found!");
+        debugPrint("❌ Admin document not found!");
       }
     } catch (e) {
-      print("❌ Error fetching admin data: $e");
+      debugPrint("❌ Error fetching admin data: $e");
     }
   }
 
@@ -159,7 +159,7 @@ class AdminProfilePageState extends State<AdminProfilePage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => AdminAuthenticatePage(),
-                          ), // ✅ Navigate to Authentication Page
+                          ), // Navigate to Authentication Page
                         );
                       },
                     ),

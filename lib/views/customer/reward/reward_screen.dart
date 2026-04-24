@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/views/ezcharge/home_screen.dart';
-import 'package:ezcharge/views/customer/notification/notification_screen.dart';
 import 'package:ezcharge/views/customer/customer_content/account_screen.dart';
+import 'package:ezcharge/views/customer/notification/notification_screen.dart';
 import 'package:ezcharge/views/customer/reward/point_history_screen.dart';
 
 class RewardScreen extends StatefulWidget {
@@ -53,7 +53,7 @@ class _RewardScreenState extends State<RewardScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching user data: $e");
+      debugPrint("Error fetching user data: $e");
     }
   }
 
@@ -89,7 +89,7 @@ class _RewardScreenState extends State<RewardScreen> {
             .toList();
       });
     } catch (e) {
-      print("Error fetching rewards: $e");
+      debugPrint("Error fetching rewards: $e");
     }
   }
 
@@ -146,7 +146,7 @@ class _RewardScreenState extends State<RewardScreen> {
                     ),
                   );
                 } catch (e) {
-                  print("Error redeeming reward: $e");
+                  debugPrint("Error redeeming reward: $e");
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text("Failed to redeem reward. Try again."),

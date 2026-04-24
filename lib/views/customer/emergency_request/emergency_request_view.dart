@@ -59,7 +59,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
   void _checkActiveRequest() {
     String? phoneNumber = FirebaseAuth.instance.currentUser?.phoneNumber;
     if (phoneNumber == null) {
-      print("❌ No phone number found for user.");
+      debugPrint("❌ No phone number found for user.");
       return;
     }
 
@@ -70,15 +70,15 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
         .snapshots() // 🔹 Listen for real-time changes
         .listen((customerQuery) {
           if (customerQuery.docs.isEmpty) {
-            print("❌ No customer found with this phone number.");
+            debugPrint("❌ No customer found with this phone number.");
             return;
           }
 
-          // ✅ Extract CustomerID
+          // Extract CustomerID
           String customerID = customerQuery.docs.first['CustomerID'];
-          print("✅ Found CustomerID: $customerID");
+          debugPrint("Found CustomerID: $customerID");
 
-          // ✅ Listen for active requests in real-time
+          // Listen for active requests in real-time
           FirebaseFirestore.instance
               .collection('emergency_requests')
               .where('CustomerID', isEqualTo: customerID)
@@ -96,11 +96,13 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
               .snapshots() // 🔹 Real-time listener for request updates
               .listen((activeRequests) {
                 if (activeRequests.docs.isNotEmpty) {
-                  // ✅ Extract active request ID
+                  // Extract active request ID
                   String fetchedRequestID = activeRequests.docs.first.id;
-                  print("🔄 Request Updated! New requestID: $fetchedRequestID");
+                  debugPrint(
+                    "🔄 Request Updated! New requestID: $fetchedRequestID",
+                  );
 
-                  // ✅ Update state with the new request in real-time
+                  // Update state with the new request in real-time
                   if (mounted) {
                     setState(() {
                       activeRequestExists = true;
@@ -109,7 +111,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
                     });
                   }
                 } else {
-                  print("✅ No active request found.");
+                  debugPrint("No active request found.");
                   if (mounted) {
                     setState(() {
                       activeRequestExists = false;
@@ -143,14 +145,14 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
     if (query.docs.isNotEmpty) {
       setState(() => customerID = query.docs.first['CustomerID']);
     } else {
-      print("❌ No customer document found.");
+      debugPrint("❌ No customer document found.");
     }
   }
 
   /// 🔹 Get User's GPS Location
   Future<void> _getUserLocation() async {
     setState(() {
-      isLoading = true; // ✅ Show loading while fetching suggestions
+      isLoading = true; // Show loading while fetching suggestions
     });
 
     try {
@@ -168,7 +170,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
       if (permission == PermissionStatus.granted) {
         LocationData locationData = await _location.getLocation();
 
-        if (!mounted) return; // ✅ Prevents errors if widget is disposed
+        if (!mounted) return; // Prevents errors if widget is disposed
 
         _selectedLocation = LatLng(
           locationData.latitude!,
@@ -176,11 +178,11 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
         );
         _updateMarker(_selectedLocation);
 
-        // ✅ Convert LatLng to Address and Autofill the TextField
+        // Convert LatLng to Address and Autofill the TextField
         await _convertLatLngToAddress(_selectedLocation);
 
         setState(() {
-          isLoading = false; // ✅ Hide loading after fetching location
+          isLoading = false; // Hide loading after fetching location
         });
 
         final GoogleMapController controller = await _controller.future;
@@ -192,7 +194,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
         _promptManualLocationEntry();
       }
     } catch (error) {
-      print("❌ Location Error: $error");
+      debugPrint("❌ Location Error: $error");
       _promptManualLocationEntry(); // 🚨 Show prompt if error occurs
     }
   }
@@ -225,7 +227,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
     }
 
     setState(() {
-      isLoading = true; // ✅ Show loading while fetching suggestions
+      isLoading = true; // Show loading while fetching suggestions
     });
 
     final String url =
@@ -235,7 +237,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         if (!mounted) {
-          return; // ✅ Prevent modifying state after widget is disposed
+          return; // Prevent modifying state after widget is disposed
         }
         setState(() {
           _suggestions = json.decode(response.body)["predictions"];
@@ -244,7 +246,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
         throw Exception("Failed to fetch address suggestions");
       }
     } catch (error) {
-      print("❌ API Error: $error");
+      debugPrint("❌ API Error: $error");
     }
   }
 
@@ -288,14 +290,14 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
           if (!mounted) return;
           setState(() {
             _locationController.text =
-                data["results"][0]["formatted_address"]; // ✅ Autofill the location field
+                data["results"][0]["formatted_address"]; // Autofill the location field
           });
         }
       } else {
         throw Exception("Failed to fetch address");
       }
     } catch (error) {
-      print("❌ Address Fetch Error: $error");
+      debugPrint("❌ Address Fetch Error: $error");
     }
   }
 
@@ -321,7 +323,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
     });
   }
 
-  /// ✅ Function to Track Request Status in Real-Time
+  /// Function to Track Request Status in Real-Time
   void _trackRequestStatus(String requestID) {
     FirebaseFirestore.instance
         .collection('emergency_requests')
@@ -333,15 +335,15 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
             String status = requestData['status'];
             String? driverID = requestData['driverID'];
 
-            print("🔄 Request Status Updated: $status");
+            debugPrint("🔄 Request Status Updated: $status");
 
             if (status == "Upcoming" && driverID != null) {
-              // ✅ Driver Assigned → Show Driver Details
+              // Driver Assigned → Show Driver Details
               setState(() {
                 isLoading = false;
               });
             } else if (status == "Pending") {
-              // ✅ Still Pending → Keep Loading Indicator
+              // Still Pending → Keep Loading Indicator
               setState(() {
                 isLoading = true;
               });
@@ -373,10 +375,10 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
     }
 
     setState(() {
-      isLoading = true; // ✅ Show loading spinner
+      isLoading = true; // Show loading spinner
     });
 
-    // ✅ Generate a request ID in the format: EMQ_<timestamp>
+    // Generate a request ID in the format: EMQ_<timestamp>
     String requestID = "EMQ${DateTime.now().millisecondsSinceEpoch}";
     String? imageUrl = await requestViewModel.uploadImageToFirebase();
 
@@ -395,7 +397,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
           ? requestViewModel.scheduledDateTime.toString()
           : _preferredTime,
       status: "Pending",
-      imageUrl: imageUrl ?? "", // ✅ Store image URL if uploaded
+      imageUrl: imageUrl ?? "", // Store image URL if uploaded
     );
 
     try {
@@ -404,14 +406,14 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
       if (!mounted) return;
 
       setState(() {
-        requestID = requestID; // ✅ Store requestID to track status updates
+        requestID = requestID; // Store requestID to track status updates
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("✅ Request submitted successfully!")),
+        const SnackBar(content: Text("Request submitted successfully!")),
       );
 
-      _trackRequestStatus(requestID); // ✅ Start listening for status updates
+      _trackRequestStatus(requestID); // Start listening for status updates
 
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) Navigator.pop(context);
@@ -423,7 +425,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
         isLoading = false;
       });
 
-      print("❌ Firestore Save Error: $error");
+      debugPrint("❌ Firestore Save Error: $error");
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("❌ Failed to submit request. Try again.")),
@@ -447,7 +449,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
       ),
       body: Column(
         children: [
-          /// ✅ Input Fields & Confirm Button (Scrollable)
+          /// Input Fields & Confirm Button (Scrollable)
           Expanded(
             flex: 1,
             child: SingleChildScrollView(
@@ -455,7 +457,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// ✅ Enter Location Input
+                  /// Enter Location Input
                   const Text(
                     "Enter Location",
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -480,7 +482,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
                   ),
                   const SizedBox(height: 10),
 
-                  /// ✅ Address Suggestions (Only Show When Needed)
+                  /// Address Suggestions (Only Show When Needed)
                   if (_suggestions.isNotEmpty)
                     Container(
                       decoration: BoxDecoration(
@@ -510,7 +512,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
                     ),
                   const SizedBox(height: 10),
 
-                  /// ✅ Booking Reason Dropdown
+                  /// Booking Reason Dropdown
                   const Text(
                     "Select Booking Reason",
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -568,20 +570,18 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
                         ),
                   const SizedBox(height: 10),
 
-                  /// ✅ Confirm Order Button
+                  /// Confirm Order Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: (activeRequestExists || isLoading)
                           ? null // Disable button if request is active or still loading
                           : () async {
-                              setState(
-                                () => isLoading = true,
-                              ); // ✅ Show loading
+                              setState(() => isLoading = true); // Show loading
 
                               _submitRequest(
                                 customerID,
-                              ); // ✅ Now call _submitRequest()
+                              ); // Now call _submitRequest()
                             },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 15),
@@ -610,10 +610,10 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
             ),
           ),
 
-          /// ✅ Google Map (Rounded Corners)
+          /// Google Map (Rounded Corners)
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12), // ✅ Rounded edges
+              borderRadius: BorderRadius.circular(12), // Rounded edges
               child: GoogleMap(
                 onTap: _onMapTap,
                 markers: _userMarker != null ? {_userMarker!} : {},
@@ -630,7 +630,7 @@ class _EmergencyRequestViewState extends State<EmergencyRequestView> {
         ],
       ),
 
-      /// ✅ Floating "Locate Me" Button (Fixed Position)
+      /// Floating "Locate Me" Button (Fixed Position)
       floatingActionButton: FloatingActionButton(
         onPressed: _getUserLocation,
         backgroundColor: Colors.blue,

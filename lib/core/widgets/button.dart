@@ -1,46 +1,61 @@
 import 'package:flutter/material.dart';
 
+import 'package:ezcharge/core/constants/colors.dart';
+import 'package:ezcharge/core/constants/text_styles.dart';
+
 class CustomButton extends StatelessWidget {
-  final String label;
-  final VoidCallback? onPressed;
-  final bool isDisabled;
+  final String text;
+  final VoidCallback onPressed;
   final bool isLoading;
+  final Color backgroundColor;
+  final double? width;
+  final double borderRadius;
 
   const CustomButton({
     super.key,
-    required this.label,
+    required this.text,
     required this.onPressed,
-    this.isDisabled = false,
+    required this.borderRadius,
+    this.backgroundColor = AppColors.primary,
     this.isLoading = false,
+    this.width,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: isDisabled || isLoading ? null : onPressed,
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        backgroundColor: Colors.blueAccent,
-        disabledBackgroundColor: Colors.grey[400],
+    return SizedBox(
+      width: width ?? double.infinity,
+      child: ElevatedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isLoading ? AppColors.darkGrey : backgroundColor,
+          foregroundColor: AppColors.white,
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          elevation: isLoading ? 0 : 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.white,
+                  ),
+                )
+              : Text(
+                  text,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+        ),
       ),
-      child: isLoading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-          : Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
     );
   }
 }

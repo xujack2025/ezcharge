@@ -66,7 +66,7 @@ class _StopChargingScreenState extends State<StopChargingScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -90,7 +90,7 @@ class _StopChargingScreenState extends State<StopChargingScreen> {
         _fetchCharger();
       }
     } catch (e) {
-      print("Error fetching reservation record: $e");
+      debugPrint("Error fetching reservation record: $e");
     }
   }
 
@@ -112,7 +112,7 @@ class _StopChargingScreenState extends State<StopChargingScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching charger: $e");
+      debugPrint("Error fetching charger: $e");
     }
   }
 

@@ -4,8 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ezcharge/views/customer/service/chatbot_screen.dart';
 import 'package:ezcharge/views/customer/customer_content/activity_screen.dart';
+import 'package:ezcharge/views/customer/service/chatbot_screen.dart';
 import 'package:ezcharge/views/ezcharge/stop_charging.dart';
 
 // A shared timer service that holds the timer state independently.
@@ -100,7 +100,7 @@ class _TimerScreenState extends State<TimerScreen> {
         ),
       );
     } catch (e) {
-      print("Error updating reservation status: $e");
+      debugPrint("Error updating reservation status: $e");
     }
   }
 
@@ -129,7 +129,7 @@ class _TimerScreenState extends State<TimerScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -153,7 +153,7 @@ class _TimerScreenState extends State<TimerScreen> {
         _fetchCharger();
       }
     } catch (e) {
-      print("Error fetching reservation record: $e");
+      debugPrint("Error fetching reservation record: $e");
     }
   }
 
@@ -172,7 +172,7 @@ class _TimerScreenState extends State<TimerScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching station: $e");
+      debugPrint("Error fetching station: $e");
     }
   }
 
@@ -194,7 +194,7 @@ class _TimerScreenState extends State<TimerScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching charger: $e");
+      debugPrint("Error fetching charger: $e");
     }
   }
 
@@ -256,7 +256,7 @@ class _TimerScreenState extends State<TimerScreen> {
                             ),
                           );
                         } catch (e) {
-                          print("Error updating reservation status: $e");
+                          debugPrint("Error updating reservation status: $e");
                         }
                       },
                       child: const Text("STOP CHARGING"),

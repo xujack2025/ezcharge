@@ -48,12 +48,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
           setState(() {
             _customerId = userDoc["CustomerID"];
             _username =
-                "${userDoc["FirstName"]} ${userDoc["LastName"]}"; // ✅ Prevents extra spaces
+                "${userDoc["FirstName"]} ${userDoc["LastName"]}"; // Prevents extra spaces
           });
         }
       }
     } catch (e) {
-      print("Error fetching user details: $e");
+      debugPrint("Error fetching user details: $e");
     }
   }
 
@@ -81,13 +81,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
       String ratingId = "RTG${DateTime.now().millisecondsSinceEpoch}";
       String dateNow = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now());
 
-      // ✅ Save the review inside the customer's Firestore document
+      // Save the review inside the customer's Firestore document
       await FirebaseFirestore.instance
-          .collection("CTM250001") // ✅ Go to 'customers' collection
-          .doc(_customerId) // ✅ Use the current user's CustomerID
+          .collection("CTM250001") // Go to 'customers' collection
+          .doc(_customerId) // Use the current user's CustomerID
           .collection(
             "Rating",
-          ) // ✅ Store the review inside 'Rating' subcollection
+          ) // Store the review inside 'Rating' subcollection
           .doc(ratingId)
           .set({
             "RatingID": "RTG${DateTime.now()}",
@@ -118,7 +118,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // ✅ Top App Bar
+          // Top App Bar
           Padding(
             padding: const EdgeInsets.only(top: 40, left: 20, right: 20),
             child: Row(
@@ -144,7 +144,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ),
           ),
 
-          // ✅ Station Details Card
+          // Station Details Card
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Card(
@@ -204,7 +204,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ),
           ),
 
-          // ✅ Review Input Fields
+          // Review Input Fields
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -216,7 +216,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     style: TextStyle(fontSize: 16),
                   ),
 
-                  // ✅ User Info
+                  // User Info
                   Row(
                     children: [
                       const CircleAvatar(
@@ -236,7 +236,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     ],
                   ),
 
-                  // ✅ Star Rating
+                  // Star Rating
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(5, (index) {
@@ -256,7 +256,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // ✅ Comment Box
+                  // Comment Box
                   TextField(
                     maxLines: 4,
                     maxLength: 500,
@@ -276,7 +276,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
               ),
             ),
           ),
-          // ✅ Submit Button
+          // Submit Button
           Padding(
             padding: const EdgeInsets.all(20),
             child: ElevatedButton(

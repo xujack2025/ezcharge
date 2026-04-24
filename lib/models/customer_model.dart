@@ -5,7 +5,7 @@ class CustomerModel extends UserModel {
   final String gender;
   final double walletBalance;
   final int pointBalance;
-  final DateTime dateOfBirth;
+  final String dateOfBirth;
   final Timestamp createdAt;
   final String email;
 
@@ -22,7 +22,6 @@ class CustomerModel extends UserModel {
     required super.phone,
   });
 
-  // ✅ Convert Firestore document to CustomerModel
   factory CustomerModel.fromFirestore(Map<String, dynamic> data) {
     return CustomerModel(
       id: data['CustomerID'] ?? '',
@@ -33,12 +32,11 @@ class CustomerModel extends UserModel {
       phone: data['PhoneNumber'] ?? '',
       walletBalance: (data['WalletBalance'] ?? 0.0).toDouble(),
       pointBalance: data['PointBalance'] ?? 0,
-      dateOfBirth: (data['DateOfBirth'] as Timestamp).toDate(),
+      dateOfBirth: data['DateOfBirth']?.toString() ?? '',
       createdAt: data['CreatedAt'] ?? Timestamp.now(),
     );
   }
 
-  // ✅ Convert CustomerModel to Firestore document format
   Map<String, dynamic> toFirestore() {
     return {
       'CustomerID': id,
@@ -49,7 +47,7 @@ class CustomerModel extends UserModel {
       'PhoneNumber': phone,
       'WalletBalance': walletBalance,
       'PointBalance': pointBalance,
-      'DateOfBirth': Timestamp.fromDate(dateOfBirth),
+      'DateOfBirth': dateOfBirth,
       'CreatedAt': createdAt,
     };
   }

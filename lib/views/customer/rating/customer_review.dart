@@ -25,7 +25,7 @@ class ReviewPage extends StatefulWidget {
 class _ReviewPageState extends State<ReviewPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _reviewController = TextEditingController();
-  double _rating = 0; // Default rating
+  double _rating = 0;
   String _username = "Guest";
   bool _isSubmitting = false;
   String? _comment;
@@ -84,7 +84,7 @@ class _ReviewPageState extends State<ReviewPage> {
     }
 
     try {
-      // ✅ Retrieve customer ID
+      // Retrieve customer ID
       var customerQuery = await _firestore
           .collection("customers")
           .where("PhoneNumber", isEqualTo: user.phoneNumber)
@@ -107,7 +107,7 @@ class _ReviewPageState extends State<ReviewPage> {
 
       String customerID = customerQuery.docs.first["CustomerID"];
 
-      // ✅ Generate Custom Review ID
+      // Generate Custom Review ID
       CollectionReference reviewsRef = _firestore.collection("reviews");
       QuerySnapshot lastReviewSnapshot = await reviewsRef
           .orderBy("ReviewID", descending: true)
@@ -131,7 +131,7 @@ class _ReviewPageState extends State<ReviewPage> {
         }
       }
 
-      // ✅ Store the Review with the Custom ID
+      // Store the Review with the Custom ID
       await reviewsRef.doc(newReviewID).set({
         'ReviewID': newReviewID, // Custom review ID
         'StationID': widget.stationId,
@@ -171,7 +171,7 @@ class _ReviewPageState extends State<ReviewPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // ✅ Top App Bar
+            // Top App Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
@@ -197,7 +197,7 @@ class _ReviewPageState extends State<ReviewPage> {
               ),
             ),
 
-            // ✅ Station Details Card
+            // Station Details Card
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Card(
@@ -262,7 +262,7 @@ class _ReviewPageState extends State<ReviewPage> {
               ),
             ),
 
-            // ✅ Review Input Fields
+            // Review Input Fields
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -278,7 +278,7 @@ class _ReviewPageState extends State<ReviewPage> {
                     ),
                     const SizedBox(height: 10),
 
-                    // ✅ User Info
+                    // User Info
                     Row(
                       children: [
                         const CircleAvatar(
@@ -299,7 +299,7 @@ class _ReviewPageState extends State<ReviewPage> {
                     ),
                     const SizedBox(height: 10),
 
-                    // ✅ Star Rating with Gesture Animation
+                    // Star Rating with Gesture Animation
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(5, (index) {
@@ -319,7 +319,7 @@ class _ReviewPageState extends State<ReviewPage> {
                     ),
                     const SizedBox(height: 10),
 
-                    // ✅ Comment Box
+                    // Comment Box
                     TextField(
                       maxLines: 4,
                       maxLength: 500,
@@ -342,7 +342,7 @@ class _ReviewPageState extends State<ReviewPage> {
               ),
             ),
 
-            // ✅ Submit & Manage Buttons
+            // Submit & Manage Buttons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Column(
@@ -366,7 +366,7 @@ class _ReviewPageState extends State<ReviewPage> {
 
                   const SizedBox(height: 10),
 
-                  // ✅ Manage My Reviews Button
+                  // Manage My Reviews Button
                   OutlinedButton.icon(
                     onPressed: () {
                       Navigator.push(

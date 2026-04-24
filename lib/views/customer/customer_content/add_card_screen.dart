@@ -45,7 +45,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -97,7 +97,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
         Navigator.pop(context, true); // Return true to indicate success
       }
     } catch (e) {
-      print("Error adding card: $e");
+      debugPrint("Error adding card: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Failed to add card. Try again!")),
       );

@@ -58,7 +58,7 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -86,7 +86,7 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching reservation record: $e");
+      debugPrint("Error fetching reservation record: $e");
     }
   }
 
@@ -105,7 +105,7 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching station: $e");
+      debugPrint("Error fetching station: $e");
     }
   }
 
@@ -128,7 +128,7 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching charger: $e");
+      debugPrint("Error fetching charger: $e");
     }
   }
 
@@ -398,7 +398,7 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
         MaterialPageRoute(builder: (context) => const StartChargingScreen()),
       );
     } catch (e) {
-      print("Error during check-in: $e");
+      debugPrint("Error during check-in: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Check-in failed. Try again!")),
       );

@@ -179,7 +179,7 @@ class AdminDrawer extends StatelessWidget {
       onTap: () {
         onItemTapped(index);
         if (Navigator.canPop(context)) {
-          Navigator.pop(context); // ✅ Close drawer if open
+          Navigator.pop(context); // Close drawer if open
         }
       },
     );

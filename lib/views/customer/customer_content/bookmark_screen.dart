@@ -46,7 +46,7 @@ class BookmarkScreenState extends State<BookmarkScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
       setState(() => _isLoading = false);
     }
   }
@@ -86,7 +86,7 @@ class BookmarkScreenState extends State<BookmarkScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print("Error fetching bookmarked stations: $e");
+      debugPrint("Error fetching bookmarked stations: $e");
       setState(() => _isLoading = false);
     }
   }
@@ -111,7 +111,7 @@ class BookmarkScreenState extends State<BookmarkScreen> {
         context,
       ).showSnackBar(const SnackBar(content: Text("Bookmark removed!")));
     } catch (e) {
-      print("Error removing bookmark: $e");
+      debugPrint("Error removing bookmark: $e");
     }
   }
 

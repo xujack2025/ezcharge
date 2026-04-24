@@ -56,7 +56,7 @@ class _RequestPaymentSuccessScreenState
       // Once we have the _accountId, fetch the latest attendance record
       _fetchRequestRecord();
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
     setState(() => isLoading = false);
   }
@@ -72,7 +72,7 @@ class _RequestPaymentSuccessScreenState
           .limit(1)
           .get();
 
-      print("accountID RPSS: $_accountId");
+      debugPrint("accountID RPSS: $_accountId");
 
       if (query.docs.isNotEmpty) {
         final data = query.docs.first.data() as Map<String, dynamic>;
@@ -81,11 +81,11 @@ class _RequestPaymentSuccessScreenState
         });
       }
 
-      print("requestID RPSS: $_requestID");
+      debugPrint("requestID RPSS: $_requestID");
 
       _fetchLatestRequest(); // continue your flow
     } catch (e) {
-      print("Error fetching request record: $e");
+      debugPrint("Error fetching request record: $e");
     }
   }
 
@@ -107,10 +107,10 @@ class _RequestPaymentSuccessScreenState
 
         // Extract fields from the attendance doc
         _duration = docData["chargingFormattedTime"] ?? "";
-        print("duration RPSS $_duration");
+        debugPrint("duration RPSS $_duration");
       }
     } catch (e) {
-      print("Error fetching attendance: $e");
+      debugPrint("Error fetching attendance: $e");
     }
   }
 
@@ -135,12 +135,14 @@ class _RequestPaymentSuccessScreenState
             "Payment ID": paymentID,
           });
 
-      print("duration RPSS $_duration");
+      debugPrint("duration RPSS $_duration");
 
-      print("Payment history record created successfully with ID $paymentID.");
+      debugPrint(
+        "Payment history record created successfully with ID $paymentID.",
+      );
       return paymentID;
     } catch (e) {
-      print("Error creating payment history record: $e");
+      debugPrint("Error creating payment history record: $e");
       return null;
     }
   }

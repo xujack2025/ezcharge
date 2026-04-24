@@ -92,7 +92,7 @@ class _RewardSelectScreenState extends State<RewardSelectScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching rewards: $e");
+      debugPrint("Error fetching rewards: $e");
     }
 
     setState(() => isLoading = false);

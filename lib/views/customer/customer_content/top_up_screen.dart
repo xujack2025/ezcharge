@@ -53,7 +53,7 @@ class TopUpScreenState extends State<TopUpScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -84,7 +84,7 @@ class TopUpScreenState extends State<TopUpScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching wallet balance: $e");
+      debugPrint("Error fetching wallet balance: $e");
     }
   }
 
@@ -121,7 +121,7 @@ class TopUpScreenState extends State<TopUpScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching card number: $e");
+      debugPrint("Error fetching card number: $e");
     }
   }
 

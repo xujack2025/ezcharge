@@ -78,8 +78,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                         onTap: () {
                           setDialogState(() {
                             newRating =
-                                index +
-                                1.0; // ✅ Updates state inside the dialog
+                                index + 1.0; // Updates state inside the dialog
                           });
                         },
                         child: Icon(
@@ -103,7 +102,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                       {
                         "ReviewText": reviewController.text,
                         "Rating": newRating.toInt(),
-                        // ✅ Ensure integer rating
+                        // Ensure integer rating
                       },
                     );
 

@@ -48,7 +48,7 @@ class _PointHistoryScreenState extends State<PointHistoryScreen>
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -121,7 +121,7 @@ class _PointHistoryScreenState extends State<PointHistoryScreen>
         _usedRewards = usedRewards; // for the "Used" tab
       });
     } catch (e) {
-      print("Error fetching rewards: $e");
+      debugPrint("Error fetching rewards: $e");
     }
   }
 

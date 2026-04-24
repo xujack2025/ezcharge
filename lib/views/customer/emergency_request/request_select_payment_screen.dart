@@ -60,7 +60,7 @@ class _RequestSelectPaymentScreenState
         }
       }
     } catch (e) {
-      print("Error fetching wallet balance: $e");
+      debugPrint("Error fetching wallet balance: $e");
     }
     setState(() => isLoading = false);
   }
@@ -79,7 +79,7 @@ class _RequestSelectPaymentScreenState
         _cardNumber = querySnapshot.docs.first["CardNumber"];
       }
     } catch (e) {
-      print("Error fetching card number: $e");
+      debugPrint("Error fetching card number: $e");
     }
   }
 
@@ -250,7 +250,7 @@ class _RequestSelectPaymentScreenState
 
                                       // 4) Navigate to PaymentSuccessScreen with wallet payment method
 
-                                      // ✅ Update emergency_requests status to "Completed"
+                                      // Update emergency_requests status to "Completed"
                                       await FirebaseFirestore.instance
                                           .collection("emergency_requests")
                                           .where(
@@ -269,7 +269,7 @@ class _RequestSelectPaymentScreenState
                                                   .update({
                                                     "status": "Completed",
                                                   });
-                                              print(
+                                              debugPrint(
                                                 "Emergency request status set to Completed ✅",
                                               );
                                             }
@@ -343,7 +343,7 @@ class _RequestSelectPaymentScreenState
                                       ),
                                     );
 
-                                    // ✅ Update emergency_requests status to "Completed"
+                                    // Update emergency_requests status to "Completed"
                                     await FirebaseFirestore.instance
                                         .collection("emergency_requests")
                                         .where(
@@ -359,7 +359,7 @@ class _RequestSelectPaymentScreenState
                                                 .update({
                                                   "status": "Completed",
                                                 });
-                                            print(
+                                            debugPrint(
                                               "Emergency request status set to Completed ✅",
                                             );
                                           }

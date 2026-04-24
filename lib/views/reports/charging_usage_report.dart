@@ -29,42 +29,42 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
   /// **Fetch the Current Admin's Name & ID using Phone Number**
   Future<void> _fetchAdminDetails() async {
     try {
-      // ✅ Get the currently logged-in user from Firebase Auth
+      // Get the currently logged-in user from Firebase Auth
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user == null || user.phoneNumber == null) {
-        print("❌ No admin is logged in or phone number is not available.");
+        debugPrint("❌ No admin is logged in or phone number is not available.");
         return;
       }
 
-      String phoneNumber = user.phoneNumber!; // ✅ Get phone number
+      String phoneNumber = user.phoneNumber!; // Get phone number
 
-      // ✅ Fetch admin details from Firestore using the phone number
+      // Fetch admin details from Firestore using the phone number
       final adminQuery = await FirebaseFirestore.instance
-          .collection('admins') // ✅ Ensure correct collection name
+          .collection('admins') // Ensure correct collection name
           .where(
             'PhoneNumber',
             isEqualTo: phoneNumber,
-          ) // ✅ Search by phone number
+          ) // Search by phone number
           .limit(1)
           .get();
 
       if (adminQuery.docs.isNotEmpty) {
         final adminData = adminQuery.docs.first.data();
 
-        print("✅ Admin Data Retrieved: $adminData"); // 🔹 Debugging output
+        debugPrint("Admin Data Retrieved: $adminData"); // 🔹 Debugging output
 
         if (mounted) {
           setState(() {
             adminNameAndID =
-                "${adminData['FirstName']} (#${adminData['AdminID']})"; // ✅ Corrected format
+                "${adminData['FirstName']} (#${adminData['AdminID']})"; // Corrected format
           });
         }
       } else {
-        print("❌ Admin data not found for phone number: $phoneNumber");
+        debugPrint("❌ Admin data not found for phone number: $phoneNumber");
       }
     } catch (e) {
-      print("❌ Error fetching admin details: $e");
+      debugPrint("❌ Error fetching admin details: $e");
     }
   }
 
@@ -72,7 +72,7 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
   Future<void> _fetchStationDetails(String stationId) async {
     try {
       final stationSnapshot = await FirebaseFirestore.instance
-          .collection('station') // ✅ Ensure correct collection name
+          .collection('station') // Ensure correct collection name
           .doc(stationId)
           .get();
 
@@ -80,7 +80,7 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
         setState(() {
           selectedStationLocation =
               stationSnapshot.data()?['Location'] ??
-              'Not Found'; // ✅ Check correct field name
+              'Not Found'; // Check correct field name
         });
       } else {
         setState(() {
@@ -88,7 +88,7 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
         });
       }
     } catch (e) {
-      print("❌ Error fetching station details: $e");
+      debugPrint("❌ Error fetching station details: $e");
       setState(() {
         selectedStationLocation = 'Error loading location';
       });
@@ -126,7 +126,7 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
 
       await Printing.layoutPdf(onLayout: (format) async => pdf.save());
     } catch (e) {
-      print("❌ Report generation failed: $e");
+      debugPrint("❌ Report generation failed: $e");
     }
 
     setState(() => isLoading = false);
@@ -142,13 +142,13 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
           "CheckInTime",
           isGreaterThanOrEqualTo: Timestamp.fromDate(
             selectedDateRange!.start /*.subtract(Duration(hours: 8))*/,
-          ), // ✅ Adjusted
+          ), // Adjusted
         )
         .where(
           "CheckOutTime",
           isLessThanOrEqualTo: Timestamp.fromDate(
             adjustedEndDate /*.subtract(Duration(hours: 8))*/,
-          ), // ✅ Adjusted
+          ), // Adjusted
         )
         .get();
 
@@ -157,28 +157,28 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
     double totalEnergy = 0.0;
     Map<int, int> peakHourUsage = {}; // {hour: count}
 
-    print(
+    debugPrint(
       "\n🔹 Retrieved ${snapshot.docs.length} Charging Sessions from Firestore 🔹",
     );
 
     for (var doc in snapshot.docs) {
       var data = doc.data();
 
-      // ✅ Add 8 hours to the original Firestore timestamps
+      // Add 8 hours to the original Firestore timestamps
       DateTime checkIn = (data['CheckInTime'] as Timestamp)
           .toDate() /*.add(Duration(hours: 8))*/;
       DateTime checkOut = (data['CheckOutTime'] as Timestamp)
           .toDate() /*.add(Duration(hours: 8))*/;
 
-      // ✅ Calculate peak hour correctly
+      // Calculate peak hour correctly
       int hour = checkIn.hour;
       peakHourUsage[hour] = (peakHourUsage[hour] ?? 0) + 1;
 
       totalRevenue += (data['TotalCost'] ?? 0).toDouble();
       totalEnergy += (data['EnergyUsed'] ?? 0).toDouble();
 
-      // ✅ Print each session details
-      print("""
+      // Print each session details
+      debugPrint("""
     📍 Session Data:
     - Station ID: ${data['StationID']}
     - Check-In Time (Adjusted): $checkIn
@@ -189,8 +189,8 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
     """);
     }
 
-    // ✅ Print summary of retrieved data
-    print("""
+    // Print summary of retrieved data
+    debugPrint("""
   📊 Summary:
   - Total Sessions: $totalSessions
   - Total Revenue: RM ${totalRevenue.toStringAsFixed(2)}
@@ -327,13 +327,13 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
 
   /// **📈 6️⃣ Peak Hour Analysis Graph**
   pw.Widget _buildPeakHourChart(Map<String, dynamic> data) {
-    // ✅ Ensure all 24 hours exist (fill missing hours with 0)
+    // Ensure all 24 hours exist (fill missing hours with 0)
     final Map<int, int> peakHourData = {for (int i = 0; i < 24; i++) i: 0};
     data['peakHourUsage'].forEach((key, value) {
-      peakHourData[key] = value; // ✅ Assign actual session counts
+      peakHourData[key] = value; // Assign actual session counts
     });
 
-    final List<int> peakHours = peakHourData.keys.toList(); // ✅ All 24 hours
+    final List<int> peakHours = peakHourData.keys.toList(); // All 24 hours
     final int maxSessions = peakHourData.values.isEmpty
         ? 1
         : peakHourData.values.fold(1, (a, b) => a > b ? a : b);
@@ -354,7 +354,7 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
               grid: pw.CartesianGrid(
                 xAxis: pw.FixedAxis.fromStrings(
                   peakHours.map((h) => h.toString()).toList(),
-                  // ✅ Show all 24 hours
+                  // Show all 24 hours
                   textStyle: pw.TextStyle(fontSize: 10),
                 ),
                 yAxis: pw.FixedAxis(
@@ -372,7 +372,7 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
                         (hour) => pw.PointChartValue(
                           hour.toDouble(),
                           peakHourData[hour]!.toDouble(),
-                        ), // ✅ Show session counts
+                        ), // Show session counts
                       )
                       .toList(),
                 ),

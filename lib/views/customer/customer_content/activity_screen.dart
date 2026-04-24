@@ -78,7 +78,7 @@ class _ActivityScreenState extends State<ActivityScreen>
         _fetchEndedAttendances();
       }
     } catch (e) {
-      print("Error fetching customer ID: $e");
+      debugPrint("Error fetching customer ID: $e");
     }
   }
 
@@ -102,7 +102,7 @@ class _ActivityScreenState extends State<ActivityScreen>
         _fetchCharger();
       }
     } catch (e) {
-      print("Error fetching reservation record: $e");
+      debugPrint("Error fetching reservation record: $e");
     }
   }
 
@@ -159,7 +159,7 @@ class _ActivityScreenState extends State<ActivityScreen>
         _endedAttendances = attendances;
       });
     } catch (e) {
-      print("Error fetching ended attendances: $e");
+      debugPrint("Error fetching ended attendances: $e");
     }
   }
 
@@ -177,10 +177,10 @@ class _ActivityScreenState extends State<ActivityScreen>
         setState(() {
           _stationName = doc["StationName"];
         });
-        print("Fetched Station Name: $_stationName");
+        debugPrint("Fetched Station Name: $_stationName");
       }
     } catch (e) {
-      print("Error fetching station: $e");
+      debugPrint("Error fetching station: $e");
     }
   }
 
@@ -206,7 +206,7 @@ class _ActivityScreenState extends State<ActivityScreen>
         });
       }
     } catch (e) {
-      print("Error fetching charger: $e");
+      debugPrint("Error fetching charger: $e");
     }
   }
 
@@ -224,7 +224,7 @@ class _ActivityScreenState extends State<ActivityScreen>
 
       setState(() {}); // Refresh UI.
     } catch (e) {
-      print("Error deleting reservation: $e");
+      debugPrint("Error deleting reservation: $e");
     }
   }
 

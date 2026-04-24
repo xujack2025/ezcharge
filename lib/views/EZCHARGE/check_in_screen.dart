@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import 'package:ezcharge/views/ezcharge/book_a_charge_screen.dart';
 import 'package:ezcharge/views/ezcharge/check_detail.dart';
 import 'package:ezcharge/views/ezcharge/home_screen.dart';
-import 'package:ezcharge/views/ezcharge/book_a_charge_screen.dart';
 
 class CheckInScreen extends StatefulWidget {
   const CheckInScreen({super.key});
@@ -62,7 +62,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
         }
       }
     } catch (e) {
-      print("Error fetching customer data: $e");
+      debugPrint("Error fetching customer data: $e");
     }
   }
 
@@ -88,7 +88,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
         });
       }
     } catch (e) {
-      print("Error fetching reservation record: $e");
+      debugPrint("Error fetching reservation record: $e");
       // Set a default status to handle the error
       setState(() {
         _reservationStatus = "Ended";
@@ -117,7 +117,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
             }
           })
           .catchError((error) {
-            print("Error scanning image: $error");
+            debugPrint("Error scanning image: $error");
           });
     }
   }

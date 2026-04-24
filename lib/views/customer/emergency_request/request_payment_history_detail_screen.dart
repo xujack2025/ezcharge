@@ -66,7 +66,7 @@ class _RequestPaymentHistoryDetailScreenState
         }
       }
     } catch (e) {
-      print("Error fetching payment detail: $e");
+      debugPrint("Error fetching payment detail: $e");
     }
 
     setState(() => isLoading = false);

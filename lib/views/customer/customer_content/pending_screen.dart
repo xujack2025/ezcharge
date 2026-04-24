@@ -45,7 +45,7 @@ class _PendingScreenState extends State<PendingScreen> {
         await _fetchImagesAndStoreInFirestore(); // Fetch Images & Store
       }
     } catch (e) {
-      print("Error fetching customer ID: $e");
+      debugPrint("Error fetching customer ID: $e");
     }
   }
 
@@ -72,10 +72,10 @@ class _PendingScreenState extends State<PendingScreen> {
               "Timestamp": FieldValue.serverTimestamp(),
             });
 
-        print("Authentication data stored successfully!");
+        debugPrint("Authentication data stored successfully!");
       }
     } catch (e) {
-      print("Error fetching images & storing in Firestore: $e");
+      debugPrint("Error fetching images & storing in Firestore: $e");
     }
   }
 
@@ -85,7 +85,7 @@ class _PendingScreenState extends State<PendingScreen> {
       Reference ref = FirebaseStorage.instance.ref().child(path);
       return await ref.getDownloadURL(); //Get download URL
     } catch (e) {
-      print("Error fetching image from Storage: $e");
+      debugPrint("Error fetching image from Storage: $e");
       return null;
     }
   }

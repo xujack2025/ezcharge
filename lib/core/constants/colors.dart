@@ -23,8 +23,10 @@ class AppColors {
     0xFF1E3A5F,
   ); // Deep Blue Background
 
+  static const Color backgroundGrey = Color(0xFFEEEEEE);
+
   // 🔹 **Blue for Buttons & Highlights**
-  static const Color buttonBlue = Color(0xFF0066CC); // Standard Button Blue
+  static const Color buttonBlue = Colors.blue; // Standard Button Blue
   static const Color buttonHoverBlue = Color(0xFF004C99); // Darker Hover Effect
 
   // 🔹 **Blue for Text & Borders**

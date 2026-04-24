@@ -58,7 +58,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         }
       }
     } catch (e) {
-      print("❌ Error fetching customer data: $e");
+      debugPrint("❌ Error fetching customer data: $e");
     }
   }
 
@@ -100,7 +100,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       Navigator.pop(context);
     } catch (e) {
-      print("Error updating profile: $e");
+      debugPrint("Error updating profile: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Failed to update profile.")),
       );

@@ -80,7 +80,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
             DateTime adjustedTime =
                 storedTime /*.add(const Duration(hours: 8))*/; // Manually adjust by +8 hours
 
-            print(
+            debugPrint(
               "Firebase Stored Time: $storedTime | Corrected Local Time: $adjustedTime",
             );
 
@@ -99,7 +99,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3, // ✅ Three Tabs
+      length: 3, // Three Tabs
       child: Scaffold(
         appBar: AppBar(
           bottom: PreferredSize(
@@ -120,9 +120,9 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
         body: TabBarView(
           controller: _tabController,
           children: [
-            _buildPeakHourAnalysis(), // ✅ Peak Hour Analysis Tab
-            _buildChargingStationOverview(), // ✅ Charging Station Tab
-            _buildUserBehaviorAnalysis(), // ✅ User Behavior Tab
+            _buildPeakHourAnalysis(), // Peak Hour Analysis Tab
+            _buildChargingStationOverview(), // Charging Station Tab
+            _buildUserBehaviorAnalysis(), // User Behavior Tab
           ],
         ),
       ),
@@ -735,7 +735,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
       int minutes = int.parse(parts[1]);
       return (hours * 60) + minutes; // Convert hours to minutes and add
     } catch (e) {
-      print("Error parsing duration: $e");
+      debugPrint("Error parsing duration: $e");
       return 0; // Default to 0 if parsing fails
     }
   }
