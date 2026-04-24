@@ -11,10 +11,10 @@ class ReservationScreen extends StatefulWidget {
   const ReservationScreen({super.key, required this.stationId});
 
   @override
-  _ReservationScreenState createState() => _ReservationScreenState();
+  ReservationScreenState createState() => ReservationScreenState();
 }
 
-class _ReservationScreenState extends State<ReservationScreen> {
+class ReservationScreenState extends State<ReservationScreen> {
   List<Map<String, dynamic>> chargers = [];
   String? selectedCharger;
   String? selectedChargerDocId;

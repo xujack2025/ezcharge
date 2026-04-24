@@ -8,10 +8,10 @@ class PassScreen extends StatefulWidget {
   const PassScreen({super.key});
 
   @override
-  State<PassScreen> createState() => _PassScreenState();
+  State<PassScreen> createState() => PassScreenState();
 }
 
-class _PassScreenState extends State<PassScreen> {
+class PassScreenState extends State<PassScreen> {
   @override
   void initState() {
     super.initState();

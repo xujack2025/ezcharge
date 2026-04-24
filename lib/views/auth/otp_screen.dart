@@ -28,7 +28,7 @@ class OTPScreen extends StatefulWidget {
 
 class OTPScreenState extends State<OTPScreen> {
   final TextEditingController _otpController = TextEditingController();
-  AuthViewmodel get _authViewModel => context.read<AuthViewmodel>();
+  AuthViewModel get _authViewModel => context.read<AuthViewModel>();
 
   //Verify OTP
   Future<void> onVerifyPressed() async {
@@ -54,7 +54,7 @@ class OTPScreenState extends State<OTPScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authViewModel = context.watch<AuthViewmodel>();
+    final authViewModel = context.watch<AuthViewModel>();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundGrey,

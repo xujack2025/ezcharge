@@ -1,3 +1,5 @@
+enum UserRole { admin, customer }
+
 abstract class UserModel {
   final String id;
   final String firstName;
@@ -12,4 +14,3 @@ abstract class UserModel {
   });
 }
 
-enum UserRole { admin, customer }

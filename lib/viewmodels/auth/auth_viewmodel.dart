@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ezcharge/core/utils/app_logger.dart';
+import 'package:ezcharge/services/station_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -6,32 +9,54 @@ import 'package:ezcharge/models/customer_model.dart';
 import 'package:ezcharge/models/user_model.dart';
 import 'package:ezcharge/services/auth_service.dart';
 
-class AuthViewmodel extends ChangeNotifier {
+class AuthViewModel extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final AuthService _authService;
+  final StationService _stationService;
 
-  AuthViewmodel({AuthService? authService})
-    : _authService = authService ?? AuthService();
+  AuthViewModel({AuthService? authService, StationService? stationService})
+    : _stationService = stationService ?? StationService(),
+      _authService = authService ?? AuthService();
 
   bool _isLoading = false;
   String? _errorMessage;
   AdminModel? _admin;
   CustomerModel? _customer;
+  String _authStatus = "";
+  String _reservationStatus = "";
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   AdminModel? get admin => _admin;
   CustomerModel? get customer => _customer;
+  bool get isAuthenticated => _authStatus == "Pass";
+  bool get hasActiveReservation =>
+      _reservationStatus == "Upcoming" || _reservationStatus == "Active";
 
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
-    debugPrint("DEBUG: isLoading is now $value at ${DateTime.now()}");
   }
 
   void _setError(String? message) {
     _errorMessage = message;
     notifyListeners();
+  }
+
+  Future<void> syncUserStatus(String phoneNumber) async {
+    _setLoading(true);
+    _setError(null);
+
+    _customer = await _authService.getCustomerByPhoneNumber(phoneNumber);
+
+    if (_customer != null) {
+      _authStatus = await _authService.getAuthStatus(_customer!.id);
+      _reservationStatus = await _stationService.getReservationStatus(
+        _customer!.id,
+      );
+    }
+
+    _setLoading(false);
   }
 
   Future<bool> verifyOtp(
@@ -117,6 +142,40 @@ class AuthViewmodel extends ChangeNotifier {
     } catch (e) {
       _setLoading(false);
       _setError('Error checking phone number: $e');
+    }
+  }
+
+  Future<void> fetchCurrentUser(String phoneNumber, UserRole role) async {
+    _setLoading(true);
+
+    try {
+      final collectionName = role == UserRole.admin ? "admins" : "customers";
+
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection(collectionName)
+          .where('PhoneNumber', isEqualTo: phoneNumber)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final data = querySnapshot.docs.first.data();
+
+        if (role == UserRole.admin) {
+          _admin = AdminModel.fromFirestore(data);
+        } else {
+          _customer = CustomerModel.fromFirestore(data);
+        }
+      } else {
+        AppLogger.info("No user found with phone: $phoneNumber");
+        _admin = null;
+        _customer = null;
+      }
+    } catch (e) {
+      AppLogger.error("Failed to fetch user: $e");
+    } finally {
+      // 3. 无论成功失败，最后都要关闭 Loading
+      _setLoading(false);
+      notifyListeners();
     }
   }
 

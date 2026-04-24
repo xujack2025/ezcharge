@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ezcharge/core/utils/app_logger.dart';
+import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart'; // Import package for date formatting
 import 'package:location/location.dart';
+import 'package:provider/provider.dart';
 
 import 'package:ezcharge/views/customer/customer_content/account_screen.dart';
 import 'package:ezcharge/views/customer/notification/notification_screen.dart';
@@ -33,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _stations = [];
   List<Map<String, dynamic>> _filteredStations = []; // For search results
   bool _isLoading = true;
-  String _accountId = "00000000";
+  String _accountId = "";
   String _authStatus = "";
   String _reservationStatus = "";
   ValueNotifier<double> sheetSize = ValueNotifier(0.15);
@@ -114,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint("Error fetching stations: $e");
+      AppLogger.error("Error fetching stations: $e");
       setState(() => _isLoading = false);
     }
   }
@@ -212,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     } catch (e) {
-      debugPrint(" Error fetching customer data: $e");
+      AppLogger.error(" Error fetching customer data: $e");
     }
   }
 
@@ -233,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     } catch (e) {
-      debugPrint("Error fetching authentication status: $e");
+      AppLogger.error("Error fetching authentication status: $e");
     }
   }
 
@@ -252,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     } catch (e) {
-      debugPrint("Error fetching reservation status: $e");
+      AppLogger.error("Error fetching reservation status: $e");
     }
   }
 
@@ -303,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!serviceEnabled) {
         serviceEnabled = await _location.requestService();
         if (!serviceEnabled) {
-          debugPrint("Location services are disabled.");
+          AppLogger.warning("Location services are disabled.");
           return;
         }
       }
@@ -313,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (permissionGranted == PermissionStatus.denied) {
         permissionGranted = await _location.requestPermission();
         if (permissionGranted != PermissionStatus.granted) {
-          debugPrint("Location permission denied.");
+          AppLogger.warning("Location permission denied.");
           return;
         }
       }
@@ -335,14 +338,14 @@ class _HomeScreenState extends State<HomeScreen> {
         CameraUpdate.newLatLngZoom(_currentLocation, 14),
       );
     } catch (e) {
-      debugPrint("Error getting location: $e");
+      AppLogger.error("Error getting location: $e");
     }
   }
 
-  Future<void> _moveCamera(LatLng position) async {
+  /*Future<void> _moveCamera(LatLng position) async {
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newLatLngZoom(position, 14));
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -525,6 +528,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   //Build Station Card (Displays Station Name + Button)
   Widget _buildStationCard(Map<String, dynamic> station) {
+    final authViewModel = context.watch<AuthViewModel>();
     return StatefulBuilder(
       builder: (context, setState) {
         bool isBookmarked = false; // Track bookmark state
@@ -549,7 +553,7 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             }
           } catch (e) {
-            debugPrint("Error checking bookmark: $e");
+            AppLogger.error("Error checking bookmark: $e");
           }
         }
 
@@ -603,7 +607,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }
           } catch (e) {
-            debugPrint("Error toggling bookmark: $e");
+            AppLogger.error("Error toggling bookmark: $e");
           }
         }
 
@@ -731,29 +735,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 10),
 
-                //Button Row (Shifted to the Right)
+                // Button Row
                 Align(
-                  alignment:
-                      Alignment.centerRight, // Moves buttons to the right
+                  alignment: Alignment.centerRight,
                   child: Row(
                     mainAxisSize: MainAxisSize
                         .min, // Ensures row only takes required space
                     children: [
+                      /// Reserve Button
                       ElevatedButton(
                         onPressed: () {
                           // Check if user is authenticated
-                          if (_authStatus != "Pass") {
+                          if (!authViewModel.isAuthenticated) {
                             _showAuthReminder(context);
                             return;
                           }
-                          // Check if user already has an Upcoming/Active reservation
-                          if (_reservationStatus == "Upcoming" ||
-                              _reservationStatus == "Active") {
+
+                          // 2. 检查是不是已经有预约在手了
+                          if (authViewModel.hasActiveReservation) {
                             _showReservationReminder(context);
                             return;
                           }
 
-                          // Otherwise, proceed to ReservationScreen
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -779,8 +782,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
+                      const SizedBox(width: 10),
 
-                      const SizedBox(width: 10), // Space between buttons
+                      /// View Chargers Button
                       ElevatedButton(
                         onPressed: () {
                           Navigator.push(

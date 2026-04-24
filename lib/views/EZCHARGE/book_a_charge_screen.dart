@@ -20,10 +20,10 @@ class BookAChargeScreen extends StatefulWidget {
   const BookAChargeScreen({super.key});
 
   @override
-  _BookAChargeScreenState createState() => _BookAChargeScreenState();
+  BookAChargeScreenState createState() => BookAChargeScreenState();
 }
 
-class _BookAChargeScreenState extends State<BookAChargeScreen>
+class BookAChargeScreenState extends State<BookAChargeScreen>
     with SingleTickerProviderStateMixin {
   bool isLoading = true, activeRequestExists = false;
   late AnimationController _controller;

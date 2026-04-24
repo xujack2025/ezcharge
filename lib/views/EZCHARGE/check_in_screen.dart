@@ -14,10 +14,10 @@ class CheckInScreen extends StatefulWidget {
   const CheckInScreen({super.key});
 
   @override
-  _CheckInScreenState createState() => _CheckInScreenState();
+  CheckInScreenState createState() => CheckInScreenState();
 }
 
-class _CheckInScreenState extends State<CheckInScreen> {
+class CheckInScreenState extends State<CheckInScreen> {
   final MobileScannerController _scannerController = MobileScannerController();
   File? _selectedImage; // Store the picked image
   String _accountId = "";

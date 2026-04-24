@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -68,12 +66,22 @@ class AuthService {
     }
   }
 
+  Future<String> getAuthStatus(String customerId) async {
+    final querySnapshot = await _firestore
+        .collection("customers")
+        .doc(customerId)
+        .collection("authenticate")
+        .doc("authentication")
+        .get();
+    return querySnapshot.exists ? querySnapshot["Status"] : "";
+  }
+
   Future<void> signout() async {
     try {
       await _auth.signOut();
-      log("User Signed Out");
+      AppLogger.info("User Signed Out");
     } catch (e) {
-      log("Unexpected error during sign-out: $e");
+      AppLogger.error("Unexpected error during sign-out: $e");
     }
   }
 }

@@ -20,7 +20,7 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
   String _fullPhoneNumber = "";
   final TextEditingController _phoneController = TextEditingController();
 
-  AuthViewmodel get _authViewModel => context.read<AuthViewmodel>();
+  AuthViewModel get _authViewModel => context.read<AuthViewModel>();
 
   @override
   void dispose() {
@@ -33,7 +33,7 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
 
     await _authViewModel.sendOtp(
       _fullPhoneNumber,
-      UserRole.customer,
+      UserRole.admin,
       onCodeSent: (verificationId) {
         if (!mounted) return;
         Navigator.push(
@@ -42,7 +42,7 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
             builder: (context) => OTPScreen(
               phoneNumber: _fullPhoneNumber,
               verificationID: verificationId,
-              role: UserRole.customer,
+              role: UserRole.admin,
             ),
           ),
         );
@@ -52,7 +52,7 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authViewModel = context.watch<AuthViewmodel>();
+    final authViewModel = context.watch<AuthViewModel>();
 
     return Scaffold(
       backgroundColor: Colors.grey[200], //Light Grey Background

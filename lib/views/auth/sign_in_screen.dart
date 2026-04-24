@@ -23,7 +23,7 @@ class SignInScreenState extends State<SignInScreen> {
   String _fullPhoneNumber = "";
   final TextEditingController _phoneController = TextEditingController();
 
-  AuthViewmodel get _authViewModel => context.read<AuthViewmodel>();
+  AuthViewModel get _authViewModel => context.read<AuthViewModel>();
 
   /// Send OTP and navigate to OTPScreen
   Future<void> _sendOTP() async {
@@ -50,7 +50,7 @@ class SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authViewModel = context.watch<AuthViewmodel>();
+    final authViewModel = context.watch<AuthViewModel>();
 
     return Scaffold(
       backgroundColor: Colors.grey[200],

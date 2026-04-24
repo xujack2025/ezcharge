@@ -10,10 +10,10 @@ class StartChargingScreen extends StatefulWidget {
   const StartChargingScreen({super.key});
 
   @override
-  _StartChargingScreenState createState() => _StartChargingScreenState();
+  StartChargingScreenState createState() => StartChargingScreenState();
 }
 
-class _StartChargingScreenState extends State<StartChargingScreen> {
+class StartChargingScreenState extends State<StartChargingScreen> {
   String _accountId = "";
   String _chargerId = "";
   String _stationId = "";

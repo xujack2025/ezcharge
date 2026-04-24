@@ -1,15 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ezcharge/models/charging_bay_model.dart';
+
+enum CapacityStatus { optimal, highdemand, overloaded, undefined }
 
 class ChargingStation {
-  String stationID;
-  String stationName;
-  String description;
-  String nearby;
-  String location;
-  String latitude;
-  String longitude;
-  int capacity;
-  String imageUrl;
+  final String stationID;
+  final String stationName;
+  final String description;
+  final String nearby;
+  final String location;
+  final String latitude;
+  final String longitude;
+  final String imageUrl;
+  final int capacity;
+  final int occupiedBays;
+  final List<ChargingBay> chargingBays;
 
   ChargingStation({
     required this.stationID,
@@ -21,10 +26,25 @@ class ChargingStation {
     required this.longitude,
     required this.capacity,
     required this.imageUrl,
+    required this.chargingBays,
+    this.occupiedBays = 0,
   });
 
+  CapacityStatus get capacityStatus {
+    if (capacity == 0) return CapacityStatus.undefined;
+    double ratio = occupiedBays / capacity;
+    if (ratio >= 1.0) return CapacityStatus.overloaded;
+    if (ratio >= 0.8) return CapacityStatus.highdemand;
+    return CapacityStatus.optimal;
+  }
+
   factory ChargingStation.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final List<dynamic> chargerData = data['charger'] ?? [];
+    final List<ChargingBay> parsedBays = chargerData.map((bayMap) {
+      return ChargingBay.fromFirestore(bayMap);
+    }).toList();
+
     return ChargingStation(
       stationID: data['StationID'] ?? '',
       stationName: data['StationName'] ?? '',
@@ -35,12 +55,14 @@ class ChargingStation {
       longitude: data['Longitude'] ?? '',
       capacity: data['Capacity'] ?? 0,
       imageUrl: data['ImageUrl'] ?? '',
+      chargingBays: parsedBays,
+      occupiedBays: data['OccupiedBays'] ?? 0,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'StationID': stationID,
+      // 转换回 Map 时，嵌套列表也要转换
       'StationName': stationName,
       'Description': description,
       'Nearby': nearby,
@@ -48,7 +70,9 @@ class ChargingStation {
       'Latitude': latitude,
       'Longitude': longitude,
       'Capacity': capacity,
-      'ImageUrl': imageUrl, // Store image URL in Firestore
+      'ImageUrl': imageUrl,
+      'OccupiedBays': occupiedBays,
+      'charger': chargingBays.map((bay) => bay.toMap()).toList(),
     };
   }
 }

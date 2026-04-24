@@ -1,13 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+enum BayStatus { available, occupied, outofservice }
+
+enum CurrentType { ac, dc, undefined }
+
+enum ChargerType { type2, ccs2, undefined }
+
 class ChargingBay {
-  String chargerID;
-  String chargerName;
-  String chargerType;
-  double chargerVoltage;
-  String currentType;
-  double pricePerVoltage;
-  String status;
+  final String chargerID;
+  final String chargerName;
+  final ChargerType chargerType;
+  final double chargerVoltage;
+  final CurrentType currentType;
+  final double pricePerVoltage;
+  final BayStatus status;
 
   ChargingBay({
     required this.chargerID,
@@ -19,30 +25,40 @@ class ChargingBay {
     required this.status,
   });
 
-  factory ChargingBay.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-
+  factory ChargingBay.fromMap(Map<String, dynamic> data) {
     return ChargingBay(
       chargerID: data['ChargerID'] ?? '',
       chargerName: data['ChargerName'] ?? '',
-      chargerType: data['ChargerType'] ?? '',
-      chargerVoltage: double.tryParse(data['ChargerVoltage'].toString()) ?? 0,
-      currentType: data['CurrentType'] ?? '',
-      pricePerVoltage:
-          double.tryParse(data['PriceperVoltage'].toString()) ?? 0.0,
-      status: data['Status'] ?? '',
+      chargerType: ChargerType.values.firstWhere(
+        (e) => e.name == data['ChargerType'],
+        orElse: () => ChargerType.undefined,
+      ),
+      chargerVoltage: (data['ChargerVoltage'] as num?)?.toDouble() ?? 0.0,
+      currentType: CurrentType.values.firstWhere(
+        (e) => e.name == data['CurrentType'],
+        orElse: () => CurrentType.undefined,
+      ),
+      pricePerVoltage: (data['PriceperVoltage'] as num?)?.toDouble() ?? 0.0,
+      status: BayStatus.values.firstWhere(
+        (e) => e.name == data['Status'],
+        orElse: () => BayStatus.outofservice,
+      ),
     );
+  }
+
+  factory ChargingBay.fromFirestore(DocumentSnapshot doc) {
+    return ChargingBay.fromMap(doc.data() as Map<String, dynamic>);
   }
 
   Map<String, dynamic> toMap() {
     return {
       'ChargerID': chargerID,
       'ChargerName': chargerName,
-      'ChargerType': chargerType,
+      'ChargerType': chargerType.name, 
       'ChargerVoltage': chargerVoltage,
-      'CurrentType': currentType,
+      'CurrentType': currentType.name,
       'PriceperVoltage': pricePerVoltage,
-      'Status': status,
+      'Status': status.name,
     };
   }
 }

@@ -12,10 +12,10 @@ class StopChargingScreen extends StatefulWidget {
   const StopChargingScreen({super.key, required this.totalDuration});
 
   @override
-  _StopChargingScreenState createState() => _StopChargingScreenState();
+  StopChargingScreenState createState() => StopChargingScreenState();
 }
 
-class _StopChargingScreenState extends State<StopChargingScreen> {
+class StopChargingScreenState extends State<StopChargingScreen> {
   String _accountId = "";
   String _chargerId = "";
   String _stationId = "";

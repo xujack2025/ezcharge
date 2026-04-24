@@ -86,7 +86,7 @@ class _AdminChargingBayPageState extends State<AdminChargingBayPage> {
     String currentType = bay?.currentType ?? "AC";
     String status = bay?.status ?? "Available";
 
-    String? originalStatus = bay?.status;
+    // String? originalStatus = bay?.status;
 
     String newChargerID = bay?.chargerID ?? await _generateNewChargerID();
 

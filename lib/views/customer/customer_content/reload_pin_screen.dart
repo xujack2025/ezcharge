@@ -7,10 +7,10 @@ class ReloadPINScreen extends StatefulWidget {
   const ReloadPINScreen({required this.topUpAmount, super.key});
 
   @override
-  _ReloadPINScreenState createState() => _ReloadPINScreenState();
+  ReloadPINScreenState createState() => ReloadPINScreenState();
 }
 
-class _ReloadPINScreenState extends State<ReloadPINScreen> {
+class ReloadPINScreenState extends State<ReloadPINScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _otpController = TextEditingController();
   String _accountId = "";
