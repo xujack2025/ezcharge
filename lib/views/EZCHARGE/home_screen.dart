@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ezcharge/core/utils/app_logger.dart';
 import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
+import 'package:ezcharge/viewmodels/charging_station_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
@@ -26,9 +27,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  AuthViewModel get _authViewModel => context.read<AuthViewModel>();
+  ChargingStationViewModel get _chargingStationVM =>
+      context.read<ChargingStationViewModel>();
+
   final Completer<GoogleMapController> _controller = Completer();
   final Location _location = Location();
-  LatLng _currentLocation = const LatLng(3.2197929237993033, 101.6437936423279); // Default: KL
+  LatLng _currentLocation = const LatLng(
+    3.2197929237993033,
+    101.6437936423279,
+  ); // Default: KL
   List<Map<String, dynamic>> _stations = [];
   List<Map<String, dynamic>> _filteredStations = [];
   bool _isLoading = true;
@@ -41,7 +49,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _getUserLocation();
     _fetchStations();
-    context.read<AuthViewModel>().syncUserStatus();
+    _authViewModel.syncUserStatus();
+    _chargingStationVM.fetchChargingStations();
   }
 
   @override
@@ -54,7 +63,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchStations() async {
     try {
       //Get all stations
-      QuerySnapshot stationSnapshot = await FirebaseFirestore.instance.collection("station").get();
+      QuerySnapshot stationSnapshot = await FirebaseFirestore.instance
+          .collection("station")
+          .get();
 
       //Temporary list to hold the final data
       List<Map<String, dynamic>> tempStations = [];
@@ -120,7 +131,9 @@ class _HomeScreenState extends State<HomeScreen> {
       } else {
         // Filter stations whose name contains the query (ignoring case)
         final matches = _stations.where((station) {
-          return station["StationName"].toString().toLowerCase().contains(query.toLowerCase());
+          return station["StationName"].toString().toLowerCase().contains(
+            query.toLowerCase(),
+          );
         }).toList();
 
         if (matches.isNotEmpty) {
@@ -183,7 +196,9 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Authentication Required"),
-        content: const Text("Please authenticate your account before making a reservation."),
+        content: const Text(
+          "Please authenticate your account before making a reservation.",
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context), // Close dialog
@@ -203,7 +218,9 @@ class _HomeScreenState extends State<HomeScreen> {
           "You already have an upcoming or active reservation. "
           "Please complete or cancel it before making a new one.",
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
+        ],
       ),
     );
   }
@@ -256,9 +273,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authVM = context.read<AuthViewModel>();
-
+    final authVM = context.watch<AuthViewModel>();
     debugPrint("Current user ID: ${authVM.customerId}");
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -379,7 +396,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 10),
-                    Container(width: 40, height: 5, color: Colors.grey[400]), // Drag Handle
+                    Container(
+                      width: 40,
+                      height: 5,
+                      color: Colors.grey[400],
+                    ), // Drag Handle
                     const SizedBox(height: 6),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -391,7 +412,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.search),
                           hintText: "SEARCH",
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                         ),
                       ),
                     ),
@@ -444,7 +467,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 .get();
 
             if (!context.mounted) return;
-            
+
             if (bookmarkSnapshot.docs.isNotEmpty) {
               setState(() {
                 isBookmarked = true;
@@ -539,13 +562,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     //Station Name (Centered)
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end, // Aligns text to the right
+                        crossAxisAlignment:
+                            CrossAxisAlignment.end, // Aligns text to the right
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.grey[200], //Grey background
-                              border: Border.all(color: Colors.black, width: 1.5), //Black border
+                              border: Border.all(
+                                color: Colors.black,
+                                width: 1.5,
+                              ), //Black border
                               borderRadius: BorderRadius.circular(8), //Rounded corners
                             ),
                             child: Text(
@@ -560,12 +590,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           Text(
                             station["StationName"],
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
                             textAlign: TextAlign.right,
                           ),
-                          const SizedBox(height: 4), // Small spacing between name and description
+                          const SizedBox(
+                            height: 4,
+                          ), // Small spacing between name and description
                           Text(
-                            station["Description"] ?? "", // Display description if available
+                            station["Description"] ??
+                                "", // Display description if available
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -578,10 +614,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               const Text(
                                 "Capacity: ",
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                               Text(
-                                station["Capacity"].toString(), // Convert to String for display
+                                station["Capacity"]
+                                    .toString(), // Convert to String for display
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -598,7 +638,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconButton(
                       icon: Icon(
                         Icons.bookmark,
-                        color: isBookmarked ? Colors.black : Colors.grey, //Fix color toggle
+                        color: isBookmarked
+                            ? Colors.black
+                            : Colors.grey, //Fix color toggle
                       ),
                       onPressed: () => toggleBookmark(setState), //Pass setState
                     ),
@@ -611,7 +653,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: Row(
-                    mainAxisSize: MainAxisSize.min, // Ensures row only takes required space
+                    mainAxisSize:
+                        MainAxisSize.min, // Ensures row only takes required space
                     children: [
                       /// Reserve Button
                       ElevatedButton(
@@ -640,12 +683,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: (authVM.isAuthenticated && !authVM.hasActiveReservation)
+                          backgroundColor:
+                              (authVM.isAuthenticated && !authVM.hasActiveReservation)
                               ? Colors.blue
                               : Colors.grey, // Grey if disabled
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
                         ),
-                        child: const Text("RESERVE", style: TextStyle(color: Colors.white)),
+                        child: const Text(
+                          "RESERVE",
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                       const SizedBox(width: 10),
 
@@ -655,15 +704,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => StationScreen(stationId: station["StationID"]),
+                              builder: (context) =>
+                                  StationScreen(stationId: station["StationID"]),
                             ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
                         ),
-                        child: const Text("VIEW CHARGERS", style: TextStyle(color: Colors.white)),
+                        child: const Text(
+                          "VIEW CHARGERS",
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ],
                   ),
@@ -685,7 +740,10 @@ class _HomeScreenState extends State<HomeScreen> {
       currentIndex: 0,
       onTap: (index) {
         if (index == 1) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const RewardScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const RewardScreen()),
+          );
         } else if (index == 3) {
           Navigator.pushReplacement(
             context,

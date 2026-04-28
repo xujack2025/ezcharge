@@ -1,18 +1,90 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ezcharge/core/utils/app_logger.dart';
+import 'package:ezcharge/models/charging_station_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:ezcharge/services/station_service.dart';
 import 'package:ezcharge/models/charging_bay_model.dart';
 
-class ChargingStationViewModel {
+class ChargingStationViewModel extends ChangeNotifier {
+  final StationService _stationService;
+
+  List<ChargingStation> _stations = [];
+  List<ChargingBay> _bays = [];
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  List<ChargingStation> get stations => _stations;
+  List<ChargingBay> get bays => _bays;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  final List<Map<String, dynamic>> _stations = [];
 
-  List<Map<String, dynamic>> get stations => _stations;
+  ChargingStationViewModel({required StationService stationService})
+    : _stationService = stationService;
+
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setError(String? message) {
+    _errorMessage = message;
+    notifyListeners();
+  }
+
+  void fetchChargingStations() {
+    _setLoading(true);
+    _setError(null);
+    _stationService.getChargingStations().listen((stations) {
+      _stations = stations;
+      _setLoading(false);
+      notifyListeners();
+    });
+  }
+
+  void fetchChargingBays(String stationID) {
+    _setLoading(true);
+    _setError(null);
+    _stationService.getChargingBays(stationID).listen((bays) {
+      _bays = bays;
+      _setLoading(false);
+      notifyListeners();
+    });
+  }
+
+  void fetchChargingStationsAndBay() {
+    _setLoading(true);
+    _setError(null);
+
+    _stationService.getChargingStations().listen(
+      (stations) async {
+        _stations = stations;
+
+        for (var station in _stations) {
+          try {
+            final bays = await _stationService.getChargingBays(station.stationID).first;
+            station.chargingBays = bays;
+          } catch (e) {
+            AppLogger.error("Failed to fetch bays for ${station.stationID}: $e");
+          }
+        }
+
+        _setLoading(false);
+        notifyListeners();
+      },
+      onError: (e) {
+        _setError(e.toString());
+        _setLoading(false);
+      },
+    );
+  }
 
   Stream<List<Map<String, dynamic>>> fetchChargingStationsStream() {
     return _firestore.collection('station').snapshots().map((snapshot) {
@@ -43,9 +115,8 @@ class ChargingStationViewModel {
         .collection('Charger')
         .snapshots()
         .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => ChargingBay.fromFirestore(doc))
-              .toList(),
+          (snapshot) =>
+              snapshot.docs.map((doc) => ChargingBay.fromFirestore(doc)).toList(),
         );
   }
 
@@ -157,7 +228,7 @@ class ChargingStationViewModel {
   }
 
   // Fetch Charging Bays with Detailed Data
-  Future<List<ChargingBay>> fetchChargingBays(String stationID) async {
+  /*Future<List<ChargingBay>> fetchChargingBays(String stationID) async {
     try {
       QuerySnapshot snapshot = await _firestore
           .collection('station')
@@ -169,15 +240,13 @@ class ChargingStationViewModel {
         debugPrint("🔍 Raw Firestore Data: ${doc.data()}"); // Debugging line
       }
 
-      return snapshot.docs
-          .map((doc) => ChargingBay.fromFirestore(doc))
-          .toList();
+      return snapshot.docs.map((doc) => ChargingBay.fromFirestore(doc)).toList();
     } catch (e) {
       debugPrint("❌ Error fetching charging bays: $e");
       return [];
     }
-  }
-
+  }*/
+  
   // Add Charging Bay with Full Details
   Future<void> addChargingBay(String stationID, ChargingBay bay) async {
     try {
@@ -242,10 +311,7 @@ class ChargingStationViewModel {
 
   Future<String?> getStationImage(String stationID) async {
     try {
-      DocumentSnapshot doc = await _firestore
-          .collection('station')
-          .doc(stationID)
-          .get();
+      DocumentSnapshot doc = await _firestore.collection('station').doc(stationID).get();
       if (doc.exists && doc['ImageUrl'] != null) {
         return doc['ImageUrl'];
       }

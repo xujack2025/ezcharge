@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ezcharge/models/charging_bay_model.dart';
 
 enum CapacityStatus { optimal, highdemand, overloaded, undefined }
+enum StationStatus { active, inactive, deleted }
 
 class ChargingStation {
   final String stationID;
@@ -14,7 +15,7 @@ class ChargingStation {
   final String imageUrl;
   final int capacity;
   final int occupiedBays;
-  final List<ChargingBay> chargingBays;
+  List<ChargingBay> chargingBays;
 
   ChargingStation({
     required this.stationID,
@@ -26,7 +27,7 @@ class ChargingStation {
     required this.longitude,
     required this.capacity,
     required this.imageUrl,
-    required this.chargingBays,
+    this.chargingBays = const [],
     this.occupiedBays = 0,
   });
 

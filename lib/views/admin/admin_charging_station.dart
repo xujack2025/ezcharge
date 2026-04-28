@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:ezcharge/viewmodels/charging_station_viewmodel.dart';
 import 'package:ezcharge/views/admin/admin_charging_bay.dart';
+import 'package:provider/provider.dart';
 
 class AdminChargingStationsPage extends StatefulWidget {
   const AdminChargingStationsPage({super.key});
@@ -14,8 +15,7 @@ class AdminChargingStationsPage extends StatefulWidget {
 }
 
 class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
-  final ChargingStationViewModel _chargingStationViewModel =
-      ChargingStationViewModel();
+  ChargingStationViewModel get _chargingStationViewModel => context.read<ChargingStationViewModel>();
 
   final TextEditingController _stationNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();

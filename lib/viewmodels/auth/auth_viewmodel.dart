@@ -82,10 +82,7 @@ class AuthViewModel extends ChangeNotifier {
     _setError(null);
 
     try {
-      final userCredential = await _authService.signInWithOtp(
-        verificationId,
-        smsCode,
-      );
+      final userCredential = await _authService.signInWithOtp(verificationId, smsCode);
 
       if (userCredential.user != null) {
         if (role == UserRole.admin) {
