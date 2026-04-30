@@ -1,8 +1,10 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
+import 'package:ezcharge/services/station_service.dart';
+import 'package:ezcharge/viewmodels/charging_station_viewmodel.dart';
 import 'package:ezcharge/core/constants/colors.dart';
 import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
 import 'package:ezcharge/viewmodels/emergency_request_viewmodel.dart';
@@ -21,10 +23,11 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AuthViewModel()),
-        ChangeNotifierProvider(
-          create: (context) => EmergencyRequestViewModel(),
-        ),
+        ChangeNotifierProvider(create: (context) => EmergencyRequestViewModel()),
         ChangeNotifierProvider(create: (context) => TrackingViewModel()),
+        ChangeNotifierProvider(
+          create: (context) => ChargingStationViewModel(stationService: StationService()),
+        ),
       ],
       child: MyApp(),
     ),

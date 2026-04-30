@@ -72,7 +72,7 @@ class StationService {
   /// CRUD Operations for Charging Bays
   /// Retrieve bays for a station with real-time updates
   Stream<List<ChargingBay>> getChargingBays(String stationID) {
-    return _db.collection('station').doc(stationID).collection('charger').snapshots().map(
+    return _db.collection('station').doc(stationID).collection('Charger').snapshots().map(
       (snapshot) {
         return snapshot.docs
             .map((doc) {

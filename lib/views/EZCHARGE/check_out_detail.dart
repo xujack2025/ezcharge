@@ -330,7 +330,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => Chatbotscreen(),
+                                builder: (context) => ChatbotScreen(),
                               ),
                             );
                           },

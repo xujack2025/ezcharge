@@ -7,14 +7,14 @@ import 'package:http/http.dart' as http;
 
 import 'package:ezcharge/secrets.dart';
 
-class Chatbotscreen extends StatefulWidget {
-  const Chatbotscreen({super.key});
+class ChatbotScreen extends StatefulWidget {
+  const ChatbotScreen({super.key});
 
   @override
-  _ChatbotscreenState createState() => _ChatbotscreenState();
+  ChatbotScreenState createState() => ChatbotScreenState();
 }
 
-class _ChatbotscreenState extends State<Chatbotscreen> {
+class ChatbotScreenState extends State<ChatbotScreen> {
   String _customerName = "";
   final List<Message> _messages = [];
   final TextEditingController _textEditingController = TextEditingController();
@@ -111,9 +111,7 @@ class _ChatbotscreenState extends State<Chatbotscreen> {
   //Updated chat-bubble design
   Widget _buildMessage(Message message) {
     // Decide alignment based on who sent the message
-    final alignment = message.isMe
-        ? MainAxisAlignment.end
-        : MainAxisAlignment.start;
+    final alignment = message.isMe ? MainAxisAlignment.end : MainAxisAlignment.start;
     final bgColor = message.isMe ? Colors.blue[50] : Colors.grey[200];
     final textColor = Colors.black87;
     final borderRadius = BorderRadius.only(
@@ -141,10 +139,7 @@ class _ChatbotscreenState extends State<Chatbotscreen> {
           Flexible(
             child: Container(
               padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: borderRadius,
-              ),
+              decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
               child: Column(
                 crossAxisAlignment: message.isMe
                     ? CrossAxisAlignment.end
@@ -155,7 +150,7 @@ class _ChatbotscreenState extends State<Chatbotscreen> {
                     message.isMe ? _customerName : 'EZCHARGE Customer Service',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: textColor.withOpacity(0.8),
+                      color: textColor.withValues(alpha: 0.8),
                     ),
                   ),
                   SizedBox(height: 6),
@@ -194,10 +189,7 @@ class _ChatbotscreenState extends State<Chatbotscreen> {
             SizedBox(width: 8),
             Text(
               'EZCHARGE Help Center',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ],
         ),

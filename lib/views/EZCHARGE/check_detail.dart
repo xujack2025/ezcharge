@@ -183,7 +183,7 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => Chatbotscreen(),
+                                builder: (context) => ChatbotScreen(),
                               ),
                             );
                           },

@@ -308,7 +308,7 @@ class _TimerScreenState extends State<TimerScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      Chatbotscreen(), // Replace with your target page widget
+                      ChatbotScreen(), // Replace with your target page widget
                 ),
               );
             },

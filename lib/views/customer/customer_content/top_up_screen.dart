@@ -93,8 +93,7 @@ class TopUpScreenState extends State<TopUpScreen> {
   }
 
   bool _isNextButtonEnabled() {
-    return _amountController.text.isNotEmpty &&
-        (isCardSelected || isReloadPinSelected);
+    return _amountController.text.isNotEmpty && (isCardSelected || isReloadPinSelected);
   }
 
   @override
@@ -141,7 +140,7 @@ class TopUpScreenState extends State<TopUpScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.blue.withOpacity(0.3)
+                    ? Colors.blue.withValues(alpha: 0.3)
                     : Colors.white, //Highlight when selected
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -155,10 +154,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                   const SizedBox(width: 10),
                   Text(
                     _cardNumber,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -171,15 +167,11 @@ class TopUpScreenState extends State<TopUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      resizeToAvoidBottomInset:
-          false, //Prevent UI from resizing when keyboard appears
+      resizeToAvoidBottomInset: false, //Prevent UI from resizing when keyboard appears
       appBar: AppBar(
         leading: IconButton(
           icon: Container(
-            decoration: const BoxDecoration(
-              color: Colors.blue,
-              shape: BoxShape.circle,
-            ),
+            decoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
             padding: const EdgeInsets.all(8),
             child: const Icon(Icons.arrow_back, color: Colors.white),
           ),
@@ -211,7 +203,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 5,
                       spreadRadius: 2,
                     ),
@@ -258,9 +250,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   prefixText: "RM ",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
               const SizedBox(height: 10),
@@ -277,10 +267,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       side: const BorderSide(color: Colors.blue),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     ),
                     child: Text(
                       "RM $amount",
@@ -314,13 +301,11 @@ class TopUpScreenState extends State<TopUpScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isReloadPinSelected
-                        ? Colors.blue[100]
-                        : Colors.white,
+                    color: isReloadPinSelected ? Colors.blue[100] : Colors.white,
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 5,
                         spreadRadius: 2,
                       ),
@@ -335,10 +320,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                       const SizedBox(width: 10),
                       const Text(
                         "Reload PIN",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -368,8 +350,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                             setState(() {
                               isLoading = true;
                             });
-                            double newWalletBalance =
-                                _walletBalance + enteredAmount;
+                            double newWalletBalance = _walletBalance + enteredAmount;
                             Future.delayed(const Duration(seconds: 3), () {
                               FirebaseFirestore.instance
                                   .collection("customers")
@@ -381,9 +362,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                                       isLoading = false;
                                     });
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Top-up successful!"),
-                                      ),
+                                      const SnackBar(content: Text("Top-up successful!")),
                                     );
                                   })
                                   .catchError((error) {
@@ -392,9 +371,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                                     });
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
-                                          "Error updating wallet: $error",
-                                        ),
+                                        content: Text("Error updating wallet: $error"),
                                       ),
                                     );
                                   });
@@ -410,9 +387,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                   ),
                   child: isLoading
                       ? const CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         )
                       : const Text(
                           "Top Up",

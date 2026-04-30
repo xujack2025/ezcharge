@@ -63,9 +63,7 @@ class _ReviewPageState extends State<ReviewPage> {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("You must be logged in to submit a review."),
-        ),
+        const SnackBar(content: Text("You must be logged in to submit a review.")),
       );
       setState(() {
         _isSubmitting = false;
@@ -74,9 +72,9 @@ class _ReviewPageState extends State<ReviewPage> {
     }
 
     if (_rating == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a star rating.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please select a star rating.")));
       setState(() {
         _isSubmitting = false;
       });
@@ -94,9 +92,7 @@ class _ReviewPageState extends State<ReviewPage> {
       if (customerQuery.docs.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              "Customer profile not found. Please contact support.",
-            ),
+            content: Text("Customer profile not found. Please contact support."),
           ),
         );
         setState(() {
@@ -142,9 +138,9 @@ class _ReviewPageState extends State<ReviewPage> {
         'ReviewDate': FieldValue.serverTimestamp(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Review submitted successfully!")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Review submitted successfully!")));
 
       setState(() {
         _isSubmitting = false;
@@ -188,7 +184,7 @@ class _ReviewPageState extends State<ReviewPage> {
                       height: 40,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                       ),
                       child: const Icon(Icons.close, color: Colors.black),
                     ),
@@ -202,9 +198,7 @@ class _ReviewPageState extends State<ReviewPage> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Card(
                 elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Row(
@@ -233,24 +227,14 @@ class _ReviewPageState extends State<ReviewPage> {
                             const SizedBox(height: 2),
                             Text(
                               widget.stationDescription,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
+                              style: const TextStyle(fontSize: 14, color: Colors.grey),
                             ),
                             const SizedBox(height: 8),
                             Row(
                               children: const [
                                 Icon(Icons.bolt, color: Colors.green, size: 18),
-                                Text(
-                                  " Available ",
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                                Icon(
-                                  Icons.ev_station,
-                                  color: Colors.black,
-                                  size: 18,
-                                ),
+                                Text(" Available ", style: TextStyle(fontSize: 14)),
+                                Icon(Icons.ev_station, color: Colors.black, size: 18),
                               ],
                             ),
                           ],
@@ -271,10 +255,7 @@ class _ReviewPageState extends State<ReviewPage> {
                   children: [
                     const Text(
                       "Share your experience:",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
 

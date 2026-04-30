@@ -114,7 +114,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 5,
                   spreadRadius: 2,
                 ),
@@ -126,10 +126,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
                 const SizedBox(width: 10),
                 Text(
                   _cardNumber,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -144,10 +141,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: Container(
-            decoration: const BoxDecoration(
-              color: Colors.blue,
-              shape: BoxShape.circle,
-            ),
+            decoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
             padding: const EdgeInsets.all(8),
             child: const Icon(Icons.arrow_back, color: Colors.white),
           ),
@@ -176,7 +170,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 5,
                     spreadRadius: 2,
                   ),
@@ -199,10 +193,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
                       const SizedBox(height: 5),
                       Text(
                         "RM ${_walletBalance.toStringAsFixed(2)}", //Display Wallet Balance
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -215,10 +206,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     ),
                     child: const Text(
                       "+ TOP UP",

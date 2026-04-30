@@ -159,10 +159,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
             height: 350, // Better height for visibility
             width: double.infinity,
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: hourlyUsage.isEmpty
                   ? const Center(
                       child: Text(
@@ -234,10 +231,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                         // End at 23 hours
                         minY: 0,
                         maxY: hourlyUsage.values.isNotEmpty
-                            ? (hourlyUsage.values.reduce(
-                                        (a, b) => a > b ? a : b,
-                                      ) +
-                                      1)
+                            ? (hourlyUsage.values.reduce((a, b) => a > b ? a : b) + 1)
                                   .toDouble()
                             : 10,
                         lineBarsData: [
@@ -265,7 +259,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                               show: true,
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.blueAccent.withOpacity(0.4),
+                                  Colors.blueAccent.withValues(alpha: 0.4),
                                   Colors.transparent,
                                 ], // 🔹 Gradient for below the line
                                 stops: [0.1, 1.0],
@@ -320,10 +314,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                   var station = stations[index];
                   return Card(
                     elevation: 2,
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 5,
-                      horizontal: 10,
-                    ),
+                    margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                     child: ListTile(
                       title: Text(
                         station["StationName"],
@@ -347,8 +338,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                const AdminDashboard(initialIndex: 3),
+                            builder: (context) => const AdminDashboard(initialIndex: 3),
                           ),
                         );
                       },
@@ -377,18 +367,12 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
           title: "📅 Recent Charging Sessions",
         ),
         if (_expandedUserSection == 1) _buildRecentSessionsSliver(),
-        _buildExpandableSectionHeaderSliver(
-          index: 2,
-          title: "🔌 Most Used Chargers",
-        ),
+        _buildExpandableSectionHeaderSliver(index: 2, title: "🔌 Most Used Chargers"),
         if (_expandedUserSection == 2)
           SliverToBoxAdapter(
             child: SizedBox(height: 200, child: _buildMostUsedChargersChart()),
           ),
-        _buildExpandableSectionHeaderSliver(
-          index: 3,
-          title: "📄 Charger Usage Details",
-        ),
+        _buildExpandableSectionHeaderSliver(index: 3, title: "📄 Charger Usage Details"),
         if (_expandedUserSection == 3) _buildChargerUsageSliver(),
         const SliverToBoxAdapter(child: SizedBox(height: 16)),
       ],
@@ -422,10 +406,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                   AnimatedRotation(
@@ -569,12 +550,8 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                 margin: const EdgeInsets.symmetric(vertical: 5),
                 child: ListTile(
                   leading: Icon(
-                    charger["CurrentType"] == "AC"
-                        ? Icons.power
-                        : Icons.flash_on,
-                    color: charger["CurrentType"] == "AC"
-                        ? Colors.blue
-                        : Colors.orange,
+                    charger["CurrentType"] == "AC" ? Icons.power : Icons.flash_on,
+                    color: charger["CurrentType"] == "AC" ? Colors.blue : Colors.orange,
                   ),
                   title: Text("Charger: ${charger["ChargerID"]}"),
                   subtitle: Text("Usage: ${charger["UsageCount"]} times"),

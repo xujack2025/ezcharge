@@ -61,10 +61,7 @@ class _StationScreenState extends State<StationScreen> {
   Future<void> _fetchReviews() async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection("reviews")
-        .where(
-          "StationID",
-          isEqualTo: widget.stationId,
-        ) // Filter reviews by station
+        .where("StationID", isEqualTo: widget.stationId) // Filter reviews by station
         .orderBy("ReviewDate", descending: true) // Show latest reviews first
         .get();
 
@@ -227,8 +224,7 @@ class _StationScreenState extends State<StationScreen> {
         return {
           "bay": data["ChargerName"] ?? "Unknown Bay",
           "type": data["ChargerType"] ?? "Unknown Type",
-          "power":
-              "${data["ChargerVoltage"] ?? "0"}kW ${data["CurrentType"] ?? ""}",
+          "power": "${data["ChargerVoltage"] ?? "0"}kW ${data["CurrentType"] ?? ""}",
           "price": "RM ${data["PriceperVoltage"] ?? "0.00"}/kW",
           "status": data["Status"] ?? "Unknown",
         };
@@ -277,14 +273,11 @@ class _StationScreenState extends State<StationScreen> {
                     MaterialPageRoute(
                       builder: (context) => ReviewPage(
                         stationId: widget.stationId,
-                        stationName:
-                            stationData?["StationName"] ?? "Unknown Station",
+                        stationName: stationData?["StationName"] ?? "Unknown Station",
                         stationDescription:
-                            stationData?["Description"] ??
-                            "No description available",
+                            stationData?["Description"] ?? "No description available",
                         stationImage:
-                            stationData?["ImageUrl"] ??
-                            "https://via.placeholder.com/150",
+                            stationData?["ImageUrl"] ?? "https://via.placeholder.com/150",
                       ),
                     ),
                   );
@@ -300,14 +293,11 @@ class _StationScreenState extends State<StationScreen> {
                     MaterialPageRoute(
                       builder: (context) => CustomerComplaintPage(
                         stationId: widget.stationId,
-                        stationName:
-                            stationData?["StationName"] ?? "Unknown Station",
+                        stationName: stationData?["StationName"] ?? "Unknown Station",
                         stationDescription:
-                            stationData?["Description"] ??
-                            "No description available",
+                            stationData?["Description"] ?? "No description available",
                         stationImage:
-                            stationData?["ImageUrl"] ??
-                            "https://via.placeholder.com/150",
+                            stationData?["ImageUrl"] ?? "https://via.placeholder.com/150",
                       ),
                     ),
                   );
@@ -327,10 +317,7 @@ class _StationScreenState extends State<StationScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: Container(
-            decoration: const BoxDecoration(
-              color: Colors.blue,
-              shape: BoxShape.circle,
-            ),
+            decoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
             padding: const EdgeInsets.all(8),
             child: const Icon(Icons.arrow_back, color: Colors.white),
           ),
@@ -436,20 +423,14 @@ class _StationScreenState extends State<StationScreen> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: const Text(
                         "Coffee Shop",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -459,10 +440,7 @@ class _StationScreenState extends State<StationScreen> {
                 // Station Name
                 Text(
                   stationData?["StationName"] ?? "Charging Station",
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
 
                 // Location Description
@@ -486,10 +464,7 @@ class _StationScreenState extends State<StationScreen> {
                     Text(
                       " ${stationData?["Capacity"] ?? 0} ",
                       //Dynamically updated based on available chargers
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
 
                     const Icon(Icons.ev_station, color: Colors.black, size: 18),
@@ -583,10 +558,7 @@ class _StationScreenState extends State<StationScreen> {
                       // Review Date
                       Text(
                         _formatReviewDate(review["ReviewDate"]),
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                        ),
+                        style: const TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                     ],
                   ),
@@ -603,9 +575,7 @@ class _StationScreenState extends State<StationScreen> {
 
                   // 🚗 Car Model (or User ID if missing)
                   Text(
-                    review["CarModel"] ??
-                        review["CustomerID"] ??
-                        "Unknown User",
+                    review["CarModel"] ?? review["CustomerID"] ?? "Unknown User",
                     style: const TextStyle(
                       fontSize: 12,
                       color: Colors.grey,
@@ -661,10 +631,7 @@ class _StationScreenState extends State<StationScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  charger["bay"],
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+                Text(charger["bay"], style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(charger["type"]),
                 Text(
                   charger["status"],
@@ -682,10 +649,7 @@ class _StationScreenState extends State<StationScreen> {
               children: [
                 Text(
                   charger["power"],
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -756,22 +720,15 @@ class _StationScreenState extends State<StationScreen> {
                   // Normalize bar height
                   barGroups: _getBarChartData(),
                   titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    rightTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
+                    leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: 32,
                         getTitlesWidget: (double value, TitleMeta meta) {
-                          int hour24 = value
-                              .toInt(); // Convert to integer hour (0-23)
+                          int hour24 = value.toInt(); // Convert to integer hour (0-23)
 
                           // Convert 24-hour format to 12-hour format
                           String hourLabel;
@@ -793,8 +750,7 @@ class _StationScreenState extends State<StationScreen> {
                                 Container(
                                   width: 2,
                                   height: 6,
-                                  color:
-                                      Colors.black54, // 🔹 Tick mark under bar
+                                  color: Colors.black54, // 🔹 Tick mark under bar
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
@@ -822,7 +778,7 @@ class _StationScreenState extends State<StationScreen> {
                     horizontalInterval: 2,
                     getDrawingHorizontalLine: (value) {
                       return FlLine(
-                        color: Colors.grey.withOpacity(0.2),
+                        color: Colors.grey.withValues(alpha: 0.2),
                         strokeWidth: 1,
                       );
                     },
@@ -850,9 +806,7 @@ class _StationScreenState extends State<StationScreen> {
             toY: barHeight, // Prevent zero-height bars
             width: 13,
             borderRadius: BorderRadius.circular(3),
-            color: index == currentHour
-                ? Colors.purple.shade300
-                : Colors.lightBlue,
+            color: index == currentHour ? Colors.purple.shade300 : Colors.lightBlue,
           ),
         ],
         barsSpace: 0,
@@ -873,8 +827,7 @@ class _StationScreenState extends State<StationScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            stationData?["Location"] ??
-                "Location not available", // Fixes data fetch
+            stationData?["Location"] ?? "Location not available", // Fixes data fetch
             style: const TextStyle(fontSize: 12),
             textAlign: TextAlign.left, // Ensures text aligns left
           ),
@@ -895,8 +848,7 @@ class _StationScreenState extends State<StationScreen> {
           ),
           const SizedBox(height: 10),
           Row(
-            mainAxisAlignment:
-                MainAxisAlignment.spaceBetween, // Space Between Boxes
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space Between Boxes
             children: [
               // 🔹 Operation Hours Box
               _buildInfoBox("Operation Hour", "24 Hours"),
@@ -925,15 +877,9 @@ class _StationScreenState extends State<StationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start, // Left Align Text
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-          ),
+          Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
           const SizedBox(height: 5),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 14, color: Colors.black54),
-          ),
+          Text(value, style: const TextStyle(fontSize: 14, color: Colors.black54)),
         ],
       ),
     );
@@ -960,10 +906,7 @@ class _StationScreenState extends State<StationScreen> {
           "Please complete or cancel it before making a new one.",
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
         ],
       ),
     );
@@ -1015,10 +958,7 @@ class _StationScreenState extends State<StationScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-              child: const Text(
-                "BRING ME THERE",
-                style: TextStyle(color: Colors.white),
-              ),
+              child: const Text("BRING ME THERE", style: TextStyle(color: Colors.white)),
             ),
 
             //Reserve button with checks
@@ -1030,8 +970,7 @@ class _StationScreenState extends State<StationScreen> {
                   return;
                 }
                 // b) If user already has an upcoming or active reservation
-                if (_reservationStatus == "Upcoming" ||
-                    _reservationStatus == "Active") {
+                if (_reservationStatus == "Upcoming" || _reservationStatus == "Active") {
                   _showReservationReminder(context);
                   return;
                 }
@@ -1040,8 +979,7 @@ class _StationScreenState extends State<StationScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        ReservationScreen(stationId: widget.stationId),
+                    builder: (context) => ReservationScreen(stationId: widget.stationId),
                   ),
                 );
               },
@@ -1050,10 +988,7 @@ class _StationScreenState extends State<StationScreen> {
                     ? Colors.blue
                     : Colors.grey, // Grey if disabled
               ),
-              child: const Text(
-                "RESERVE",
-                style: TextStyle(color: Colors.white),
-              ),
+              child: const Text("RESERVE", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
