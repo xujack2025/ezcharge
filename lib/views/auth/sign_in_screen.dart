@@ -25,11 +25,11 @@ class SignInScreenState extends State<SignInScreen> {
 
   AuthViewModel get _authViewModel => context.read<AuthViewModel>();
 
-  /// Send OTP and navigate to OTPScreen
-  Future<void> _sendOTP() async {
+  /// Request OTP and navigate to OTPScreen
+  Future<void> _requestOtp() async {
     if (_fullPhoneNumber.isEmpty) return;
 
-    await _authViewModel.sendOtp(
+    await _authViewModel.requestOtp(
       _fullPhoneNumber,
       UserRole.customer,
       onCodeSent: (verificationId) {
@@ -91,9 +91,7 @@ class SignInScreenState extends State<SignInScreen> {
                 const SizedBox(height: 5),
                 Text(
                   authViewModel.errorMessage!,
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.danger,
-                  ),
+                  style: AppTextStyles.labelLarge.copyWith(color: AppColors.danger),
                 ),
               ],
               const SizedBox(height: 16),
@@ -102,7 +100,7 @@ class SignInScreenState extends State<SignInScreen> {
               CustomButton(
                 text: "Submit",
                 isLoading: authViewModel.isLoading,
-                onPressed: _sendOTP,
+                onPressed: _requestOtp,
                 borderRadius: 22,
               ),
 
@@ -118,9 +116,7 @@ class SignInScreenState extends State<SignInScreen> {
                     authViewModel.clearError();
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => AdminSignInScreen(),
-                      ),
+                      MaterialPageRoute(builder: (context) => AdminSignInScreen()),
                     );
                   },
                   child: Text(

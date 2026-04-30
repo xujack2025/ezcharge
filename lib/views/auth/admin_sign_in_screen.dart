@@ -28,10 +28,10 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
     super.dispose();
   }
 
-  Future<void> _sendOTP() async {
+  Future<void> _requestOtp() async {
     if (_fullPhoneNumber.isEmpty) return;
 
-    await _authViewModel.sendOtp(
+    await _authViewModel.requestOtp(
       _fullPhoneNumber,
       UserRole.admin,
       onCodeSent: (verificationId) {
@@ -70,10 +70,7 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Sign in with phone number",
-                style: AppTextStyles.titleLarge,
-              ),
+              const Text("Sign in with phone number", style: AppTextStyles.titleLarge),
               const SizedBox(height: 5),
 
               const Text(
@@ -102,7 +99,7 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
               CustomButton(
                 text: "Submit",
                 isLoading: authViewModel.isLoading,
-                onPressed: _sendOTP,
+                onPressed: _requestOtp,
                 borderRadius: 22,
               ),
             ],

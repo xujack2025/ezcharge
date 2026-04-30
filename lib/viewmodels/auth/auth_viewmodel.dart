@@ -1,16 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/core/utils/app_logger.dart';
-import 'package:ezcharge/services/station_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'package:ezcharge/core/utils/app_logger.dart';
+import 'package:ezcharge/services/station_service.dart';
 import 'package:ezcharge/models/admin_model.dart';
 import 'package:ezcharge/models/customer_model.dart';
 import 'package:ezcharge/models/user_model.dart';
 import 'package:ezcharge/services/auth_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final AuthService _authService;
   final StationService _stationService;
 
@@ -85,11 +82,13 @@ class AuthViewModel extends ChangeNotifier {
       final userCredential = await _authService.signInWithOtp(verificationId, smsCode);
 
       if (userCredential.user != null) {
-        if (role == UserRole.admin) {
-          _admin = await _authService.getAdminByPhoneNumber(phoneNumber);
+        final user = await _authService.getUserByPhoneNumber(phoneNumber, role);
+
+        if (user is AdminModel) {
+          _admin = user;
           _customer = null;
-        } else {
-          _customer = await _authService.getCustomerByPhoneNumber(phoneNumber);
+        } else if (user is CustomerModel) {
+          _customer = user;
           _admin = null;
         }
 
@@ -109,7 +108,7 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> sendOtp(
+  Future<void> requestOtp(
     String phoneNumber,
     UserRole role, {
     required void Function(String verificationId) onCodeSent,
@@ -118,35 +117,19 @@ class AuthViewModel extends ChangeNotifier {
     _setError(null);
 
     try {
-      final userData = (role == UserRole.admin)
-          ? await _authService.getAdminByPhoneNumber(phoneNumber)
-          : await _authService.getCustomerByPhoneNumber(phoneNumber);
-
-      if (userData == null) {
-        _setLoading(false);
-        _setError(
-          '${role == UserRole.admin ? "Admin" : "Customer"} phone number not found!',
-        );
-        return;
-      }
-
-      await _auth.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        timeout: const Duration(seconds: 30),
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential);
-          _setLoading(false);
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          _setLoading(false);
-          _setError('Error: ${e.message}');
-        },
-        codeSent: (String verificationId, int? resendToken) {
+      await _authService.sendOtp(
+        phoneNumber,
+        role,
+        onCodeSent: (verificationId) {
           _setLoading(false);
           onCodeSent(verificationId);
         },
-        codeAutoRetrievalTimeout: (String verificationId) {
+        onVerificationCompleted: () {
           _setLoading(false);
+        },
+        onError: (message) {
+          _setLoading(false);
+          _setError(message);
         },
       );
     } catch (e) {
@@ -157,24 +140,17 @@ class AuthViewModel extends ChangeNotifier {
 
   Future<void> fetchCurrentUser(String phoneNumber, UserRole role) async {
     _setLoading(true);
+    _setError(null);
 
     try {
-      final collectionName = role == UserRole.admin ? "admins" : "customers";
+      final user = await _authService.getUserByPhoneNumber(phoneNumber, role);
 
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection(collectionName)
-          .where('PhoneNumber', isEqualTo: phoneNumber)
-          .limit(1)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        final data = querySnapshot.docs.first.data();
-
-        if (role == UserRole.admin) {
-          _admin = AdminModel.fromFirestore(data);
-        } else {
-          _customer = CustomerModel.fromFirestore(data);
-        }
+      if (user is AdminModel) {
+        _admin = user;
+        _customer = null;
+      } else if (user is CustomerModel) {
+        _customer = user;
+        _admin = null;
       } else {
         AppLogger.info("No user found with phone: $phoneNumber");
         _admin = null;
@@ -182,6 +158,7 @@ class AuthViewModel extends ChangeNotifier {
       }
     } catch (e) {
       AppLogger.error("Failed to fetch user: $e");
+      _setError('Failed to fetch user: $e');
     } finally {
       _setLoading(false);
       notifyListeners();
