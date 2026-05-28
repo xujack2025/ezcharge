@@ -5,10 +5,10 @@ class DeleteAccountScreen extends StatefulWidget {
   const DeleteAccountScreen({super.key});
 
   @override
-  _DeleteAccountScreenState createState() => _DeleteAccountScreenState();
+  DeleteAccountScreenState createState() => DeleteAccountScreenState();
 }
 
-class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
+class DeleteAccountScreenState extends State<DeleteAccountScreen> {
   String? _selectedReason;
 
   final List<String> _reasons = [

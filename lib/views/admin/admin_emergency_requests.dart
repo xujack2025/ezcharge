@@ -7,11 +7,11 @@ class AdminEmergencyRequestsPage extends StatefulWidget {
   const AdminEmergencyRequestsPage({super.key});
 
   @override
-  _AdminEmergencyRequestsPageState createState() =>
-      _AdminEmergencyRequestsPageState();
+  AdminEmergencyRequestsPageState createState() =>
+      AdminEmergencyRequestsPageState();
 }
 
-class _AdminEmergencyRequestsPageState
+class AdminEmergencyRequestsPageState
     extends State<AdminEmergencyRequestsPage> {
   String selectedStatus = "All"; // Default filter
 

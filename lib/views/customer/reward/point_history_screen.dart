@@ -6,10 +6,10 @@ class PointHistoryScreen extends StatefulWidget {
   const PointHistoryScreen({super.key});
 
   @override
-  _PointHistoryScreenState createState() => _PointHistoryScreenState();
+  PointHistoryScreenState createState() => PointHistoryScreenState();
 }
 
-class _PointHistoryScreenState extends State<PointHistoryScreen>
+class PointHistoryScreenState extends State<PointHistoryScreen>
     with SingleTickerProviderStateMixin {
   String _accountId = "";
   List<Map<String, dynamic>> _expiredRewards = [];

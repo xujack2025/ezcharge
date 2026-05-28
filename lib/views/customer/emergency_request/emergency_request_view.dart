@@ -18,10 +18,10 @@ class EmergencyRequestView extends StatefulWidget {
   const EmergencyRequestView({super.key});
 
   @override
-  _EmergencyRequestViewState createState() => _EmergencyRequestViewState();
+  EmergencyRequestViewState createState() => EmergencyRequestViewState();
 }
 
-class _EmergencyRequestViewState extends State<EmergencyRequestView> {
+class EmergencyRequestViewState extends State<EmergencyRequestView> {
   final Completer<GoogleMapController> _controller = Completer();
   final Location _location = Location();
   final TextEditingController _locationController = TextEditingController();

@@ -21,9 +21,8 @@ class EmergencyRequestViewModel extends ChangeNotifier {
         .where('customerID', isEqualTo: customerID)
         .snapshots()
         .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => EmergencyRequest.fromMap(doc.data()))
-              .toList(),
+          (snapshot) =>
+              snapshot.docs.map((doc) => EmergencyRequest.fromMap(doc.data())).toList(),
         );
   }
 
@@ -88,8 +87,7 @@ class EmergencyRequestViewModel extends ChangeNotifier {
       isLoading = true;
       notifyListeners(); // Show loading state
 
-      String fileName =
-          "requests/RQImage${DateTime.now().millisecondsSinceEpoch}.jpg";
+      String fileName = "requests/RQImage${DateTime.now().millisecondsSinceEpoch}.jpg";
       Reference ref = FirebaseStorage.instance.ref().child(fileName);
       UploadTask uploadTask = ref.putFile(selectedImage!);
 
@@ -122,25 +120,25 @@ class EmergencyRequestViewModel extends ChangeNotifier {
       firstDate: now,
       lastDate: now.add(const Duration(days: 30)),
     );
+    if (!context.mounted) return;
+    if (pickedDate == null) return;
 
-    if (pickedDate != null) {
-      TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-      );
+    TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (!context.mounted) return;
+    if (pickedTime == null) return;
 
-      if (pickedTime != null) {
-        scheduledDateTime = DateTime(
-          pickedDate.year,
-          pickedDate.month,
-          pickedDate.day,
-          pickedTime.hour,
-          pickedTime.minute,
-        ); //.toUtc().add(const Duration(hours: 8)); // Ensure selected time is also UTC+8
+    scheduledDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
 
-        notifyListeners();
-      }
-    }
+    notifyListeners();
   }
 
   /// 🔹 **Calculate Fee**

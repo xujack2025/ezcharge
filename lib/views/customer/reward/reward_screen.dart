@@ -11,10 +11,10 @@ class RewardScreen extends StatefulWidget {
   const RewardScreen({super.key});
 
   @override
-  _RewardScreenState createState() => _RewardScreenState();
+  RewardScreenState createState() => RewardScreenState();
 }
 
-class _RewardScreenState extends State<RewardScreen> {
+class RewardScreenState extends State<RewardScreen> {
   int _customerPoints = 0;
   String _customerId = "";
   List<Map<String, dynamic>> _rewards = [];

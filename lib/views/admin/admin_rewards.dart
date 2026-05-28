@@ -5,10 +5,10 @@ class AdminRewardsScreen extends StatefulWidget {
   const AdminRewardsScreen({super.key});
 
   @override
-  _AdminRewardsScreenState createState() => _AdminRewardsScreenState();
+  AdminRewardsScreenState createState() => AdminRewardsScreenState();
 }
 
-class _AdminRewardsScreenState extends State<AdminRewardsScreen> {
+class AdminRewardsScreenState extends State<AdminRewardsScreen> {
   final CollectionReference rewardsCollection = FirebaseFirestore.instance
       .collection('reward');
 

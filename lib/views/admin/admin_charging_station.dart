@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'package:ezcharge/viewmodels/charging_station_viewmodel.dart';
-import 'package:ezcharge/views/admin/admin_charging_bay.dart';
 import 'package:provider/provider.dart';
 
 class AdminChargingStationsPage extends StatefulWidget {

@@ -6,10 +6,10 @@ class EditAdminProfileScreen extends StatefulWidget {
   const EditAdminProfileScreen({super.key});
 
   @override
-  _EditAdminProfileScreenState createState() => _EditAdminProfileScreenState();
+  EditAdminProfileScreenState createState() => EditAdminProfileScreenState();
 }
 
-class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
+class EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();

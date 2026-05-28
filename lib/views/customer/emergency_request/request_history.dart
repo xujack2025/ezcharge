@@ -6,10 +6,10 @@ class RequestHistoryScreen extends StatefulWidget {
   const RequestHistoryScreen({super.key});
 
   @override
-  _RequestHistoryScreenState createState() => _RequestHistoryScreenState();
+  RequestHistoryScreenState createState() => RequestHistoryScreenState();
 }
 
-class _RequestHistoryScreenState extends State<RequestHistoryScreen> {
+class RequestHistoryScreenState extends State<RequestHistoryScreen> {
   String? customerID;
   bool isLoading = true;
 

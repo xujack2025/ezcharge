@@ -6,10 +6,10 @@ class AddCardScreen extends StatefulWidget {
   const AddCardScreen({super.key});
 
   @override
-  _AddCardScreenState createState() => _AddCardScreenState();
+  AddCardScreenState createState() => AddCardScreenState();
 }
 
-class _AddCardScreenState extends State<AddCardScreen> {
+class AddCardScreenState extends State<AddCardScreen> {
   final TextEditingController _cardNumberController = TextEditingController();
   final TextEditingController _expiryDateController = TextEditingController();
   final TextEditingController _cvvController = TextEditingController();
