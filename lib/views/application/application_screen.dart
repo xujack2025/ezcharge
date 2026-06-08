@@ -3,19 +3,15 @@ import 'package:provider/provider.dart';
 
 import '../../core/constants/colors.dart';
 import '../../viewmodels/application/application_viewmodel.dart';
+import 'book_a_charge_screen.dart';
+import 'check_in_screen.dart';
 import 'customer/profile/profile_screen.dart';
 import 'home_screen.dart';
 import 'notification_screen.dart';
 import 'reward_screen.dart';
 
 class ApplicationScreen extends StatelessWidget {
-  ApplicationScreen({super.key});
-  final pages = [
-    HomeScreen(),
-    RewardScreen(),
-    NotificationScreen(),
-    ProfileScreen(),
-  ];
+  const ApplicationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +39,26 @@ class ApplicationScreen extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Me"),
         ],
       ),
-      body: Stack(children: [pages[appVM.selectedPages]]),
+      body: IndexedStack(
+        index: appVM.selectedPages,
+        children: [
+          _buildHomeBody(appVM),
+          const RewardScreen(),
+          const NotificationScreen(),
+          const ProfileScreen(),
+        ],
+      ),
     );
+  }
+
+  Widget _buildHomeBody(ApplicationViewmodel appVM) {
+    switch (appVM.homeSection) {
+      case ApplicationHomeSection.checkIn:
+        return const CheckInScreen();
+      case ApplicationHomeSection.bookACharge:
+        return const BookAChargeScreen(showBottomNav: false);
+      case ApplicationHomeSection.home:
+        return const HomeScreen();
+    }
   }
 }

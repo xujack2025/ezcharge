@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
 
@@ -13,6 +12,7 @@ class NotificationScreen extends StatefulWidget {
 class NotificationScreenState extends State<NotificationScreen> {
   List<Map<String, dynamic>> _notifications = [];
   bool _isLoading = true;
+  // ignore: unused_field TODO
   bool _hasNewNotification = false; // Track if there's a new notification
 
   @override

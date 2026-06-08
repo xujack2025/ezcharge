@@ -5,19 +5,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../core/constants/colors.dart';
+import '../../core/constants/text_styles.dart';
 import '../../models/emergency_request_model.dart';
-import 'check_in_screen.dart';
+import '../../viewmodels/application/application_viewmodel.dart';
 import 'customer/emergency_request/emergency_request_view.dart';
 import 'customer/emergency_request/request_history.dart';
 import 'customer/emergency_request/tracking_view.dart';
-import 'customer/profile/profile_screen.dart';
-import 'home_screen.dart';
-import 'notification_screen.dart';
-import 'reward_screen.dart';
 
 class BookAChargeScreen extends StatefulWidget {
-  const BookAChargeScreen({super.key});
+  const BookAChargeScreen({super.key, this.showBottomNav = true});
+
+  final bool showBottomNav;
 
   @override
   BookAChargeScreenState createState() => BookAChargeScreenState();
@@ -38,10 +39,8 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
     super.initState();
 
     // 🔹 Initialize animation for breathing effect
-    _controller = AnimationController(
-      duration: const Duration(seconds: 1),
-      vsync: this,
-    )..repeat(reverse: true);
+    _controller = AnimationController(duration: const Duration(seconds: 1), vsync: this)
+      ..repeat(reverse: true);
     _animation = Tween<double>(
       begin: 1.0,
       end: 1.3,
@@ -58,8 +57,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
   @override
   void dispose() {
     _controller.dispose();
-    _requestSubscription
-        ?.cancel(); // Prevent memory leaks when widget is disposed
+    _requestSubscription?.cancel(); // Prevent memory leaks when widget is disposed
     super.dispose();
   }
 
@@ -107,13 +105,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
               .where('CustomerID', isEqualTo: customerID)
               .where(
                 'status',
-                whereIn: [
-                  "Pending",
-                  "Upcoming",
-                  "Arrived",
-                  "Charging",
-                  "Payment",
-                ],
+                whereIn: ["Pending", "Upcoming", "Arrived", "Charging", "Payment"],
               )
               .limit(1)
               .snapshots() // 🔹 Real-time listener for request updates
@@ -121,9 +113,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
                 if (activeRequests.docs.isNotEmpty) {
                   // Extract active request ID
                   String fetchedRequestID = activeRequests.docs.first.id;
-                  debugPrint(
-                    "🔄 Request Updated! New requestID: $fetchedRequestID",
-                  );
+                  debugPrint("🔄 Request Updated! New requestID: $fetchedRequestID");
 
                   // Update state with the new request in real-time
                   if (mounted) {
@@ -167,8 +157,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
       }
 
       // Extract request data
-      Map<String, dynamic> requestData =
-          requestSnapshot.data() as Map<String, dynamic>;
+      Map<String, dynamic> requestData = requestSnapshot.data() as Map<String, dynamic>;
 
       // Ensure `driverID` exists in Firestore
       String driverID = requestData.containsKey('driverID')
@@ -197,17 +186,14 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
               if (updatedData != null && updatedData.containsKey('driverID')) {
                 String updatedDriverID = updatedData['driverID'] ?? "Unknown";
 
-                if (updatedDriverID != "Unknown" &&
-                    updatedDriverID.isNotEmpty) {
+                if (updatedDriverID != "Unknown" && updatedDriverID.isNotEmpty) {
                   debugPrint("Driver assigned: $updatedDriverID");
                   if (!mounted) return;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => TrackingView(
-                        driverID: updatedDriverID,
-                        requestID: requestID,
-                      ),
+                      builder: (context) =>
+                          TrackingView(driverID: updatedDriverID, requestID: requestID),
                     ),
                   );
                 }
@@ -222,89 +208,62 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              TrackingView(driverID: driverID, requestID: requestID),
+          builder: (context) => TrackingView(driverID: driverID, requestID: requestID),
         ),
       );
     } catch (e) {
       debugPrint("❌ Error fetching request details: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error fetching request details.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Error fetching request details.")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        elevation: 0,
+        backgroundColor: AppColors.black,
+        title: Text(
+          "EZCHARGE",
+          style: AppTextStyles.headlineMedium.copyWith(
+            color: AppColors.white,
+            letterSpacing: 2,
+          ),
+        ),
+      ),
       body: Stack(
         children: [
           /// Background Image Instead of Google Maps
           Positioned.fill(
             child: CachedNetworkImage(
               imageUrl: imageUrl ?? "",
-              // Avoids null error
               fit: BoxFit.contain,
-              // placeholder: (context, url) =>
-              //     const Center(child: CircularProgressIndicator()),
-              // Loading indicator
-              // errorWidget: (context, url, error) => const Center(
-              //   child: Icon(Icons.error, color: Colors.red, size: 50),
-              // ), // Shows error icon if image fails to load
-              errorWidget: (context, url, error) => const Center(
-                child: CircularProgressIndicator(),
-              ), // Shows error icon if image fails to load
+              errorWidget: (context, url, error) =>
+                  const Center(child: CircularProgressIndicator()),
             ),
           ),
-          // Positioned.fill(child: Image(image: NetworkImage(imageUrl!))),
 
           /// Dark Overlay for Better Contrast
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.1),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          /// EZCHARGE Title
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              color: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-              child: const Text(
-                "EZCHARGE",
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 2.0,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 4,
-                      color: Colors.black45,
-                      offset: Offset(1, 1),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          // Positioned.fill(
+          //   child: Container(
+          //     decoration: BoxDecoration(
+          //       gradient: LinearGradient(
+          //         begin: Alignment.topCenter,
+          //         end: Alignment.bottomCenter,
+          //         colors: [Colors.black.withValues(alpha: 0.1), Colors.transparent],
+          //       ),
+          //     ),
+          //   ),
+          // ),
 
           // Top Navigation Buttons
+          // Container(width: double.infinity, height: 30, color: AppColors.black),
           Positioned(
-            top: 80,
+            top: 0,
             left: 20,
             right: 20,
             child: Container(
@@ -321,24 +280,14 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
                     Icons.qr_code,
                     isSelected: false,
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CheckInScreen(),
-                        ),
-                      );
+                      context.read<ApplicationViewmodel>().showCheckInSection();
                     },
                   ),
                   _buildNavButton(
                     Icons.electric_bolt,
                     isSelected: false,
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HomeScreen(),
-                        ),
-                      );
+                      context.read<ApplicationViewmodel>().showHomeSection();
                     },
                   ),
                   _buildNavButton(Icons.local_gas_station, isSelected: true),
@@ -352,9 +301,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
             top: 240,
             right: 20,
             child: ScaleTransition(
-              scale: activeRequestExists
-                  ? _animation
-                  : AlwaysStoppedAnimation(1.0),
+              scale: activeRequestExists ? _animation : AlwaysStoppedAnimation(1.0),
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -372,9 +319,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
                       onPressed: () async {
                         if (!activeRequestExists) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("You have no active request."),
-                            ),
+                            const SnackBar(content: Text("You have no active request.")),
                           );
                           return;
                         }
@@ -382,9 +327,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
                         if (requestID == null || requestID!.isEmpty) {
                           debugPrint("❌ Error: Request ID is missing.");
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Request ID is missing."),
-                            ),
+                            const SnackBar(content: Text("Request ID is missing.")),
                           );
                           return;
                         }
@@ -481,18 +424,14 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => EmergencyRequestView(),
-                  ),
+                  MaterialPageRoute(builder: (context) => EmergencyRequestView()),
                 );
               },
               style: ElevatedButton.styleFrom(
                 elevation: 6,
                 backgroundColor: Colors.blue,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: const Center(
                 child: Text(
@@ -502,20 +441,13 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
               ),
             ),
           ),
-
-          /// Bottom Navigation Bar
-          _buildBottomNavBar(context),
         ],
       ),
     );
   }
 
   /// 🔹 Build Navigation Button (QR / Charging / Gas)
-  Widget _buildNavButton(
-    IconData icon, {
-    bool isSelected = false,
-    VoidCallback? onTap,
-  }) {
+  Widget _buildNavButton(IconData icon, {bool isSelected = false, VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -524,56 +456,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
           color: isSelected ? Colors.blue : Colors.white,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(
-          icon,
-          color: isSelected ? Colors.white : Colors.black,
-          size: 30,
-        ),
-      ),
-    );
-  }
-
-  /// 🔹 Bottom Navigation Bar (Same as HomeScreen)
-  Widget _buildBottomNavBar(BuildContext context) {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.black54,
-        currentIndex: 0,
-        onTap: (index) {
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => RewardScreen()),
-            );
-          } else if (index == 3) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => NotificationScreen()),
-            );
-          } else if (index == 2) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
-            );
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.directions_car),
-            label: "EZCharge",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.card_giftcard),
-            label: "Rewards",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Me"),
-          BottomNavigationBarItem(icon: Icon(Icons.mail), label: "Inbox"),
-        ],
+        child: Icon(icon, color: isSelected ? Colors.white : Colors.black, size: 30),
       ),
     );
   }

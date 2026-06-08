@@ -5,10 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:provider/provider.dart';
 
-import 'book_a_charge_screen.dart';
+import '../../core/constants/colors.dart';
+import '../../core/constants/text_styles.dart';
+import '../../viewmodels/application/application_viewmodel.dart';
 import 'customer/ezcharge/check_detail.dart';
-import 'home_screen.dart';
+import 'widgets/top_nav_icon.dart';
 
 class CheckInScreen extends StatefulWidget {
   const CheckInScreen({super.key});
@@ -168,34 +171,27 @@ class CheckInScreenState extends State<CheckInScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        elevation: 0,
+        backgroundColor: AppColors.black,
+        title: Text(
+          "EZCHARGE",
+          style: AppTextStyles.headlineMedium.copyWith(
+            color: AppColors.white,
+            letterSpacing: 2,
+          ),
+        ),
+      ),
       body: Stack(
         children: [
           // Mobile Scanner for QR Code
           MobileScanner(controller: _scannerController, onDetect: _onDetect),
 
-          //EZCHARGE Title
+          //Top Navigation Buttons
+          Container(width: double.infinity, height: 30, color: AppColors.black),
           Positioned(
             top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              color: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-              child: const Text(
-                "EZCHARGE",
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 2.0,
-                ),
-              ),
-            ),
-          ),
-
-          //Top Navigation Buttons
-          Positioned(
-            top: 80,
             left: 20,
             right: 20,
             child: Container(
@@ -207,29 +203,21 @@ class CheckInScreenState extends State<CheckInScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildNavButton(Icons.qr_code, isSelected: true),
-                  _buildNavButton(
+                  TopNavIcon(Icons.qr_code, isSelected: true),
+                  TopNavIcon(
                     Icons.electric_bolt,
                     isSelected: false,
                     onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HomeScreen(),
-                        ),
-                      );
+                      context.read<ApplicationViewmodel>().showHomeSection();
                     },
                   ),
-                  _buildNavButton(
+                  TopNavIcon(
                     Icons.local_gas_station,
                     isSelected: false,
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BookAChargeScreen(),
-                        ),
-                      );
+                      context
+                          .read<ApplicationViewmodel>()
+                          .showBookAChargeSection();
                     },
                   ),
                 ],
@@ -297,29 +285,6 @@ class CheckInScreenState extends State<CheckInScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  //Navigation Button Builder
-  Widget _buildNavButton(
-    IconData icon, {
-    bool isSelected = false,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(
-          icon,
-          color: isSelected ? Colors.white : Colors.black,
-          size: 30,
-        ),
       ),
     );
   }

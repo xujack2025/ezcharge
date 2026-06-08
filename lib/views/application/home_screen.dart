@@ -10,13 +10,13 @@ import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../core/constants/text_styles.dart';
 import '../../core/utils/app_logger.dart';
+import '../../viewmodels/application/application_viewmodel.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
 import '../../viewmodels/charging_station_viewmodel.dart';
-import 'book_a_charge_screen.dart';
-import 'check_in_screen.dart';
 import 'customer/ezcharge/filter_screen.dart';
 import 'customer/ezcharge/reservation_screen.dart';
 import 'customer/ezcharge/station_screen.dart';
+import 'widgets/top_nav_icon.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -284,7 +284,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final authVM = context.watch<AuthViewModel>();
-    debugPrint("Current user ID: ${authVM.customerId}");
+    final appVM = context.watch<ApplicationViewmodel>();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -326,7 +326,50 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // Top Navigation Buttons
           Container(width: double.infinity, height: 30, color: AppColors.black),
-          Positioned(top: 0, left: 20, right: 20, child: TopNavBar()),
+          Positioned(
+            top: 0,
+            left: 20,
+            right: 20,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black12)],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  TopNavIcon(
+                    Icons.qr_code,
+                    isSelected:
+                        appVM.homeSection == ApplicationHomeSection.checkIn,
+                    onTap: () {
+                      context.read<ApplicationViewmodel>().showCheckInSection();
+                    },
+                  ),
+                  TopNavIcon(
+                    Icons.electric_bolt,
+                    isSelected:
+                        appVM.homeSection == ApplicationHomeSection.home,
+                    onTap: () {
+                      context.read<ApplicationViewmodel>().showHomeSection();
+                    },
+                  ),
+                  TopNavIcon(
+                    Icons.local_gas_station,
+                    isSelected:
+                        appVM.homeSection == ApplicationHomeSection.bookACharge,
+                    onTap: () {
+                      context
+                          .read<ApplicationViewmodel>()
+                          .showBookAChargeSection();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
 
           /// Filter Button
           Positioned(
@@ -750,64 +793,5 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return markers;
-  }
-}
-
-class TopNavBar extends StatelessWidget {
-  TopNavBar({super.key});
-
-  final selectedTab = 1;
-  final tabs = [CheckInScreen(), HomeScreen(), BookAChargeScreen()];
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.85,
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconContainer(iconData: Icons.qr_code),
-          IconContainer(iconData: Icons.electric_bolt, isSelected: true),
-          IconContainer(iconData: Icons.local_gas_station),
-        ],
-      ),
-    );
-  }
-}
-
-class IconContainer extends StatelessWidget {
-  const IconContainer({
-    super.key,
-    this.bgColor = AppColors.white,
-    required this.iconData,
-    this.iconColor = AppColors.black,
-    this.isSelected = false,
-    this.iconSize = 30,
-  });
-  final Color bgColor;
-  final IconData iconData;
-  final Color iconColor;
-  final bool isSelected;
-  final double iconSize;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary : bgColor,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Icon(
-        iconData,
-        color: isSelected ? AppColors.white : iconColor,
-        size: iconSize,
-      ),
-    );
   }
 }

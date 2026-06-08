@@ -63,8 +63,7 @@ class MyApp extends StatelessWidget {
             primary: AppColors.textBlue,
           ),
         ),
-        initialRoute: AppRoutes.signInScreen,
-        // home: Scaffold(body: Center(child: ApplicationScreen())),
+        initialRoute: AppRoutes.applicationScreen,
         routes: {
           AppRoutes.introScreen: (context) => IntroScreen(),
           AppRoutes.introScheduleScreen: (context) => IntroScheduleScreen(),
