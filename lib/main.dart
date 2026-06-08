@@ -1,17 +1,29 @@
+// ignore_for_file: unused_import
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
-import 'package:ezcharge/services/station_service.dart';
-import 'package:ezcharge/viewmodels/charging_station_viewmodel.dart';
-import 'package:ezcharge/core/constants/colors.dart';
-import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
-import 'package:ezcharge/viewmodels/emergency_request_viewmodel.dart';
-import 'package:ezcharge/viewmodels/tracking_viewmodel.dart';
-import 'package:ezcharge/views/auth/sign_in_screen.dart';
-// ignore: unused_import
-import 'package:ezcharge/views/welcome/intro_screen.dart';
+import 'core/constants/colors.dart';
+import 'core/routes/app_routes.dart';
+import 'models/user_model.dart';
+import 'services/station_service.dart';
+import 'viewmodels/application/application_viewmodel.dart';
+import 'viewmodels/auth/auth_viewmodel.dart';
+import 'viewmodels/charging_station_viewmodel.dart';
+import 'viewmodels/emergency_request_viewmodel.dart';
+import 'viewmodels/onboarding/onboarding_viewmodel.dart';
+import 'viewmodels/tracking_viewmodel.dart';
+import 'views/application/application_screen.dart';
+import 'views/application/check_in_screen.dart';
+import 'views/application/home_screen.dart';
+import 'views/auth/admin_sign_in_screen.dart';
+import 'views/auth/otp_screen.dart';
+import 'views/auth/sign_in_screen.dart';
+import 'views/onboarding/intro_schedule_screen.dart';
+import 'views/onboarding/intro_screen.dart';
+import 'views/onboarding/welcome_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,19 +31,7 @@ Future<void> main() async {
   await dotenv.load(fileName: '.env');
   await Firebase.initializeApp();
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => AuthViewModel()),
-        ChangeNotifierProvider(create: (context) => EmergencyRequestViewModel()),
-        ChangeNotifierProvider(create: (context) => TrackingViewModel()),
-        ChangeNotifierProvider(
-          create: (context) => ChargingStationViewModel(stationService: StationService()),
-        ),
-      ],
-      child: MyApp(),
-    ),
-  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -39,18 +39,41 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'EzCharge',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.textBlue,
-          primary: AppColors.textBlue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AuthViewModel()),
+        ChangeNotifierProvider(
+          create: (context) => EmergencyRequestViewModel(),
         ),
+        ChangeNotifierProvider(create: (context) => TrackingViewModel()),
+        ChangeNotifierProvider(
+          create: (context) =>
+              ChargingStationViewModel(stationService: StationService()),
+        ),
+        ChangeNotifierProvider(create: (context) => OnboardingViewmodel()),
+        ChangeNotifierProvider(create: (context) => ApplicationViewmodel()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'EzCharge',
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.textBlue,
+            primary: AppColors.textBlue,
+          ),
+        ),
+        initialRoute: AppRoutes.signInScreen,
+        // home: Scaffold(body: Center(child: ApplicationScreen())),
+        routes: {
+          AppRoutes.introScreen: (context) => IntroScreen(),
+          AppRoutes.introScheduleScreen: (context) => IntroScheduleScreen(),
+          AppRoutes.welcomeScreen: (context) => WelcomeScreen(),
+          AppRoutes.signInScreen: (context) => SignInScreen(),
+          AppRoutes.adminSignInScreen: (context) => AdminSignInScreen(),
+          AppRoutes.applicationScreen: (context) => ApplicationScreen(),
+        },
       ),
-      // home: IntroScreen(),
-      home: SignInScreen(),
     );
   }
 }

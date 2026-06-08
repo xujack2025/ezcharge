@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:ezcharge/core/constants/colors.dart';
-import 'package:ezcharge/core/constants/text_styles.dart';
-import 'package:ezcharge/core/widgets/otp_input.dart';
-import 'package:ezcharge/core/widgets/top_app_bar.dart';
-import 'package:ezcharge/models/user_model.dart';
-import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
-import 'package:ezcharge/views/admin/admin_dashboard.dart';
-import 'package:ezcharge/views/ezcharge/home_screen.dart';
+import '../../core/constants/colors.dart';
+import '../../core/constants/text_styles.dart';
+import '../../core/widgets/otp_input.dart';
+import '../../core/widgets/top_app_bar.dart';
+import '../../models/user_model.dart';
+import '../../viewmodels/auth/auth_viewmodel.dart';
+import '../admin/admin_dashboard.dart';
+import '../application/application_screen.dart';
 
 class OTPScreen extends StatefulWidget {
   final String phoneNumber;
@@ -41,13 +41,15 @@ class OTPScreenState extends State<OTPScreen> {
     );
 
     if (success && mounted) {
-      Widget destination = (widget.role == UserRole.admin)
-          ? const AdminDashboard()
-          : const HomeScreen();
-
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => destination),
+        MaterialPageRoute(
+          builder: (context) {
+            return widget.role == UserRole.customer
+                ? ApplicationScreen()
+                : AdminDashboard();
+          },
+        ),
       );
     }
   }

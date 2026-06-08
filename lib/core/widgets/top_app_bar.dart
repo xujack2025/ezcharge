@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:ezcharge/core/constants/colors.dart';
-import 'package:ezcharge/core/constants/text_styles.dart';
+import '../constants/colors.dart';
+import '../constants/text_styles.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -26,20 +26,23 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       backgroundColor: AppColors.white,
       elevation: 0,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 16.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
-          ),
-          child: IconButton(
-            padding: EdgeInsets.zero,
-            icon: const Icon(Icons.arrow_back, color: AppColors.white),
-            onPressed: onBackPress ?? () => Navigator.of(context).maybePop(),
-          ),
-        ),
-      ),
+      leading: showBackButton
+          ? Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(Icons.arrow_back, color: AppColors.white),
+                  onPressed:
+                      onBackPress ?? () => Navigator.of(context).maybePop(),
+                ),
+              ),
+            )
+          : Container(),
       actions: actions,
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1.0),

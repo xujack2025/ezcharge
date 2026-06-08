@@ -1,14 +1,14 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/core/utils/app_logger.dart';
-import 'package:ezcharge/models/charging_station_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:ezcharge/services/station_service.dart';
-import 'package:ezcharge/models/charging_bay_model.dart';
+import '../core/utils/app_logger.dart';
+import '../models/charging_bay_model.dart';
+import '../models/charging_station_model.dart';
+import '../services/station_service.dart';
 
 class ChargingStationViewModel extends ChangeNotifier {
   final StationService _stationService;
@@ -31,12 +31,16 @@ class ChargingStationViewModel extends ChangeNotifier {
 
   void _setLoading(bool value) {
     _isLoading = value;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void _setError(String? message) {
     _errorMessage = message;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void fetchChargingStations() {
@@ -69,10 +73,14 @@ class ChargingStationViewModel extends ChangeNotifier {
 
         for (var station in _stations) {
           try {
-            final bays = await _stationService.getChargingBays(station.stationID).first;
+            final bays = await _stationService
+                .getChargingBays(station.stationID)
+                .first;
             station.chargingBays = bays;
           } catch (e) {
-            AppLogger.error("Failed to fetch bays for ${station.stationID}: $e");
+            AppLogger.error(
+              "Failed to fetch bays for ${station.stationID}: $e",
+            );
           }
         }
 
@@ -115,8 +123,9 @@ class ChargingStationViewModel extends ChangeNotifier {
         .collection('Charger')
         .snapshots()
         .map(
-          (snapshot) =>
-              snapshot.docs.map((doc) => ChargingBay.fromFirestore(doc)).toList(),
+          (snapshot) => snapshot.docs
+              .map((doc) => ChargingBay.fromFirestore(doc))
+              .toList(),
         );
   }
 
@@ -246,7 +255,7 @@ class ChargingStationViewModel extends ChangeNotifier {
       return [];
     }
   }*/
-  
+
   // Add Charging Bay with Full Details
   Future<void> addChargingBay(String stationID, ChargingBay bay) async {
     try {
@@ -311,7 +320,10 @@ class ChargingStationViewModel extends ChangeNotifier {
 
   Future<String?> getStationImage(String stationID) async {
     try {
-      DocumentSnapshot doc = await _firestore.collection('station').doc(stationID).get();
+      DocumentSnapshot doc = await _firestore
+          .collection('station')
+          .doc(stationID)
+          .get();
       if (doc.exists && doc['ImageUrl'] != null) {
         return doc['ImageUrl'];
       }

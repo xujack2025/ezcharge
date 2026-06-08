@@ -1,51 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:ezcharge/core/constants/colors.dart';
-import 'package:ezcharge/core/constants/text_styles.dart';
-import 'package:ezcharge/core/widgets/button.dart';
-import 'package:ezcharge/core/widgets/custom_divider.dart';
-import 'package:ezcharge/core/widgets/phone_input.dart';
-import 'package:ezcharge/core/widgets/top_app_bar.dart';
-import 'package:ezcharge/models/user_model.dart';
-import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
-import 'package:ezcharge/views/auth/admin_sign_in_screen.dart';
-import 'package:ezcharge/views/auth/otp_screen.dart';
+import '../../core/constants/colors.dart';
+import '../../core/constants/text_styles.dart';
+import '../../core/routes/app_routes.dart';
+import '../../core/widgets/button.dart';
+import '../../core/widgets/custom_divider.dart';
+import '../../core/widgets/phone_input.dart';
+import '../../core/widgets/top_app_bar.dart';
+import '../../models/user_model.dart';
+import '../../viewmodels/auth/auth_viewmodel.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
   @override
-  SignInScreenState createState() => SignInScreenState();
+  State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class SignInScreenState extends State<SignInScreen> {
-  String _fullPhoneNumber = "";
-  final TextEditingController _phoneController = TextEditingController();
+class _SignInScreenState extends State<SignInScreen> {
+  final _phoneController = TextEditingController();
 
-  AuthViewModel get _authViewModel => context.read<AuthViewModel>();
+  final role = UserRole.customer;
 
-  /// Request OTP and navigate to OTPScreen
-  Future<void> _requestOtp() async {
-    if (_fullPhoneNumber.isEmpty) return;
-
-    await _authViewModel.requestOtp(
-      _fullPhoneNumber,
-      UserRole.customer,
-      onCodeSent: (verificationId) {
-        if (!mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OTPScreen(
-              phoneNumber: _fullPhoneNumber,
-              verificationID: verificationId,
-              role: UserRole.customer,
-            ),
-          ),
-        );
-      },
-    );
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
   }
 
   @override
@@ -54,14 +35,7 @@ class SignInScreenState extends State<SignInScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      appBar: CustomAppBar(
-        title: "Sign In",
-        showBackButton: true,
-        onBackPress: () {
-          authViewModel.clearError();
-          Navigator.maybePop(context);
-        },
-      ),
+      appBar: CustomAppBar(title: "Sign In", showBackButton: false),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -84,14 +58,16 @@ class SignInScreenState extends State<SignInScreen> {
               AppPhoneInput(
                 controller: _phoneController,
                 onInputChanged: (number) {
-                  _fullPhoneNumber = number.phoneNumber ?? "";
+                  authViewModel.fullPhoneNumber = number.phoneNumber ?? "";
                 },
               ),
               if (authViewModel.errorMessage != null) ...[
                 const SizedBox(height: 5),
                 Text(
                   authViewModel.errorMessage!,
-                  style: AppTextStyles.labelLarge.copyWith(color: AppColors.danger),
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: AppColors.danger,
+                  ),
                 ),
               ],
               const SizedBox(height: 16),
@@ -100,7 +76,11 @@ class SignInScreenState extends State<SignInScreen> {
               CustomButton(
                 text: "Submit",
                 isLoading: authViewModel.isLoading,
-                onPressed: _requestOtp,
+                onPressed: () => authViewModel.submitPhoneNumber(
+                  context,
+                  authViewModel.fullPhoneNumber,
+                  role,
+                ),
                 borderRadius: 22,
               ),
 
@@ -114,10 +94,7 @@ class SignInScreenState extends State<SignInScreen> {
                 child: TextButton(
                   onPressed: () {
                     authViewModel.clearError();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AdminSignInScreen()),
-                    );
+                    Navigator.pushNamed(context, AppRoutes.adminSignInScreen);
                   },
                   child: Text(
                     "Sign In as Admin",

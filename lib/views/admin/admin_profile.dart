@@ -2,10 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ezcharge/services/auth_service.dart';
-import 'package:ezcharge/views/auth/sign_in_screen.dart';
-import 'package:ezcharge/views/admin/admin_authenticate.dart';
-import 'package:ezcharge/views/admin/admin_profile_edit.dart';
+import '../../services/auth_service.dart';
+import '../auth/sign_in_screen.dart';
+import 'admin_authenticate.dart';
+import 'admin_profile_edit.dart';
 
 class AdminProfilePage extends StatefulWidget {
   const AdminProfilePage({super.key});

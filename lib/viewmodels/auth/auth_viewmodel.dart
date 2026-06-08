@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'package:ezcharge/core/utils/app_logger.dart';
-import 'package:ezcharge/services/station_service.dart';
-import 'package:ezcharge/models/admin_model.dart';
-import 'package:ezcharge/models/customer_model.dart';
-import 'package:ezcharge/models/user_model.dart';
-import 'package:ezcharge/services/auth_service.dart';
+import '../../core/utils/app_logger.dart';
+import '../../models/admin_model.dart';
+import '../../models/customer_model.dart';
+import '../../models/user_model.dart';
+import '../../services/auth_service.dart';
+import '../../services/station_service.dart';
+import '../../views/auth/otp_screen.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final AuthService _authService;
@@ -21,7 +22,9 @@ class AuthViewModel extends ChangeNotifier {
   CustomerModel? _customer;
   String _authStatus = "";
   String _reservationStatus = "";
+  String _fullPhoneNumber = "";
 
+  String get fullPhoneNumber => _fullPhoneNumber;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   AdminModel? get admin => _admin;
@@ -31,14 +34,17 @@ class AuthViewModel extends ChangeNotifier {
   bool get hasActiveReservation =>
       _reservationStatus == "Upcoming" || _reservationStatus == "Active";
 
-  void _setLoading(bool value) {
-    _isLoading = value;
+  set fullPhoneNumber(String value) {
+    _fullPhoneNumber = value;
     notifyListeners();
   }
 
-  void _setError(String? message) {
-    _errorMessage = message;
-    notifyListeners();
+  void _updateStatus(bool loading, String? error) {
+    _isLoading = loading;
+    _errorMessage = error;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   Future<void> syncUserStatus() async {
@@ -47,8 +53,7 @@ class AuthViewModel extends ChangeNotifier {
       return;
     }
 
-    _setLoading(true);
-    _setError(null);
+    _updateStatus(true, null);
 
     try {
       final String currentId = _customer!.id;
@@ -62,10 +67,65 @@ class AuthViewModel extends ChangeNotifier {
       _reservationStatus = results[1];
 
       AppLogger.info("Status synced for user: $currentId");
+      _updateStatus(false, null);
     } catch (e) {
-      _setError("Failed to sync status: $e");
-    } finally {
-      _setLoading(false);
+      AppLogger.error("Sync error: $e");
+      _updateStatus(false, "Failed to sync status: $e");
+    }
+  }
+
+  Future<void> submitPhoneNumber(
+    BuildContext context,
+    String fullPhoneNumber,
+    UserRole role,
+  ) async {
+    if (fullPhoneNumber.isEmpty) return;
+
+    _updateStatus(true, null);
+
+    await requestOtp(
+      fullPhoneNumber,
+      role,
+      onCodeSent: (verificationId) {
+        _updateStatus(false, null);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPScreen(
+              phoneNumber: fullPhoneNumber,
+              verificationID: verificationId,
+              role: role,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> requestOtp(
+    String phoneNumber,
+    UserRole role, {
+    required void Function(String verificationId) onCodeSent,
+  }) async {
+    _updateStatus(true, null);
+
+    try {
+      await _authService.sendOtp(
+        phoneNumber,
+        role,
+        onCodeSent: (verificationId) {
+          onCodeSent(verificationId);
+          _updateStatus(false, null);
+        },
+        onVerificationCompleted: () {
+          _updateStatus(false, null);
+        },
+        onError: (message) {
+          _updateStatus(false, message);
+        },
+      );
+    } catch (e) {
+      _updateStatus(false, "Error checking phone number: $e");
     }
   }
 
@@ -75,11 +135,13 @@ class AuthViewModel extends ChangeNotifier {
     String phoneNumber,
     UserRole role,
   ) async {
-    _setLoading(true);
-    _setError(null);
+    _updateStatus(true, null);
 
     try {
-      final userCredential = await _authService.signInWithOtp(verificationId, smsCode);
+      final userCredential = await _authService.signInWithOtp(
+        verificationId,
+        smsCode,
+      );
 
       if (userCredential.user != null) {
         final user = await _authService.getUserByPhoneNumber(phoneNumber, role);
@@ -93,54 +155,21 @@ class AuthViewModel extends ChangeNotifier {
         }
 
         if (_admin != null || _customer != null) {
-          _setLoading(false);
+          _updateStatus(false, null);
           return true;
         }
       }
 
-      _setError("User record not found.");
-      _setLoading(false);
+      _updateStatus(false, "User record not found.");
       return false;
     } catch (e) {
-      _setLoading(false);
-      _setError("Invalid OTP.");
+      _updateStatus(false, "Invalid OTP.");
       return false;
-    }
-  }
-
-  Future<void> requestOtp(
-    String phoneNumber,
-    UserRole role, {
-    required void Function(String verificationId) onCodeSent,
-  }) async {
-    _setLoading(true);
-    _setError(null);
-
-    try {
-      await _authService.sendOtp(
-        phoneNumber,
-        role,
-        onCodeSent: (verificationId) {
-          _setLoading(false);
-          onCodeSent(verificationId);
-        },
-        onVerificationCompleted: () {
-          _setLoading(false);
-        },
-        onError: (message) {
-          _setLoading(false);
-          _setError(message);
-        },
-      );
-    } catch (e) {
-      _setLoading(false);
-      _setError('Error checking phone number: $e');
     }
   }
 
   Future<void> fetchCurrentUser(String phoneNumber, UserRole role) async {
-    _setLoading(true);
-    _setError(null);
+    _updateStatus(true, null);
 
     try {
       final user = await _authService.getUserByPhoneNumber(phoneNumber, role);
@@ -156,16 +185,14 @@ class AuthViewModel extends ChangeNotifier {
         _admin = null;
         _customer = null;
       }
+      _updateStatus(false, null);
     } catch (e) {
       AppLogger.error("Failed to fetch user: $e");
-      _setError('Failed to fetch user: $e');
-    } finally {
-      _setLoading(false);
-      notifyListeners();
+      _updateStatus(false, 'Failed to fetch user: $e');
     }
   }
 
   void clearError() {
-    _setError(null);
+    _updateStatus(false, null);
   }
 }

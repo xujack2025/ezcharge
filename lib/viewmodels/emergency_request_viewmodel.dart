@@ -5,7 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:ezcharge/models/emergency_request_model.dart';
+import '../models/emergency_request_model.dart';
 
 class EmergencyRequestViewModel extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -21,8 +21,9 @@ class EmergencyRequestViewModel extends ChangeNotifier {
         .where('customerID', isEqualTo: customerID)
         .snapshots()
         .map(
-          (snapshot) =>
-              snapshot.docs.map((doc) => EmergencyRequest.fromMap(doc.data())).toList(),
+          (snapshot) => snapshot.docs
+              .map((doc) => EmergencyRequest.fromMap(doc.data()))
+              .toList(),
         );
   }
 
@@ -87,7 +88,8 @@ class EmergencyRequestViewModel extends ChangeNotifier {
       isLoading = true;
       notifyListeners(); // Show loading state
 
-      String fileName = "requests/RQImage${DateTime.now().millisecondsSinceEpoch}.jpg";
+      String fileName =
+          "requests/RQImage${DateTime.now().millisecondsSinceEpoch}.jpg";
       Reference ref = FirebaseStorage.instance.ref().child(fileName);
       UploadTask uploadTask = ref.putFile(selectedImage!);
 

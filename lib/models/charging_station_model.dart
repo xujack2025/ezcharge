@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/models/charging_bay_model.dart';
+import 'charging_bay_model.dart';
 
 enum CapacityStatus { optimal, highdemand, overloaded, undefined }
+
 enum StationStatus { active, inactive, deleted }
 
 class ChargingStation {

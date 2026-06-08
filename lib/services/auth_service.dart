@@ -1,16 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'package:ezcharge/core/utils/app_logger.dart';
-import 'package:ezcharge/models/admin_model.dart';
-import 'package:ezcharge/models/customer_model.dart';
-import 'package:ezcharge/models/user_model.dart';
+import '../core/utils/app_logger.dart';
+import '../models/admin_model.dart';
+import '../models/customer_model.dart';
+import '../models/user_model.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<UserCredential> signInWithOtp(String verificationId, String smsCode) async {
+  Future<UserCredential> signInWithOtp(
+    String verificationId,
+    String smsCode,
+  ) async {
     PhoneAuthCredential credential = PhoneAuthProvider.credential(
       verificationId: verificationId,
       smsCode: smsCode,
@@ -28,7 +31,9 @@ class AuthService {
     final userData = await getUserByPhoneNumber(phoneNumber, role);
 
     if (userData == null) {
-      onError('${role == UserRole.admin ? "Admin" : "Customer"} phone number not found!');
+      onError(
+        '${role == UserRole.admin ? "Admin" : "Customer"} phone number not found!',
+      );
       return;
     }
 
@@ -53,7 +58,10 @@ class AuthService {
     }
   }
 
-  Future<UserModel?> getUserByPhoneNumber(String phoneNumber, UserRole role) async {
+  Future<UserModel?> getUserByPhoneNumber(
+    String phoneNumber,
+    UserRole role,
+  ) async {
     return role == UserRole.admin
         ? await getAdminByPhoneNumber(phoneNumber)
         : await getCustomerByPhoneNumber(phoneNumber);
@@ -95,7 +103,9 @@ class AuthService {
 
       final customerData = querySnapshot.docs.first.data();
       final customer = CustomerModel.fromFirestore(customerData);
-      AppLogger.debug("Customer Model successfully created: ${customer.firstName}");
+      AppLogger.debug(
+        "Customer Model successfully created: ${customer.firstName}",
+      );
       return customer;
     } catch (e) {
       AppLogger.error("Error fetching customer by phone number: $e");

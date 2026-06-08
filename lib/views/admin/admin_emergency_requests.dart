@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ezcharge/views/admin/admin_assign_driver.dart';
+import 'admin_assign_driver.dart';
 
 class AdminEmergencyRequestsPage extends StatefulWidget {
   const AdminEmergencyRequestsPage({super.key});

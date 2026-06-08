@@ -76,11 +76,16 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
   /// Update driver location in Firestore
   Future<void> _updateDriverLocation(String driverID, Position position) async {
     try {
-      await FirebaseFirestore.instance.collection('drivers').doc(driverID).update({
-        'location': GeoPoint(position.latitude, position.longitude),
-        'lastUpdated': FieldValue.serverTimestamp(),
-      });
-      debugPrint("Driver location updated: ${position.latitude}, ${position.longitude}");
+      await FirebaseFirestore.instance
+          .collection('drivers')
+          .doc(driverID)
+          .update({
+            'location': GeoPoint(position.latitude, position.longitude),
+            'lastUpdated': FieldValue.serverTimestamp(),
+          });
+      debugPrint(
+        "Driver location updated: ${position.latitude}, ${position.longitude}",
+      );
     } catch (e) {
       debugPrint("❌ Error updating driver location: $e");
     }
@@ -112,7 +117,8 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
 
           setState(() {
             isDriverAssigned =
-                requestData.containsKey('driverID') && requestData['driverID'] != null;
+                requestData.containsKey('driverID') &&
+                requestData['driverID'] != null;
             isDriverArrived = (status == "Arrived" || status == "Charging");
             isCharging = status == "Charging";
           });
@@ -124,10 +130,14 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
 
           // Debugging: Confirm if this block is running
           if (status == "Payment" && driverID != null) {
-            debugPrint("Status is 'Completed', calling _updateDriverStatus($driverID)");
+            debugPrint(
+              "Status is 'Completed', calling _updateDriverStatus($driverID)",
+            );
             _updateDriverStatus(driverID);
           } else {
-            debugPrint("⚠️ Status is NOT 'Completed' yet, skipping driver update.");
+            debugPrint(
+              "⚠️ Status is NOT 'Completed' yet, skipping driver update.",
+            );
           }
         });
   }
@@ -165,10 +175,10 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         .update({'driverID': selectedDriverID, 'status': 'Upcoming'});
 
     // Update driver status to "Busy"
-    await FirebaseFirestore.instance.collection('drivers').doc(selectedDriverID).update({
-      'status': 'Busy',
-      'requestID': widget.requestID,
-    });
+    await FirebaseFirestore.instance
+        .collection('drivers')
+        .doc(selectedDriverID)
+        .update({'status': 'Busy', 'requestID': widget.requestID});
 
     if (!mounted) return;
     setState(() {
@@ -178,9 +188,9 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
     // Start tracking location
     _startTrackingDriverLocation(selectedDriverID!);
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Driver assigned successfully!")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Driver assigned successfully!")),
+    );
   }
 
   /// Admin starts charging
@@ -221,7 +231,8 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
       return;
     }
 
-    Map<String, dynamic>? requestData = requestSnapshot.data() as Map<String, dynamic>?;
+    Map<String, dynamic>? requestData =
+        requestSnapshot.data() as Map<String, dynamic>?;
 
     if (requestData == null || !requestData.containsKey('chargingStartTime')) {
       debugPrint("❌ Error: Charging start time not found in Firestore.");
@@ -229,10 +240,13 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
     }
 
     Timestamp startTimestamp =
-        requestData['chargingClientStartTime'] ?? requestData['chargingStartTime'];
+        requestData['chargingClientStartTime'] ??
+        requestData['chargingStartTime'];
     DateTime chargingStartTime = startTimestamp.toDate();
 
-    debugPrint("Retrieved charging start time from Firestore: $chargingStartTime");
+    debugPrint(
+      "Retrieved charging start time from Firestore: $chargingStartTime",
+    );
 
     DateTime endTime = DateTime.now();
     Duration duration = endTime.difference(chargingStartTime);
@@ -301,7 +315,8 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
       }
 
       // Get Firestore document data
-      Map<String, dynamic>? requestData = requestSnapshot.data() as Map<String, dynamic>?;
+      Map<String, dynamic>? requestData =
+          requestSnapshot.data() as Map<String, dynamic>?;
 
       if (requestData == null) {
         debugPrint("❌ Error: requestData is null.");
@@ -315,7 +330,8 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         return;
       }
 
-      if (!requestData.containsKey('location') || requestData['location'] == null) {
+      if (!requestData.containsKey('location') ||
+          requestData['location'] == null) {
         debugPrint("❌ Customer location not available in emergency request.");
         return;
       }
@@ -330,7 +346,8 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
           .get();
 
       if (!mounted) return;
-      Map<String, dynamic>? driverData = driverSnapshot.data() as Map<String, dynamic>?;
+      Map<String, dynamic>? driverData =
+          driverSnapshot.data() as Map<String, dynamic>?;
 
       if (driverData == null || !driverData.containsKey('location')) {
         debugPrint("❌ Driver location not available.");
@@ -367,9 +384,9 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         // Stop tracking when driver arrives
         _stopTrackingDriverLocation();
 
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Driver marked as arrived!")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Driver marked as arrived!")),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -389,10 +406,13 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
     try {
       debugPrint("🔄 Updating driver $driverID status to 'Available'...");
 
-      await FirebaseFirestore.instance.collection('drivers').doc(driverID).update({
-        'status': 'Available', // Set driver as Available
-        'requestID': FieldValue.delete(), // Remove requestID field
-      });
+      await FirebaseFirestore.instance
+          .collection('drivers')
+          .doc(driverID)
+          .update({
+            'status': 'Available', // Set driver as Available
+            'requestID': FieldValue.delete(), // Remove requestID field
+          });
 
       debugPrint("Driver $driverID status updated successfully!");
     } catch (error) {
@@ -414,7 +434,10 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
                   if (!isDriverAssigned) ...[
                     const Text(
                       "Select a Driver:",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     RadioGroup<String>(
@@ -431,7 +454,9 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
                         itemBuilder: (context, index) {
                           final driver = availableDrivers[index];
                           return RadioListTile<String>(
-                            title: Text("${driver["name"]} (${driver["phone"]})"),
+                            title: Text(
+                              "${driver["name"]} (${driver["phone"]})",
+                            ),
                             value: driver["driverID"],
                           );
                         },
@@ -440,7 +465,9 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
                     const SizedBox(height: 10),
                     Center(
                       child: ElevatedButton(
-                        onPressed: selectedDriverID == null ? null : _assignDriver,
+                        onPressed: selectedDriverID == null
+                            ? null
+                            : _assignDriver,
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 48),
                         ),
@@ -469,7 +496,10 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
                         isCharging
                             ? "Charging in progress..."
                             : "Ready to start charging",
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -477,9 +507,13 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
                       child: ElevatedButton.icon(
                         onPressed: isCharging ? _stopCharging : _startCharging,
                         icon: Icon(isCharging ? Icons.stop : Icons.flash_on),
-                        label: Text(isCharging ? "Stop Charging" : "Start Charging"),
+                        label: Text(
+                          isCharging ? "Stop Charging" : "Start Charging",
+                        ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isCharging ? Colors.red : Colors.green,
+                          backgroundColor: isCharging
+                              ? Colors.red
+                              : Colors.green,
                           minimumSize: const Size(double.infinity, 48),
                         ),
                       ),

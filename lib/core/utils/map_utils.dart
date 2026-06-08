@@ -1,6 +1,6 @@
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:ezcharge/core/utils/app_logger.dart';
+import 'app_logger.dart';
 
 class MapUtils {
   MapUtils._();

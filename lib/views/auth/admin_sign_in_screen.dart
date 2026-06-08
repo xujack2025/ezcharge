@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:ezcharge/core/constants/text_styles.dart';
-import 'package:ezcharge/core/widgets/button.dart';
-import 'package:ezcharge/core/widgets/phone_input.dart';
-import 'package:ezcharge/core/widgets/top_app_bar.dart';
-import 'package:ezcharge/models/user_model.dart';
-import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
-import 'package:ezcharge/views/auth/otp_screen.dart';
+import '../../core/constants/text_styles.dart';
+import '../../core/widgets/button.dart';
+import '../../core/widgets/phone_input.dart';
+import '../../core/widgets/top_app_bar.dart';
+import '../../models/user_model.dart';
+import '../../viewmodels/auth/auth_viewmodel.dart';
 
 class AdminSignInScreen extends StatefulWidget {
   const AdminSignInScreen({super.key});
@@ -17,10 +16,8 @@ class AdminSignInScreen extends StatefulWidget {
 }
 
 class AdminSignInScreenState extends State<AdminSignInScreen> {
-  String _fullPhoneNumber = "";
-  final TextEditingController _phoneController = TextEditingController();
-
-  AuthViewModel get _authViewModel => context.read<AuthViewModel>();
+  final _phoneController = TextEditingController();
+  final role = UserRole.admin;
 
   @override
   void dispose() {
@@ -28,34 +25,12 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
     super.dispose();
   }
 
-  Future<void> _requestOtp() async {
-    if (_fullPhoneNumber.isEmpty) return;
-
-    await _authViewModel.requestOtp(
-      _fullPhoneNumber,
-      UserRole.admin,
-      onCodeSent: (verificationId) {
-        if (!mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OTPScreen(
-              phoneNumber: _fullPhoneNumber,
-              verificationID: verificationId,
-              role: UserRole.admin,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final authViewModel = context.watch<AuthViewModel>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[200], //Light Grey Background
+      backgroundColor: Colors.grey[200],
       appBar: CustomAppBar(
         title: "Admin Sign In",
         showBackButton: true,
@@ -70,7 +45,10 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Sign in with phone number", style: AppTextStyles.titleLarge),
+              const Text(
+                "Sign in with phone number",
+                style: AppTextStyles.titleLarge,
+              ),
               const SizedBox(height: 5),
 
               const Text(
@@ -83,7 +61,7 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
               AppPhoneInput(
                 controller: _phoneController,
                 onInputChanged: (number) {
-                  _fullPhoneNumber = number.phoneNumber ?? "";
+                  authViewModel.fullPhoneNumber = number.phoneNumber ?? "";
                 },
               ),
               if (authViewModel.errorMessage != null) ...[
@@ -99,7 +77,11 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
               CustomButton(
                 text: "Submit",
                 isLoading: authViewModel.isLoading,
-                onPressed: _requestOtp,
+                onPressed: () => authViewModel.submitPhoneNumber(
+                  context,
+                  authViewModel.fullPhoneNumber,
+                  role,
+                ),
                 borderRadius: 22,
               ),
             ],

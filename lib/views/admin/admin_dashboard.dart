@@ -2,14 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 // Import Admin Pages
-import 'package:ezcharge/core/widgets/bottom_app_bar.dart';
-import 'package:ezcharge/views/admin/admin_analysis.dart';
-import 'package:ezcharge/views/admin/admin_assign_driver.dart';
-import 'package:ezcharge/views/admin/admin_charging_station.dart';
-import 'package:ezcharge/views/admin/admin_complaint.dart';
-import 'package:ezcharge/views/admin/admin_drawer.dart';
-import 'package:ezcharge/views/admin/admin_notification.dart';
-import 'package:ezcharge/views/admin/admin_profile.dart';
+import '../../core/widgets/bottom_app_bar.dart';
+import 'admin_analysis.dart';
+import 'admin_assign_driver.dart';
+import 'admin_charging_station.dart';
+import 'admin_complaint.dart';
+import 'admin_drawer.dart';
+import 'admin_notification.dart';
+import 'admin_profile.dart';
 
 class AdminDashboard extends StatefulWidget {
   final int initialIndex;

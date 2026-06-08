@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
-import 'package:ezcharge/core/constants/colors.dart';
+import '../constants/colors.dart';
 
 class AppPhoneInput extends StatelessWidget {
   final TextEditingController controller;
@@ -15,7 +15,7 @@ class AppPhoneInput extends StatelessWidget {
     required this.controller,
     required this.onInputChanged,
     this.initialCountryCode = 'MY',
-    this.hintText = '123456789',
+    this.hintText = '12 3456789',
     this.autofocus = false,
   });
 

@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ezcharge/models/user_model.dart';
+import 'user_model.dart';
 
 class CustomerModel extends UserModel {
   final String gender;

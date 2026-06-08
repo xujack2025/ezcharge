@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-
-import 'package:ezcharge/viewmodels/charging_station_viewmodel.dart';
 import 'package:provider/provider.dart';
+
+import '../../viewmodels/charging_station_viewmodel.dart';
 
 class AdminChargingStationsPage extends StatefulWidget {
   const AdminChargingStationsPage({super.key});
@@ -14,7 +14,8 @@ class AdminChargingStationsPage extends StatefulWidget {
 }
 
 class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
-  ChargingStationViewModel get _chargingStationViewModel => context.read<ChargingStationViewModel>();
+  ChargingStationViewModel get _chargingStationViewModel =>
+      context.read<ChargingStationViewModel>();
 
   final TextEditingController _stationNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -160,8 +161,8 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
                 child: const Text("Cancel"),
               ),
               ElevatedButton.icon(
-                onPressed: () async {
-                  await _saveChargingStation(setDialogState);
+                onPressed: () {
+                  _saveChargingStation(setDialogState);
                   Navigator.pop(context);
                 },
                 icon: const Icon(Icons.save),

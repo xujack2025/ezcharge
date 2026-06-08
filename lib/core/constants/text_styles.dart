@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:ezcharge/core/constants/colors.dart';
+import 'colors.dart';
 
 class AppTextStyles {
   static const String _fontFamily = 'Roboto';
@@ -10,13 +10,14 @@ class AppTextStyles {
     fontFamily: _fontFamily,
     fontSize: 57,
     fontWeight: FontWeight.bold,
-    letterSpacing: -0.25,
+    letterSpacing: 6,
   );
 
   static const TextStyle displayMedium = TextStyle(
     fontFamily: _fontFamily,
     fontSize: 45,
     fontWeight: FontWeight.bold,
+    letterSpacing: 4,
   );
 
   // --- Headline (页面大标题) ---

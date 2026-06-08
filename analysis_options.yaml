@@ -2,10 +2,10 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:   
-    # - prefer_relative_imports 
-    # - directives_ordering
-    - avoid_relative_lib_imports
-    - always_use_package_imports
+    - prefer_relative_imports 
+    - directives_ordering
+    # - avoid_relative_lib_imports
+    # - always_use_package_imports
     # # Error handling
     # - avoid_empty_else
     

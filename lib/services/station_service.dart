@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:ezcharge/core/utils/app_logger.dart';
-import 'package:ezcharge/models/charging_bay_model.dart';
-import 'package:ezcharge/models/charging_station_model.dart';
+import '../core/utils/app_logger.dart';
+import '../models/charging_bay_model.dart';
+import '../models/charging_station_model.dart';
 
 class StationService {
   final _db = FirebaseFirestore.instance;
@@ -38,8 +38,13 @@ class StationService {
   /// Update existing station in Firestore
   Future<void> updateChargingStation(ChargingStation station) async {
     try {
-      await _db.collection('station').doc(station.stationID).update(station.toMap());
-      AppLogger.info('Charging station update successfully: ${station.toMap()}');
+      await _db
+          .collection('station')
+          .doc(station.stationID)
+          .update(station.toMap());
+      AppLogger.info(
+        'Charging station update successfully: ${station.toMap()}',
+      );
     } catch (e) {
       AppLogger.error('Error update charging station: $e');
     }
@@ -49,7 +54,9 @@ class StationService {
   Future<void> deleteChargingStation(ChargingStation station) async {
     try {
       await _db.collection('station').doc(station.stationID).delete();
-      AppLogger.info('Charging station deleted successfully: ${station.toMap()}');
+      AppLogger.info(
+        'Charging station deleted successfully: ${station.toMap()}',
+      );
     } catch (e) {
       AppLogger.error('Error delete charging station: $e');
     }
@@ -72,23 +79,26 @@ class StationService {
   /// CRUD Operations for Charging Bays
   /// Retrieve bays for a station with real-time updates
   Stream<List<ChargingBay>> getChargingBays(String stationID) {
-    return _db.collection('station').doc(stationID).collection('Charger').snapshots().map(
-      (snapshot) {
-        return snapshot.docs
-            .map((doc) {
-              try {
-                return ChargingBay.fromFirestore(doc);
-              } catch (e) {
-                AppLogger.error(
-                  'Error parsing charging bay ${doc.id} in station $stationID: $e',
-                );
-                return null;
-              }
-            })
-            .whereType<ChargingBay>()
-            .toList();
-      },
-    );
+    return _db
+        .collection('station')
+        .doc(stationID)
+        .collection('Charger')
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) {
+                try {
+                  return ChargingBay.fromFirestore(doc);
+                } catch (e) {
+                  AppLogger.error(
+                    'Error parsing charging bay ${doc.id} in station $stationID: $e',
+                  );
+                  return null;
+                }
+              })
+              .whereType<ChargingBay>()
+              .toList();
+        });
   }
 
   /// Add new charging bay to a station
@@ -99,7 +109,10 @@ class StationService {
           .doc(stationID)
           .collection('Charger')
           .doc(bay.chargerID)
-          .set({...bay.toMap(), "Status": bay.status.name}, SetOptions(merge: true));
+          .set({
+            ...bay.toMap(),
+            "Status": bay.status.name,
+          }, SetOptions(merge: true));
       AppLogger.info(
         'Charging bay added successfully to station $stationID: ${bay.toMap}',
       );
@@ -138,7 +151,9 @@ class StationService {
         'Charging bay deleted successfully from station $stationID: $chargerID',
       );
     } catch (e) {
-      AppLogger.error('Error deleting charging bay from station $stationID: $e');
+      AppLogger.error(
+        'Error deleting charging bay from station $stationID: $e',
+      );
     }
   }
 
@@ -159,7 +174,9 @@ class StationService {
         'Charging bay soft-deleted successfully from station $stationID: $chargerID',
       );
     } catch (e) {
-      AppLogger.error('Error deleting charging bay from station $stationID: $e');
+      AppLogger.error(
+        'Error deleting charging bay from station $stationID: $e',
+      );
     }
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:ezcharge/core/constants/colors.dart';
-import 'package:ezcharge/core/constants/text_styles.dart';
+import '../constants/colors.dart';
+import '../constants/text_styles.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
