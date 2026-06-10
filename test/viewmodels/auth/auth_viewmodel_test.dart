@@ -1,17 +1,28 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ezcharge/models/admin_model.dart';
 import 'package:ezcharge/models/customer_model.dart';
 import 'package:ezcharge/models/user_model.dart';
 import 'package:ezcharge/services/auth_service.dart';
 import 'package:ezcharge/services/startup_service.dart';
+import 'package:ezcharge/services/station_service.dart';
 import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class FakeAuthService implements AuthServiceContract {
-  FakeAuthService({this.verificationId, this.errorMessage});
+  FakeAuthService({
+    this.verificationId,
+    this.errorMessage,
+    this.currentPhoneNumber,
+    this.customer,
+    this.authStatus = "",
+  });
 
   final String? verificationId;
   final String? errorMessage;
+  final String? currentPhoneNumber;
+  final CustomerModel? customer;
+  final String authStatus;
   String? requestedPhoneNumber;
   UserRole? requestedRole;
 
@@ -50,18 +61,19 @@ class FakeAuthService implements AuthServiceContract {
   }
 
   @override
-  Future<CustomerModel?> getCustomerByPhoneNumber(String phoneNumber) {
-    throw UnimplementedError();
+  Future<CustomerModel?> getCustomerByPhoneNumber(String phoneNumber) async {
+    requestedPhoneNumber = phoneNumber;
+    return customer;
   }
 
   @override
-  Future<String> getAuthStatus(String customerId) {
-    throw UnimplementedError();
+  Future<String> getAuthStatus(String customerId) async {
+    return authStatus;
   }
 
   @override
   String? getCurrentUserPhoneNumber() {
-    throw UnimplementedError();
+    return currentPhoneNumber;
   }
 
   @override
@@ -106,8 +118,34 @@ class FakeStartupService implements StartupServiceContract {
   }
 }
 
+class FakeStationService implements StationReservationServiceContract {
+  FakeStationService({this.reservationStatus = ""});
+
+  final String reservationStatus;
+  String? requestedCustomerId;
+
+  @override
+  Future<String> getReservationStatus(String customerId) async {
+    requestedCustomerId = customerId;
+    return reservationStatus;
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  final customer = CustomerModel(
+    id: "CUS1",
+    firstName: "Test",
+    lastName: "Customer",
+    gender: "Female",
+    walletBalance: 0,
+    pointBalance: 0,
+    dateOfBirth: "2000-01-01",
+    createdAt: Timestamp.fromMillisecondsSinceEpoch(0),
+    email: "test@example.com",
+    phone: "+60123456789",
+  );
 
   group('AuthViewModel.submitPhoneNumber', () {
     test(
@@ -171,5 +209,47 @@ void main() {
         expect(viewModel.errorMessage, 'Phone not found');
       },
     );
+  });
+
+  group('AuthViewModel.syncUserStatus', () {
+    test(
+      'hydrates current customer from Firebase phone before syncing status',
+      () async {
+        final authService = FakeAuthService(
+          currentPhoneNumber: '+60123456789',
+          customer: customer,
+          authStatus: 'Pass',
+        );
+        final stationService = FakeStationService(reservationStatus: '');
+        final viewModel = AuthViewModel(
+          authService: authService,
+          stationService: stationService,
+          startupService: FakeStartupService(),
+        );
+
+        await viewModel.syncUserStatus();
+
+        expect(authService.requestedPhoneNumber, '+60123456789');
+        expect(stationService.requestedCustomerId, 'CUS1');
+        expect(viewModel.customerId, 'CUS1');
+        expect(viewModel.isAuthenticated, isTrue);
+        expect(viewModel.hasActiveReservation, isFalse);
+        expect(viewModel.errorMessage, isNull);
+      },
+    );
+
+    test('exposes an error when no customer profile can be restored', () async {
+      final viewModel = AuthViewModel(
+        authService: FakeAuthService(currentPhoneNumber: '+60123456789'),
+        stationService: FakeStationService(),
+        startupService: FakeStartupService(),
+      );
+
+      await viewModel.syncUserStatus();
+
+      expect(viewModel.customerId, isEmpty);
+      expect(viewModel.isAuthenticated, isFalse);
+      expect(viewModel.errorMessage, 'Customer profile not found.');
+    });
   });
 }

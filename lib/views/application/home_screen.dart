@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadHomeData() async {
-    unawaited(_authViewModel.syncUserStatus());
+    await _authViewModel.syncUserStatus();
     await _homeViewModel.loadStations(customerId: _authViewModel.customerId);
   }
 

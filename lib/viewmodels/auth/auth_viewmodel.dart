@@ -12,12 +12,12 @@ import '../../services/station_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final AuthServiceContract _authService;
-  final StationService? _stationService;
+  final StationReservationServiceContract? _stationService;
   final StartupServiceContract _startupService;
 
   AuthViewModel({
     AuthServiceContract? authService,
-    StationService? stationService,
+    StationReservationServiceContract? stationService,
     StartupServiceContract? startupService,
   }) : _stationService = stationService,
        _authService = authService ?? AuthService(),
@@ -55,15 +55,19 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> syncUserStatus() async {
-    if (_customer == null) {
-      AppLogger.error("Sync failed: No customer data found in memory.");
-      return;
-    }
-
     _updateStatus(true, null);
 
     try {
-      final String currentId = _customer!.id;
+      final customer = await _ensureCurrentCustomer();
+      if (customer == null) {
+        AppLogger.error("Sync failed: No customer data found.");
+        _authStatus = "";
+        _reservationStatus = "";
+        _updateStatus(false, "Customer profile not found.");
+        return;
+      }
+
+      final String currentId = customer.id;
 
       final results = await Future.wait([
         _authService.getAuthStatus(currentId),
@@ -79,6 +83,21 @@ class AuthViewModel extends ChangeNotifier {
       AppLogger.error("Sync error: $e");
       _updateStatus(false, "Failed to sync status: $e");
     }
+  }
+
+  Future<CustomerModel?> _ensureCurrentCustomer() async {
+    if (_customer != null) return _customer;
+
+    final phoneNumber = _authService.getCurrentUserPhoneNumber();
+    if (phoneNumber == null || phoneNumber.isEmpty) {
+      AppLogger.error("Sync failed: No authenticated phone number found.");
+      return null;
+    }
+
+    final customer = await _authService.getCustomerByPhoneNumber(phoneNumber);
+    _customer = customer;
+    _admin = null;
+    return customer;
   }
 
   Future<String?> submitPhoneNumber(

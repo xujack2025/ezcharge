@@ -4,7 +4,11 @@ import '../core/utils/app_logger.dart';
 import '../models/charging_bay_model.dart';
 import '../models/charging_station_model.dart';
 
-class StationService {
+abstract class StationReservationServiceContract {
+  Future<String> getReservationStatus(String customerId);
+}
+
+class StationService implements StationReservationServiceContract {
   final _db = FirebaseFirestore.instance;
 
   /// CRUD Operations for Charging Stations and Bays
@@ -181,6 +185,7 @@ class StationService {
   }
 
   /// Check reservation status for customers
+  @override
   Future<String> getReservationStatus(String customerId) async {
     final doc = await _db.collection("reservation").doc(customerId).get();
     return doc.exists ? (doc["Status"] ?? "") : "";
