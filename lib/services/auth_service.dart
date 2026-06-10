@@ -6,10 +6,33 @@ import '../models/admin_model.dart';
 import '../models/customer_model.dart';
 import '../models/user_model.dart';
 
-class AuthService {
+abstract class AuthServiceContract {
+  Future<UserCredential> signInWithOtp(String verificationId, String smsCode);
+
+  Future<void> sendOtp(
+    String phoneNumber,
+    UserRole role, {
+    required void Function(String verificationId) onCodeSent,
+    required void Function() onVerificationCompleted,
+    required void Function(String message) onError,
+  });
+
+  Future<UserModel?> getUserByPhoneNumber(String phoneNumber, UserRole role);
+
+  Future<AdminModel?> getAdminByPhoneNumber(String phoneNumber);
+
+  Future<CustomerModel?> getCustomerByPhoneNumber(String phoneNumber);
+
+  Future<String> getAuthStatus(String customerId);
+
+  Future<void> signout();
+}
+
+class AuthService implements AuthServiceContract {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  @override
   Future<UserCredential> signInWithOtp(
     String verificationId,
     String smsCode,
@@ -21,6 +44,7 @@ class AuthService {
     return await _auth.signInWithCredential(credential);
   }
 
+  @override
   Future<void> sendOtp(
     String phoneNumber,
     UserRole role, {
@@ -58,6 +82,7 @@ class AuthService {
     }
   }
 
+  @override
   Future<UserModel?> getUserByPhoneNumber(
     String phoneNumber,
     UserRole role,
@@ -67,6 +92,7 @@ class AuthService {
         : await getCustomerByPhoneNumber(phoneNumber);
   }
 
+  @override
   Future<AdminModel?> getAdminByPhoneNumber(String phoneNumber) async {
     try {
       final querySnapshot = await _firestore
@@ -89,6 +115,7 @@ class AuthService {
     }
   }
 
+  @override
   Future<CustomerModel?> getCustomerByPhoneNumber(String phoneNumber) async {
     try {
       final querySnapshot = await _firestore
@@ -113,6 +140,7 @@ class AuthService {
     }
   }
 
+  @override
   Future<String> getAuthStatus(String customerId) async {
     final querySnapshot = await _firestore
         .collection("customers")
@@ -123,6 +151,7 @@ class AuthService {
     return querySnapshot.exists ? querySnapshot["Status"] : "";
   }
 
+  @override
   Future<void> signout() async {
     try {
       await _auth.signOut();

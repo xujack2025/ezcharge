@@ -3,12 +3,11 @@ import 'package:provider/provider.dart';
 
 import '../../core/constants/colors.dart';
 import '../../core/constants/text_styles.dart';
+import '../../core/routes/auth_route_resolver.dart';
 import '../../core/widgets/otp_input.dart';
 import '../../core/widgets/top_app_bar.dart';
 import '../../models/user_model.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
-import '../admin/admin_dashboard.dart';
-import '../application/application_screen.dart';
 
 class OTPScreen extends StatefulWidget {
   final String phoneNumber;
@@ -40,18 +39,18 @@ class OTPScreenState extends State<OTPScreen> {
       widget.role,
     );
 
-    if (success && mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) {
-            return widget.role == UserRole.customer
-                ? ApplicationScreen()
-                : AdminDashboard();
-          },
-        ),
-      );
-    }
+    if (!success || !mounted) return;
+
+    Navigator.pushReplacementNamed(
+      context,
+      AuthRouteResolver.successRouteFor(widget.role),
+    );
+  }
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    super.dispose();
   }
 
   @override
@@ -79,7 +78,7 @@ class OTPScreenState extends State<OTPScreen> {
                 "Enter the 6-digit code sent to ${widget.phoneNumber}",
                 style: AppTextStyles.titleLarge,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               /// OTP Input Field
               CustomOtpInput(
@@ -104,7 +103,7 @@ class OTPScreenState extends State<OTPScreen> {
                 children: [
                   Text(
                     "Didn't receive it?",
-                    style: TextStyle(color: Colors.black54),
+                    style: const TextStyle(color: Colors.black54),
                   ),
                   TextButton(
                     onPressed: () {}, // TODO: Implement Resend OTP

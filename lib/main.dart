@@ -15,6 +15,7 @@ import 'viewmodels/charging_station_viewmodel.dart';
 import 'viewmodels/emergency_request_viewmodel.dart';
 import 'viewmodels/onboarding/onboarding_viewmodel.dart';
 import 'viewmodels/tracking_viewmodel.dart';
+import 'views/admin/admin_dashboard.dart';
 import 'views/application/application_screen.dart';
 import 'views/application/check_in_screen.dart';
 import 'views/application/home_screen.dart';
@@ -71,6 +72,7 @@ class MyApp extends StatelessWidget {
           AppRoutes.signInScreen: (context) => SignInScreen(),
           AppRoutes.adminSignInScreen: (context) => AdminSignInScreen(),
           AppRoutes.applicationScreen: (context) => ApplicationScreen(),
+          AppRoutes.adminDashboardScreen: (context) => AdminDashboard(),
         },
       ),
     );

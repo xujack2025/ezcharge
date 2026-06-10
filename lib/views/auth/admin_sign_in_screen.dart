@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/constants/text_styles.dart';
-import '../../core/widgets/button.dart';
-import '../../core/widgets/phone_input.dart';
 import '../../core/widgets/top_app_bar.dart';
 import '../../models/user_model.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
+import 'otp_screen.dart';
+import 'widgets/phone_sign_in_form.dart';
 
 class AdminSignInScreen extends StatefulWidget {
   const AdminSignInScreen({super.key});
@@ -25,6 +24,27 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
     super.dispose();
   }
 
+  Future<void> _submitPhoneNumber(AuthViewModel authViewModel) async {
+    final phoneNumber = authViewModel.fullPhoneNumber;
+    final verificationId = await authViewModel.submitPhoneNumber(
+      phoneNumber,
+      role,
+    );
+
+    if (!mounted || verificationId == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OTPScreen(
+          phoneNumber: phoneNumber,
+          verificationID: verificationId,
+          role: role,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authViewModel = context.watch<AuthViewModel>();
@@ -40,52 +60,13 @@ class AdminSignInScreenState extends State<AdminSignInScreen> {
         },
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Sign in with phone number",
-                style: AppTextStyles.titleLarge,
-              ),
-              const SizedBox(height: 5),
-
-              const Text(
-                "A verification code will be sent to your registered phone number",
-                style: AppTextStyles.labelLarge,
-              ),
-              const SizedBox(height: 16),
-
-              // Phone Number Input
-              AppPhoneInput(
-                controller: _phoneController,
-                onInputChanged: (number) {
-                  authViewModel.fullPhoneNumber = number.phoneNumber ?? "";
-                },
-              ),
-              if (authViewModel.errorMessage != null) ...[
-                const SizedBox(height: 5),
-                Text(
-                  authViewModel.errorMessage!,
-                  style: const TextStyle(color: Colors.red, fontSize: 14),
-                ),
-              ],
-              const SizedBox(height: 16),
-
-              /// Submit Button
-              CustomButton(
-                text: "Submit",
-                isLoading: authViewModel.isLoading,
-                onPressed: () => authViewModel.submitPhoneNumber(
-                  context,
-                  authViewModel.fullPhoneNumber,
-                  role,
-                ),
-                borderRadius: 22,
-              ),
-            ],
-          ),
+        child: PhoneSignInForm(
+          title: "Sign in with phone number",
+          subtitle:
+              "A verification code will be sent to your registered phone number",
+          phoneController: _phoneController,
+          authViewModel: authViewModel,
+          onSubmit: () => _submitPhoneNumber(authViewModel),
         ),
       ),
     );

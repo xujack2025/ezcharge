@@ -11,4 +11,7 @@ class AppRoutes {
 
   // Application Screens
   static const String applicationScreen = "/application_screen";
+
+  // Admin Screens
+  static const String adminDashboardScreen = "/admin_dashboard_screen";
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../core/utils/app_logger.dart';
@@ -6,15 +8,16 @@ import '../../models/customer_model.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/station_service.dart';
-import '../../views/auth/otp_screen.dart';
 
 class AuthViewModel extends ChangeNotifier {
-  final AuthService _authService;
-  final StationService _stationService;
+  final AuthServiceContract _authService;
+  final StationService? _stationService;
 
-  AuthViewModel({AuthService? authService, StationService? stationService})
-    : _stationService = stationService ?? StationService(),
-      _authService = authService ?? AuthService();
+  AuthViewModel({
+    AuthServiceContract? authService,
+    StationService? stationService,
+  }) : _stationService = stationService,
+       _authService = authService ?? AuthService();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -60,7 +63,7 @@ class AuthViewModel extends ChangeNotifier {
 
       final results = await Future.wait([
         _authService.getAuthStatus(currentId),
-        _stationService.getReservationStatus(currentId),
+        (_stationService ?? StationService()).getReservationStatus(currentId),
       ]);
 
       _authStatus = results[0];
@@ -74,59 +77,54 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> submitPhoneNumber(
-    BuildContext context,
+  Future<String?> submitPhoneNumber(
     String fullPhoneNumber,
     UserRole role,
   ) async {
-    if (fullPhoneNumber.isEmpty) return;
+    if (fullPhoneNumber.isEmpty) return null;
 
-    _updateStatus(true, null);
-
-    await requestOtp(
-      fullPhoneNumber,
-      role,
-      onCodeSent: (verificationId) {
-        _updateStatus(false, null);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OTPScreen(
-              phoneNumber: fullPhoneNumber,
-              verificationID: verificationId,
-              role: role,
-            ),
-          ),
-        );
-      },
-    );
+    return requestOtp(fullPhoneNumber, role);
   }
 
-  Future<void> requestOtp(
-    String phoneNumber,
-    UserRole role, {
-    required void Function(String verificationId) onCodeSent,
-  }) async {
+  Future<String?> requestOtp(String phoneNumber, UserRole role) async {
     _updateStatus(true, null);
+    final completer = Completer<String?>();
+
+    void completeRequest(String? verificationId) {
+      if (!completer.isCompleted) {
+        completer.complete(verificationId);
+      }
+    }
 
     try {
       await _authService.sendOtp(
         phoneNumber,
         role,
         onCodeSent: (verificationId) {
-          onCodeSent(verificationId);
           _updateStatus(false, null);
+          completeRequest(verificationId);
         },
         onVerificationCompleted: () {
           _updateStatus(false, null);
+          completeRequest(null);
         },
         onError: (message) {
           _updateStatus(false, message);
+          completeRequest(null);
         },
       );
     } catch (e) {
       _updateStatus(false, "Error checking phone number: $e");
+      completeRequest(null);
     }
+
+    return completer.future.timeout(
+      const Duration(seconds: 31),
+      onTimeout: () {
+        _updateStatus(false, "OTP request timed out.");
+        return null;
+      },
+    );
   }
 
   Future<bool> verifyOtp(
