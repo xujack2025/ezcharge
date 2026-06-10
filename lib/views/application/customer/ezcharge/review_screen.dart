@@ -184,8 +184,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                             ),
                           ),
                           const SizedBox(height: 5),
-                          Row(
-                            children: const [
+                          const Row(
+                            children: [
                               Icon(Icons.bolt, color: Colors.green, size: 18),
                               Text(" Available "),
                               Icon(

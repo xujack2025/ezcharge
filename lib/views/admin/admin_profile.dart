@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../services/auth_service.dart';
-import '../auth/sign_in_screen.dart';
+import '../../core/routes/app_routes.dart';
+import '../../viewmodels/auth/auth_viewmodel.dart';
 import 'admin_authenticate.dart';
 import 'admin_profile_edit.dart';
 
@@ -78,10 +79,11 @@ class AdminProfilePageState extends State<AdminProfilePage> {
   }
 
   void _signOut(BuildContext context) async {
-    await AuthService().signout();
-    Navigator.pushAndRemoveUntil(
+    await context.read<AuthViewModel>().signOut();
+    if (!context.mounted) return;
+    Navigator.pushNamedAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => SignInScreen()),
+      AppRoutes.signInScreen,
       (route) => false,
     );
   }
@@ -138,7 +140,7 @@ class AdminProfilePageState extends State<AdminProfilePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EditAdminProfileScreen(),
+                            builder: (context) => const EditAdminProfileScreen(),
                           ),
                         );
                       },
@@ -158,7 +160,7 @@ class AdminProfilePageState extends State<AdminProfilePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => AdminAuthenticatePage(),
+                            builder: (context) => const AdminAuthenticatePage(),
                           ), // Navigate to Authentication Page
                         );
                       },

@@ -53,8 +53,8 @@ class ConfirmDeleteScreen extends StatelessWidget {
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 20),
-            Row(
-              children: const [
+            const Row(
+              children: [
                 Icon(Icons.warning, color: Colors.orange),
                 SizedBox(width: 8),
                 Expanded(

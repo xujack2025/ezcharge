@@ -15,6 +15,7 @@ import 'viewmodels/auth/auth_viewmodel.dart';
 import 'viewmodels/charging_station_viewmodel.dart';
 import 'viewmodels/emergency_request_viewmodel.dart';
 import 'viewmodels/onboarding/onboarding_viewmodel.dart';
+import 'viewmodels/startup_viewmodel.dart';
 import 'viewmodels/tracking_viewmodel.dart';
 import 'views/admin/admin_dashboard.dart';
 import 'views/application/application_screen.dart';
@@ -26,6 +27,7 @@ import 'views/auth/sign_in_screen.dart';
 import 'views/onboarding/intro_schedule_screen.dart';
 import 'views/onboarding/intro_screen.dart';
 import 'views/onboarding/welcome_screen.dart';
+import 'views/startup/startup_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +35,7 @@ Future<void> main() async {
   await dotenv.load(fileName: '.env');
   await Firebase.initializeApp();
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -53,6 +55,7 @@ class MyApp extends StatelessWidget {
               ChargingStationViewModel(stationService: StationService()),
         ),
         ChangeNotifierProvider(create: (context) => OnboardingViewmodel()),
+        ChangeNotifierProvider(create: (context) => StartupViewModel()),
         ChangeNotifierProvider(create: (context) => ApplicationViewmodel()),
         ChangeNotifierProvider(create: (context) => HomeViewModel()),
       ],
@@ -66,15 +69,16 @@ class MyApp extends StatelessWidget {
             primary: AppColors.textBlue,
           ),
         ),
-        initialRoute: AppRoutes.signInScreen,
+        initialRoute: AppRoutes.startupScreen,
         routes: {
-          AppRoutes.introScreen: (context) => IntroScreen(),
+          AppRoutes.startupScreen: (context) => const StartupScreen(),
+          AppRoutes.introScreen: (context) => const IntroScreen(),
           AppRoutes.introScheduleScreen: (context) => IntroScheduleScreen(),
-          AppRoutes.welcomeScreen: (context) => WelcomeScreen(),
-          AppRoutes.signInScreen: (context) => SignInScreen(),
-          AppRoutes.adminSignInScreen: (context) => AdminSignInScreen(),
-          AppRoutes.applicationScreen: (context) => ApplicationScreen(),
-          AppRoutes.adminDashboardScreen: (context) => AdminDashboard(),
+          AppRoutes.welcomeScreen: (context) => const WelcomeScreen(),
+          AppRoutes.signInScreen: (context) => const SignInScreen(),
+          AppRoutes.adminSignInScreen: (context) => const AdminSignInScreen(),
+          AppRoutes.applicationScreen: (context) => const ApplicationScreen(),
+          AppRoutes.adminDashboardScreen: (context) => const AdminDashboard(),
         },
       ),
     );

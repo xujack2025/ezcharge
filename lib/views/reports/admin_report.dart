@@ -18,18 +18,18 @@ class PrintReportScreen extends StatelessWidget {
           _buildReportTile(
             context,
             "📊 Charging Usage Report",
-            ChargingUsageReport(),
+            const ChargingUsageReport(),
           ),
           _buildReportTile(
             context,
             "🛠️ Complaint Resolution Report",
-            ComplaintResolutionReport(),
+            const ComplaintResolutionReport(),
           ),
           //_buildReportTile(context, "💰 Financial Performance Report", FinancialPerformanceReport()),
           _buildReportTile(
             context,
             "🔌 Charging Pile Utilization Report",
-            ChargingPileUtilizationReport(),
+            const ChargingPileUtilizationReport(),
           ),
         ],
       ),

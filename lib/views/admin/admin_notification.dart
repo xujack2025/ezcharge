@@ -87,7 +87,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
           horizontal: 16,
           vertical: 10,
         ),
-        leading: CircleAvatar(
+        leading: const CircleAvatar(
           backgroundColor: Colors.blueAccent,
           child: Icon(Icons.notifications, color: Colors.white),
         ),

@@ -7,17 +7,17 @@ class IntroScheduleScreen extends StatelessWidget {
   IntroScheduleScreen({super.key});
 
   final List<Widget> pages = [
-    OnboardingPage(
+    const OnboardingPage(
       title: 'Schedule your charging',
       subtitle: 'Check, Reserve and charge your EV',
       imagePath: AppMedia.scheduleCharging1,
     ),
-    OnboardingPage(
+    const OnboardingPage(
       title: 'Pay for your charging',
       subtitle: 'Pay with any method you prefer',
       imagePath: AppMedia.scheduleCharging2,
     ),
-    OnboardingPage(
+    const OnboardingPage(
       title: 'Earn for your charging',
       subtitle: 'Earn points for every sustainable action',
       imagePath: AppMedia.scheduleCharging3,

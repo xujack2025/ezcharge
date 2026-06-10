@@ -488,7 +488,7 @@ class EmergencyRequestViewState extends State<EmergencyRequestView> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(5),
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(color: Colors.black26, blurRadius: 5),
                         ],
                       ),

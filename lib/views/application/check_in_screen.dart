@@ -203,7 +203,7 @@ class CheckInScreenState extends State<CheckInScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  TopNavIcon(Icons.qr_code, isSelected: true),
+                  const TopNavIcon(Icons.qr_code, isSelected: true),
                   TopNavIcon(
                     Icons.electric_bolt,
                     isSelected: false,
@@ -238,11 +238,11 @@ class CheckInScreenState extends State<CheckInScreen> {
           ),
 
           //Instruction Text
-          Positioned(
+          const Positioned(
             bottom: 180,
             left: 0,
             right: 0,
-            child: const Center(
+            child: Center(
               child: Text(
                 "Position the QR code within the frame",
                 style: TextStyle(color: Colors.white, fontSize: 16),

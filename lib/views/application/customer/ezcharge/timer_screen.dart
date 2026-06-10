@@ -308,13 +308,13 @@ class _TimerScreenState extends State<TimerScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      ChatbotScreen(), // Replace with your target page widget
+                      const ChatbotScreen(), // Replace with your target page widget
                 ),
               );
             },
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
+              children: [
                 Icon(Icons.support_agent, color: Colors.white),
                 SizedBox(width: 8),
                 Text(

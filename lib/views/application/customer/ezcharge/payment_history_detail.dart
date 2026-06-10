@@ -256,7 +256,7 @@ class _PaymentHistoryDetailScreenState
                                     pw.Center(
                                       child: pw.Text(
                                         'Thank you for using our service!',
-                                        style: pw.TextStyle(fontSize: 12),
+                                        style: const pw.TextStyle(fontSize: 12),
                                       ),
                                     ),
                                   ],

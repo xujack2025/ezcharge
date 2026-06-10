@@ -106,17 +106,17 @@ class _PendingScreenState extends State<PendingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.hourglass_empty,
               size: 100,
               color: Colors.blue,
             ), // ⏳ Pending Icon
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: 20),
+            Text(
               "Your authentication request is pending approval.",
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -125,8 +125,8 @@ class _PendingScreenState extends State<PendingScreen> {
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 10),
-            const Text(
+            SizedBox(height: 10),
+            Text(
               "This process may take some time. Please wait...",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: Colors.black54),

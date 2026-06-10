@@ -115,32 +115,32 @@ class ChatbotScreenState extends State<ChatbotScreen> {
         ? MainAxisAlignment.end
         : MainAxisAlignment.start;
     final bgColor = message.isMe ? Colors.blue[50] : Colors.grey[200];
-    final textColor = Colors.black87;
+    const textColor = Colors.black87;
     final borderRadius = BorderRadius.only(
-      topLeft: Radius.circular(12),
-      topRight: Radius.circular(12),
-      bottomLeft: message.isMe ? Radius.circular(12) : Radius.circular(0),
-      bottomRight: message.isMe ? Radius.circular(0) : Radius.circular(12),
+      topLeft: const Radius.circular(12),
+      topRight: const Radius.circular(12),
+      bottomLeft: message.isMe ? const Radius.circular(12) : const Radius.circular(0),
+      bottomRight: message.isMe ? const Radius.circular(0) : const Radius.circular(12),
     );
 
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
       child: Row(
         mainAxisAlignment: alignment,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           // Optionally show an avatar on the left side if not the user
           if (!message.isMe) ...[
-            CircleAvatar(
+            const CircleAvatar(
               radius: 16,
               backgroundImage: AssetImage('assets/images/ezcharge_logo.png'),
             ),
 
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
           ],
           Flexible(
             child: Container(
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: borderRadius,
@@ -158,17 +158,17 @@ class ChatbotScreenState extends State<ChatbotScreen> {
                       color: textColor.withValues(alpha: 0.8),
                     ),
                   ),
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   // Actual message text
-                  Text(message.text, style: TextStyle(color: textColor)),
+                  Text(message.text, style: const TextStyle(color: textColor)),
                 ],
               ),
             ),
           ),
           // Optionally show an avatar on the right side if it's the user
           if (message.isMe) ...[
-            SizedBox(width: 8),
-            CircleAvatar(
+            const SizedBox(width: 8),
+            const CircleAvatar(
               radius: 16,
               backgroundColor: Colors.grey,
               child: Icon(Icons.person, color: Colors.white, size: 18),
@@ -185,7 +185,7 @@ class ChatbotScreenState extends State<ChatbotScreen> {
       // Example of updating the AppBar to match the style from the first picture
       appBar: AppBar(
         backgroundColor: Colors.blue[900],
-        title: Row(
+        title: const Row(
           children: [
             CircleAvatar(
               radius: 16,
@@ -214,7 +214,7 @@ class ChatbotScreenState extends State<ChatbotScreen> {
               },
             ),
           ),
-          Divider(height: 1.0),
+          const Divider(height: 1.0),
           Container(
             decoration: BoxDecoration(color: Theme.of(context).cardColor),
             child: Row(
@@ -222,14 +222,14 @@ class ChatbotScreenState extends State<ChatbotScreen> {
                 Expanded(
                   child: TextField(
                     controller: _textEditingController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       contentPadding: EdgeInsets.all(10.0),
                       hintText: 'Type a message...',
                       border: InputBorder.none,
                     ),
                   ),
                 ),
-                IconButton(icon: Icon(Icons.send), onPressed: onSendMessage),
+                IconButton(icon: const Icon(Icons.send), onPressed: onSendMessage),
               ],
             ),
           ),

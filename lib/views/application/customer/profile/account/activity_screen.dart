@@ -289,7 +289,7 @@ class _ActivityScreenState extends State<ActivityScreen>
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   color: Colors.black26,
                   blurRadius: 4,
@@ -443,7 +443,7 @@ class _ActivityScreenState extends State<ActivityScreen>
               // Navigate to TimerScreen when tapped.
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => TimerScreen()),
+                MaterialPageRoute(builder: (context) => const TimerScreen()),
               );
             },
             child: Container(
@@ -451,7 +451,7 @@ class _ActivityScreenState extends State<ActivityScreen>
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black26,
                     blurRadius: 4,
@@ -572,7 +572,7 @@ class _ActivityScreenState extends State<ActivityScreen>
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   color: Colors.black26,
                   blurRadius: 4,

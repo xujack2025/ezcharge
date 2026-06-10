@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/constants/colors.dart';
-import '../auth/sign_in_screen.dart';
+import '../../core/routes/app_routes.dart';
+import '../../viewmodels/auth/auth_viewmodel.dart';
 import '../reports/admin_report.dart';
 import 'admin_authenticate.dart';
 import 'admin_emergency_requests.dart';
@@ -96,7 +97,7 @@ class AdminDrawer extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AdminAuthenticatePage(),
+                  builder: (context) => const AdminAuthenticatePage(),
                 ),
               );
             },
@@ -149,7 +150,7 @@ class AdminDrawer extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => PrintReportScreen()),
+                MaterialPageRoute(builder: (context) => const PrintReportScreen()),
               );
             },
           ),
@@ -199,11 +200,13 @@ class AdminDrawer extends StatelessWidget {
           ),
           TextButton(
             onPressed: () async {
-              await FirebaseAuth.instance.signOut();
+              await context.read<AuthViewModel>().signOut();
+              if (!context.mounted) return;
               Navigator.pop(context);
-              Navigator.pushReplacement(
+              Navigator.pushNamedAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => SignInScreen()),
+                AppRoutes.signInScreen,
+                (route) => false,
               );
             },
             child: const Text("Logout", style: TextStyle(color: Colors.red)),

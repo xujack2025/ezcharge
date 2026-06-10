@@ -189,7 +189,7 @@ class RewardScreenState extends State<RewardScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => PointHistoryScreen()),
+                  MaterialPageRoute(builder: (context) => const PointHistoryScreen()),
                 );
               },
               child: Row(

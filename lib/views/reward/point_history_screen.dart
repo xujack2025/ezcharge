@@ -152,7 +152,7 @@ class PointHistoryScreenState extends State<PointHistoryScreen>
         elevation: 1,
         bottom: TabBar(
           controller: _tabController,
-          tabs: [
+          tabs: const [
             Tab(text: "Invalid"),
             Tab(text: "Used"),
           ],
@@ -168,15 +168,15 @@ class PointHistoryScreenState extends State<PointHistoryScreen>
   //UI for "Invalid" tab (Expired Rewards)
   Widget _buildInvalidTab() {
     return _expiredRewards.isEmpty
-        ? Center(child: Text("No expired rewards."))
+        ? const Center(child: Text("No expired rewards."))
         : ListView.builder(
             itemCount: _expiredRewards.length,
             itemBuilder: (context, index) {
               var reward = _expiredRewards[index];
 
               return Container(
-                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-                padding: EdgeInsets.symmetric(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 20,
                 ), // Increased vertical padding
@@ -193,7 +193,7 @@ class PointHistoryScreenState extends State<PointHistoryScreen>
                       top: -10, // Moves label slightly above container
                       left: -25, // Aligns label to left
                       child: Container(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 8,
                           vertical: 4,
                         ),
@@ -203,7 +203,7 @@ class PointHistoryScreenState extends State<PointHistoryScreen>
                             8,
                           ), // Uniform radius of 8 for all corners
                         ),
-                        child: Text(
+                        child: const Text(
                           "Expired",
                           style: TextStyle(
                             color: Colors.white,
@@ -218,21 +218,21 @@ class PointHistoryScreenState extends State<PointHistoryScreen>
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 20), // Space below the label
+                        const SizedBox(height: 20), // Space below the label
                         Text(
                           reward["RewardDetails"] ?? "Unknown Reward",
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           "Valid Till: ${reward["ExpiredDate"].toDate()}",
-                          style: TextStyle(fontSize: 12, color: Colors.black54),
+                          style: const TextStyle(fontSize: 12, color: Colors.black54),
                         ),
-                        SizedBox(height: 10), // Extra space for better layout
+                        const SizedBox(height: 10), // Extra space for better layout
                       ],
                     ),
                   ],

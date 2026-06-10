@@ -135,7 +135,7 @@ class TrackingViewState extends State<TrackingView> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => BookAChargeScreen(),
+            builder: (context) => const BookAChargeScreen(),
           ), // Replace with your target page
         );
       }

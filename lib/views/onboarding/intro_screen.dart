@@ -58,7 +58,7 @@ class _IntroScreenState extends State<IntroScreen> {
             ),
           ),
           SafeArea(
-            minimum: EdgeInsets.symmetric(horizontal: 20),
+            minimum: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
                 Expanded(

@@ -7,17 +7,21 @@ import '../../models/admin_model.dart';
 import '../../models/customer_model.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
+import '../../services/startup_service.dart';
 import '../../services/station_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final AuthServiceContract _authService;
   final StationService? _stationService;
+  final StartupServiceContract _startupService;
 
   AuthViewModel({
     AuthServiceContract? authService,
     StationService? stationService,
+    StartupServiceContract? startupService,
   }) : _stationService = stationService,
-       _authService = authService ?? AuthService();
+       _authService = authService ?? AuthService(),
+       _startupService = startupService ?? StartupService();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -153,6 +157,7 @@ class AuthViewModel extends ChangeNotifier {
         }
 
         if (_admin != null || _customer != null) {
+          await _startupService.setLoggedIn(true, role: role);
           _updateStatus(false, null);
           return true;
         }
@@ -192,5 +197,23 @@ class AuthViewModel extends ChangeNotifier {
 
   void clearError() {
     _updateStatus(false, null);
+  }
+
+  Future<void> signOut() async {
+    _updateStatus(true, null);
+
+    try {
+      await _authService.signout();
+      await _startupService.setLoggedIn(false);
+      _admin = null;
+      _customer = null;
+      _authStatus = "";
+      _reservationStatus = "";
+      _fullPhoneNumber = "";
+      _updateStatus(false, null);
+    } catch (e) {
+      AppLogger.error("Failed to sign out: $e");
+      _updateStatus(false, "Failed to sign out.");
+    }
   }
 }

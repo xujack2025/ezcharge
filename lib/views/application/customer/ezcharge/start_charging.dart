@@ -29,7 +29,7 @@ class StartChargingScreenState extends State<StartChargingScreen> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => TimerScreen()),
+          MaterialPageRoute(builder: (context) => const TimerScreen()),
         );
       }
     });
@@ -139,7 +139,7 @@ class StartChargingScreenState extends State<StartChargingScreen> {
             // Bay name
             Text(
               _chargerName,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 25,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,

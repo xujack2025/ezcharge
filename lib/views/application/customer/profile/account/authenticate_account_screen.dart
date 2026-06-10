@@ -88,9 +88,9 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (context) => const AlertDialog(
         content: Row(
-          children: const [
+          children: [
             CircularProgressIndicator(),
             SizedBox(width: 20),
             Text("Uploading... Please wait"),
@@ -138,11 +138,11 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Upload Successful"),
-        content: Column(
+        content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 60),
-            const SizedBox(height: 10),
+            Icon(Icons.check_circle, color: Colors.green, size: 60),
+            SizedBox(height: 10),
             Text("Your license has been uploaded successfully."),
           ],
         ),
@@ -154,7 +154,7 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
               // Navigate to TopUpScreen
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => UploadSelfieScreen()),
+                MaterialPageRoute(builder: (context) => const UploadSelfieScreen()),
               );
             },
             child: const Text("OK"),
@@ -237,9 +237,9 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
               ),
               child: Center(
                 child: _licenseImage == null
-                    ? Column(
+                    ? const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Icon(
                             Icons.image_outlined,
                             size: 50,

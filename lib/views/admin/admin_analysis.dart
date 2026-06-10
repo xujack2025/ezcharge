@@ -253,7 +253,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                             isCurved: true,
                             curveSmoothness: 0.3,
                             color: Colors.blueAccent,
-                            gradient: LinearGradient(
+                            gradient: const LinearGradient(
                               colors: [
                                 Colors.blueAccent,
                                 Colors.lightBlueAccent,
@@ -268,7 +268,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
                                   Colors.blueAccent.withValues(alpha: 0.4),
                                   Colors.transparent,
                                 ], // 🔹 Gradient for below the line
-                                stops: [0.1, 1.0],
+                                stops: const [0.1, 1.0],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                               ),

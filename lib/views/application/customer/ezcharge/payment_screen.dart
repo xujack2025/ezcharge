@@ -207,7 +207,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             await Navigator.push<Map<String, dynamic>>(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => RewardSelectScreen(),
+                                builder: (_) => const RewardSelectScreen(),
                               ),
                             );
                         if (result != null) {

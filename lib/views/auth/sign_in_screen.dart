@@ -55,7 +55,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      appBar: CustomAppBar(title: "Sign In", showBackButton: false),
+      appBar: const CustomAppBar(title: "Sign In", showBackButton: false),
       body: SafeArea(
         child: PhoneSignInForm(
           title: "Sign in or create account with your phone number",
@@ -65,7 +65,7 @@ class _SignInScreenState extends State<SignInScreen> {
           onSubmit: () => _submitPhoneNumber(authViewModel),
           footer: Column(
             children: [
-              LabeledDivider(label: "Or"),
+              const LabeledDivider(label: "Or"),
               const SizedBox(height: 16),
               Center(
                 child: TextButton(

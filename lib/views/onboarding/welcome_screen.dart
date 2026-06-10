@@ -5,6 +5,7 @@ import '../../core/constants/constants.dart';
 import '../../core/constants/text_styles.dart';
 import '../../core/routes/app_routes.dart';
 import '../../viewmodels/onboarding/onboarding_viewmodel.dart';
+import '../../viewmodels/startup_viewmodel.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -15,15 +16,15 @@ class WelcomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        minimum: EdgeInsets.symmetric(horizontal: 16),
+        minimum: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// Title
-            Text('EZCHARGE', style: AppTextStyles.displayMedium),
+            const Text('EZCHARGE', style: AppTextStyles.displayMedium),
 
             /// Content
-            SizedBox(height: 60),
+            const SizedBox(height: 60),
             Center(
               child: Column(
                 children: [
@@ -36,7 +37,7 @@ class WelcomeScreen extends StatelessWidget {
                   const SizedBox(height: 30),
                   Image(
                     width: MediaQuery.of(context).size.width * 0.7,
-                    image: AssetImage(
+                    image: const AssetImage(
                       AppMedia.welcomeMap,
                     ), // Replace with actual map image
                     fit: BoxFit.cover,
@@ -96,8 +97,11 @@ class WelcomeScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: vm.isChecked
-                        ? () {
-                            // Navigate to Sign In Screen
+                        ? () async {
+                            await context
+                                .read<StartupViewModel>()
+                                .completeOnboarding();
+                            if (!context.mounted) return;
                             Navigator.pushNamedAndRemoveUntil(
                               context,
                               AppRoutes.signInScreen,

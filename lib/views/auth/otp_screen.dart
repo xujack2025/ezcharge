@@ -95,15 +95,15 @@ class OTPScreenState extends State<OTPScreen> {
                     style: const TextStyle(color: Colors.red, fontSize: 14),
                   ),
                 ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               // Resend Code Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     "Didn't receive it?",
-                    style: const TextStyle(color: Colors.black54),
+                    style: TextStyle(color: Colors.black54),
                   ),
                   TextButton(
                     onPressed: () {}, // TODO: Implement Resend OTP

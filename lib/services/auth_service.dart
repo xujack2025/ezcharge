@@ -25,6 +25,8 @@ abstract class AuthServiceContract {
 
   Future<String> getAuthStatus(String customerId);
 
+  String? getCurrentUserPhoneNumber();
+
   Future<void> signout();
 }
 
@@ -149,6 +151,11 @@ class AuthService implements AuthServiceContract {
         .doc("authentication")
         .get();
     return querySnapshot.exists ? querySnapshot["Status"] : "";
+  }
+
+  @override
+  String? getCurrentUserPhoneNumber() {
+    return _auth.currentUser?.phoneNumber;
   }
 
   @override

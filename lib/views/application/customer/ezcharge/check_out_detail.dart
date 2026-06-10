@@ -309,10 +309,10 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Left side: back button + "Check In"
-                      Row(
+                      const Row(
                         children: [
-                          const SizedBox(width: 5),
-                          const Text(
+                          SizedBox(width: 5),
+                          Text(
                             "Check Out",
                             style: TextStyle(
                               fontSize: 25,
@@ -330,13 +330,13 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ChatbotScreen(),
+                                builder: (context) => const ChatbotScreen(),
                               ),
                             );
                           },
-                          child: Row(
+                          child: const Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
+                            children: [
                               Icon(
                                 Icons.support_agent,
                                 color: Colors.blue,

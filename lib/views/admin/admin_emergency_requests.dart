@@ -103,7 +103,7 @@ class AdminEmergencyRequestsPageState
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.grey[100], // Subtle background color
-                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               ),
               child: StreamBuilder<QuerySnapshot>(
                 stream: _fetchRequests(),
@@ -141,22 +141,22 @@ class AdminEmergencyRequestsPageState
                         ),
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(12),
-                          leading: Icon(Icons.location_on, color: Colors.blue),
+                          leading: const Icon(Icons.location_on, color: Colors.blue),
                           title: Text(
                             "Location: ${request["address"]}",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 "Reason: ${request["bookingReason"]}",
-                                style: TextStyle(color: Colors.black87),
+                                style: const TextStyle(color: Colors.black87),
                               ),
                               const SizedBox(height: 5),
                               Row(
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.schedule,
                                     size: 14,
                                     color: Colors.grey,
@@ -164,7 +164,7 @@ class AdminEmergencyRequestsPageState
                                   const SizedBox(width: 4),
                                   Text(
                                     request["preferredTime"] ?? "Unknown Time",
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
                                     ),
@@ -176,7 +176,7 @@ class AdminEmergencyRequestsPageState
                           trailing: Chip(
                             label: Text(
                               request["status"],
-                              style: TextStyle(color: Colors.white),
+                              style: const TextStyle(color: Colors.white),
                             ),
                             backgroundColor: _getStatusColor(request["status"]),
                           ),

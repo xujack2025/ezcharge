@@ -2,6 +2,7 @@ import 'package:ezcharge/models/admin_model.dart';
 import 'package:ezcharge/models/customer_model.dart';
 import 'package:ezcharge/models/user_model.dart';
 import 'package:ezcharge/services/auth_service.dart';
+import 'package:ezcharge/services/startup_service.dart';
 import 'package:ezcharge/viewmodels/auth/auth_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -59,8 +60,49 @@ class FakeAuthService implements AuthServiceContract {
   }
 
   @override
+  String? getCurrentUserPhoneNumber() {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<void> signout() {
     throw UnimplementedError();
+  }
+}
+
+class FakeStartupService implements StartupServiceContract {
+  bool? loggedInValue;
+  UserRole? loggedInRole;
+
+  @override
+  Future<UserRole?> getSavedRole() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> hasCompletedOnboarding() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> isLoggedIn() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> markOnboardingCompleted() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<UserRole?> resolveCurrentUserRole() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> setLoggedIn(bool value, {UserRole? role}) async {
+    loggedInValue = value;
+    loggedInRole = role;
   }
 }
 
@@ -72,7 +114,10 @@ void main() {
       'returns null and does not call auth service when phone is empty',
       () async {
         final authService = FakeAuthService();
-        final viewModel = AuthViewModel(authService: authService);
+        final viewModel = AuthViewModel(
+          authService: authService,
+          startupService: FakeStartupService(),
+        );
 
         final verificationId = await viewModel.submitPhoneNumber(
           '',
@@ -88,7 +133,10 @@ void main() {
 
     test('returns verification id when OTP request succeeds', () async {
       final authService = FakeAuthService(verificationId: 'verification-123');
-      final viewModel = AuthViewModel(authService: authService);
+      final viewModel = AuthViewModel(
+        authService: authService,
+        startupService: FakeStartupService(),
+      );
 
       final verificationId = await viewModel.submitPhoneNumber(
         '+60123456789',
@@ -106,7 +154,10 @@ void main() {
       'returns null and exposes error message when OTP request fails',
       () async {
         final authService = FakeAuthService(errorMessage: 'Phone not found');
-        final viewModel = AuthViewModel(authService: authService);
+        final viewModel = AuthViewModel(
+          authService: authService,
+          startupService: FakeStartupService(),
+        );
 
         final verificationId = await viewModel.submitPhoneNumber(
           '+60123456789',

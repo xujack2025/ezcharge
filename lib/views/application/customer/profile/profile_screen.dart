@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../../auth/sign_in_screen.dart';
+import '../../../../core/routes/app_routes.dart';
+import '../../../../viewmodels/auth/auth_viewmodel.dart';
 import 'account/activity_screen.dart';
 import 'account/authenticate_account_screen.dart';
 import 'account/bookmark_screen.dart';
@@ -216,7 +218,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => TopUpScreen(),
+                                builder: (context) => const TopUpScreen(),
                               ),
                             );
                           },
@@ -239,7 +241,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EditProfileScreen(),
+                            builder: (context) => const EditProfileScreen(),
                           ),
                         );
                       },
@@ -250,7 +252,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ActivityScreen(),
+                            builder: (context) => const ActivityScreen(),
                           ),
                         );
                       },
@@ -296,7 +298,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BookmarkScreen(),
+                            builder: (context) => const BookmarkScreen(),
                           ),
                         );
                       },
@@ -309,7 +311,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => PaymentMethodScreen(),
+                            builder: (context) => const PaymentMethodScreen(),
                           ),
                         );
                       },
@@ -320,7 +322,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => PaymentHistoryListScreen(),
+                            builder: (context) => const PaymentHistoryListScreen(),
                           ),
                         );
                       },
@@ -417,11 +419,13 @@ class ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _logoutUser(BuildContext context) {
-    FirebaseAuth.instance.signOut();
-    Navigator.pushReplacement(
+  Future<void> _logoutUser(BuildContext context) async {
+    await context.read<AuthViewModel>().signOut();
+    if (!context.mounted) return;
+    Navigator.pushNamedAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => SignInScreen()),
+      AppRoutes.signInScreen,
+      (route) => false,
     );
   }
 }

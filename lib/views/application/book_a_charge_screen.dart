@@ -271,7 +271,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
-                boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black12)],
+                boxShadow: const [BoxShadow(blurRadius: 6, color: Colors.black12)],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -301,7 +301,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
             top: 240,
             right: 20,
             child: ScaleTransition(
-              scale: activeRequestExists ? _animation : AlwaysStoppedAnimation(1.0),
+              scale: activeRequestExists ? _animation : const AlwaysStoppedAnimation(1.0),
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -362,7 +362,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
             top: 300,
             right: 20,
             child: ScaleTransition(
-              scale: AlwaysStoppedAnimation(1.0), // No animation needed
+              scale: const AlwaysStoppedAnimation(1.0), // No animation needed
               child: Material(
                 shape: const CircleBorder(),
                 elevation: 6,
@@ -424,7 +424,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => EmergencyRequestView()),
+                  MaterialPageRoute(builder: (context) => const EmergencyRequestView()),
                 );
               },
               style: ElevatedButton.styleFrom(

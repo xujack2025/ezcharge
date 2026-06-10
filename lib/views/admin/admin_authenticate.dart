@@ -77,14 +77,14 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Customer Authentication"),
+          title: const Text("Customer Authentication"),
           bottom:
               _tabController ==
                   null // Null-check before using controller
               ? null
               : TabBar(
                   controller: _tabController,
-                  tabs: [
+                  tabs: const [
                     Tab(text: "Pending"),
                     Tab(text: "Approved"),
                     Tab(text: "Rejected"),
@@ -95,17 +95,17 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
           stream: fetchCustomerAuthData(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
 
             var customers = snapshot.data!;
             if (customers.isEmpty) {
-              return Center(child: Text("No authentication requests."));
+              return const Center(child: Text("No authentication requests."));
             }
 
             return _tabController ==
                     null // Handle null case
-                ? Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                 : TabBarView(
                     controller: _tabController!,
                     children: [
@@ -139,17 +139,17 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
         var customer = filteredCustomers[index];
 
         return Card(
-          margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
           child: Padding(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   "Customer ID: ${customer['customerId']}",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
@@ -165,7 +165,7 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
                               fit: BoxFit.cover,
                             ),
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: customer['selfieImage'].isNotEmpty
                           ? Image.network(
@@ -181,12 +181,12 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
                     ),
                   ],
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Text(
                   "Status: ${customer['Status']}",
-                  style: TextStyle(color: Colors.blue),
+                  style: const TextStyle(color: Colors.blue),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 if (status == "Pending") ...[
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -197,19 +197,19 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                         ),
-                        child: Text("Approve"),
+                        child: const Text("Approve"),
                       ),
                       ElevatedButton(
                         onPressed: () => rejectCustomer(customer['customerId']),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                         ),
-                        child: Text("Reject"),
+                        child: const Text("Reject"),
                       ),
                     ],
                   ),
                 ] else if (status == "Pass") ...[
-                  Row(
+                  const Row(
                     children: [
                       Icon(Icons.check_circle, color: Colors.green),
                       SizedBox(width: 5),
@@ -217,7 +217,7 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
                     ],
                   ),
                 ] else if (status == "Failed") ...[
-                  Row(
+                  const Row(
                     children: [
                       Icon(Icons.cancel, color: Colors.red),
                       SizedBox(width: 5),

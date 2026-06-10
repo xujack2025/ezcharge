@@ -36,7 +36,7 @@ class AdminRewardsScreenState extends State<AdminRewardsScreen> {
               // Check if DateOfBirth is a Firestore Timestamp
               if (user['DateOfBirth'] is Timestamp) {
                 dob = (user['DateOfBirth'] as Timestamp).toDate().add(
-                  Duration(hours: 8),
+                  const Duration(hours: 8),
                 ); // Convert to UTC+8
               }
               // Handle DateOfBirth stored as a String (e.g., "21/2/2025")
@@ -48,7 +48,7 @@ class AdminRewardsScreenState extends State<AdminRewardsScreen> {
                   int year = int.parse(parts[2]);
 
                   // Create DateTime in UTC and convert to UTC+8
-                  dob = DateTime.utc(year, month, day).add(Duration(hours: 8));
+                  dob = DateTime.utc(year, month, day).add(const Duration(hours: 8));
                 } catch (e) {
                   debugPrint("Invalid Date Format for User: ${doc.id}");
                   return false; // Skip users with invalid dates
@@ -345,7 +345,7 @@ class AdminRewardsScreenState extends State<AdminRewardsScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Title
-                      Center(
+                      const Center(
                         child: Text(
                           "Select Users",
                           style: TextStyle(
@@ -361,7 +361,7 @@ class AdminRewardsScreenState extends State<AdminRewardsScreen> {
                         controller: searchController,
                         decoration: InputDecoration(
                           hintText: "Search Users...",
-                          prefixIcon: Icon(Icons.search),
+                          prefixIcon: const Icon(Icons.search),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -380,8 +380,8 @@ class AdminRewardsScreenState extends State<AdminRewardsScreen> {
                           await _selectBirthdayUsers();
                           setDialogState(() {}); // Refresh UI
                         },
-                        icon: Icon(Icons.cake),
-                        label: Text("Select All Birthday Members"),
+                        icon: const Icon(Icons.cake),
+                        label: const Text("Select All Birthday Members"),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
@@ -406,8 +406,8 @@ class AdminRewardsScreenState extends State<AdminRewardsScreen> {
                             setDialogState(() {}); // Refresh UI
                           }
                         },
-                        icon: Icon(Icons.person_add),
-                        label: Text("Select New Members After Date"),
+                        icon: const Icon(Icons.person_add),
+                        label: const Text("Select New Members After Date"),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,
@@ -430,12 +430,12 @@ class AdminRewardsScreenState extends State<AdminRewardsScreen> {
                               (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return Center(
+                                  return const Center(
                                     child: CircularProgressIndicator(),
                                   );
                                 }
                                 if (snapshot.hasError) {
-                                  return Center(
+                                  return const Center(
                                     child: Text("Error loading users"),
                                   );
                                 }
@@ -449,7 +449,7 @@ class AdminRewardsScreenState extends State<AdminRewardsScreen> {
                                 }).toList();
 
                                 if (users.isEmpty) {
-                                  return Center(child: Text("No users found."));
+                                  return const Center(child: Text("No users found."));
                                 }
 
                                 return ListView.builder(
@@ -467,7 +467,7 @@ class AdminRewardsScreenState extends State<AdminRewardsScreen> {
                                       child: CheckboxListTile(
                                         title: Text(
                                           user['FirstName'] ?? 'No Name',
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -509,12 +509,12 @@ class AdminRewardsScreenState extends State<AdminRewardsScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
                                 vertical: 12,
                               ),
                             ),
-                            child: Text("Done"),
+                            child: const Text("Done"),
                           ),
                         ],
                       ),

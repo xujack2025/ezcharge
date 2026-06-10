@@ -20,7 +20,7 @@ class Driver extends UserModel {
       firstName: map['FirstName'] ?? '',
       lastName: map['LastName'] ?? '',
       phone: map['PhoneNumber'] ?? '',
-      location: map['location'] ?? GeoPoint(0.0, 0.0),
+      location: map['location'] ?? const GeoPoint(0.0, 0.0),
       status: map['status'] ?? 'Offline',
     );
   }

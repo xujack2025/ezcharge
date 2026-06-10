@@ -26,7 +26,7 @@ class ApplicationScreen extends StatelessWidget {
         onTap: (value) {
           appVM.onItemTapped(value);
         },
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.directions_car),
             label: "EZCharge",

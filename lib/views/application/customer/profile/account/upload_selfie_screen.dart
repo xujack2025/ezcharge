@@ -87,9 +87,9 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (context) => const AlertDialog(
         content: Row(
-          children: const [
+          children: [
             CircularProgressIndicator(),
             SizedBox(width: 20),
             Text("Uploading... Please wait"),
@@ -136,11 +136,11 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Upload Successful"),
-        content: Column(
+        content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 60),
-            const SizedBox(height: 10),
+            Icon(Icons.check_circle, color: Colors.green, size: 60),
+            SizedBox(height: 10),
             Text("Your selfie has been uploaded successfully."),
           ],
         ),
@@ -240,16 +240,16 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
               ),
               child: Center(
                 child: _selfieImage == null
-                    ? Column(
+                    ? const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.camera_alt,
                             size: 50,
                             color: Colors.black45,
                           ),
-                          const SizedBox(height: 8),
-                          const Text(
+                          SizedBox(height: 8),
+                          Text(
                             "Please upload your selfie",
                             style: TextStyle(
                               color: Colors.black54,

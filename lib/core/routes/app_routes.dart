@@ -1,4 +1,7 @@
 class AppRoutes {
+  // Startup
+  static const String startupScreen = "/startup_screen";
+
   // On Boarding Pages
   static const String introScreen = "/intro_screen";
   static const String introScheduleScreen = "/intro_schedule_screen";

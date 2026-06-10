@@ -62,7 +62,7 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
             ),
             title: Row(
               children: [
-                Icon(Icons.ev_station, color: Colors.green),
+                const Icon(Icons.ev_station, color: Colors.green),
                 const SizedBox(width: 8),
                 Text(
                   stationID == null

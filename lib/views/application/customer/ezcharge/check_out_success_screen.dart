@@ -31,7 +31,7 @@ class CheckOutSuccessScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Icon or image
-              Icon(Icons.check_circle, color: Colors.green, size: 100),
+              const Icon(Icons.check_circle, color: Colors.green, size: 100),
               const SizedBox(height: 16),
 
               // Additional message

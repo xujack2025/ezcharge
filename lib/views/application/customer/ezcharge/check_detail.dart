@@ -183,13 +183,13 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ChatbotScreen(),
+                                builder: (context) => const ChatbotScreen(),
                               ),
                             );
                           },
-                          child: Row(
+                          child: const Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
+                            children: [
                               Icon(
                                 Icons.support_agent,
                                 color: Colors.blue,
