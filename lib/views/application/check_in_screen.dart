@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -9,9 +7,11 @@ import 'package:provider/provider.dart';
 
 import '../../core/constants/colors.dart';
 import '../../core/constants/text_styles.dart';
+import '../../core/utils/app_logger.dart';
 import '../../viewmodels/application/application_viewmodel.dart';
+import '../../viewmodels/application/check_in_viewmodel.dart';
 import 'customer/ezcharge/check_detail.dart';
-import 'widgets/top_nav_icon.dart';
+import 'widgets/home_top_nav_bar.dart';
 
 class CheckInScreen extends StatefulWidget {
   const CheckInScreen({super.key});
@@ -23,13 +23,19 @@ class CheckInScreen extends StatefulWidget {
 class CheckInScreenState extends State<CheckInScreen> {
   final MobileScannerController _scannerController = MobileScannerController();
   File? _selectedImage; // Store the picked image
-  String _accountId = "";
-  String _reservationStatus = "";
 
   @override
   void initState() {
     super.initState();
-    _getCustomerID();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CheckInViewModel>().loadReservationStatus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scannerController.dispose();
+    super.dispose();
   }
 
   //Detect QR Code from the Camera Scanner
@@ -37,65 +43,6 @@ class CheckInScreenState extends State<CheckInScreen> {
     if (capture != null && capture.barcodes.isNotEmpty) {
       final String scannedData = capture.barcodes.first.rawValue ?? "";
       _showScannedData(scannedData);
-    }
-  }
-
-  Future<void> _getCustomerID() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-
-          setState(() {
-            _accountId = userDoc["CustomerID"];
-          });
-
-          //Fetch Reservation after getting CustomerID
-          _fetchReservationRecord();
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-    }
-  }
-
-  //Fetch the Latest Reservation for the User
-  Future<void> _fetchReservationRecord() async {
-    if (_accountId.isEmpty) return; // Ensure _accountId is available
-
-    try {
-      // Fetch reservation document for the user
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("reservation")
-          .doc(_accountId)
-          .get();
-
-      if (doc.exists) {
-        setState(() {
-          _reservationStatus = doc["Status"];
-        });
-      } else {
-        // If no reservation found, update the status to trigger the error dialog
-        setState(() {
-          _reservationStatus = "Ended";
-        });
-      }
-    } catch (e) {
-      debugPrint("Error fetching reservation record: $e");
-      // Set a default status to handle the error
-      setState(() {
-        _reservationStatus = "Ended";
-      });
     }
   }
 
@@ -110,8 +57,7 @@ class CheckInScreenState extends State<CheckInScreen> {
       });
 
       //Scan the selected image for QR Code
-      final barcodeScanner = MobileScannerController();
-      barcodeScanner
+      _scannerController
           .analyzeImage(_selectedImage!.path)
           .then((capture) {
             if (capture != null && capture.barcodes.isNotEmpty) {
@@ -120,51 +66,45 @@ class CheckInScreenState extends State<CheckInScreen> {
             }
           })
           .catchError((error) {
-            debugPrint("Error scanning image: $error");
+            AppLogger.error("Error scanning image: $error");
           });
     }
   }
 
   ///Show Scanned QR Code Data in a Dialog
   void _showScannedData(String data) {
-    if (data.isNotEmpty) {
-      if (_reservationStatus == "Upcoming") {
+    switch (context.read<CheckInViewModel>().resolveScan(data)) {
+      case CheckInScanResult.upcoming:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const CheckDetailScreen()),
         );
-      } else if (_reservationStatus == "Active") {
-        // Show error message if the reservation is active.
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text("Error"),
-            content: const Text("You are charging your EV now"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("OK"),
-              ),
-            ],
-          ),
-        );
-      } else if (_reservationStatus == "Ended") {
-        // Show error message if the reservation has ended.
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text("Error"),
-            content: const Text("Can't find your reservation"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("OK"),
-              ),
-            ],
-          ),
-        );
-      }
+        return;
+      case CheckInScanResult.active:
+        _showErrorDialog("You are charging your EV now");
+        return;
+      case CheckInScanResult.unavailable:
+        _showErrorDialog("Can't find your reservation");
+        return;
+      case CheckInScanResult.empty:
+        return;
     }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -194,34 +134,17 @@ class CheckInScreenState extends State<CheckInScreen> {
             top: 0,
             left: 20,
             right: 20,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  const TopNavIcon(Icons.qr_code, isSelected: true),
-                  TopNavIcon(
-                    Icons.electric_bolt,
-                    isSelected: false,
-                    onTap: () {
-                      context.read<ApplicationViewmodel>().showHomeSection();
-                    },
-                  ),
-                  TopNavIcon(
-                    Icons.local_gas_station,
-                    isSelected: false,
-                    onTap: () {
-                      context
-                          .read<ApplicationViewmodel>()
-                          .showBookAChargeSection();
-                    },
-                  ),
-                ],
-              ),
+            child: HomeTopNavBar(
+              selectedSection: ApplicationHomeSection.checkIn,
+              onCheckInPressed: () {
+                context.read<ApplicationViewmodel>().showCheckInSection();
+              },
+              onHomePressed: () {
+                context.read<ApplicationViewmodel>().showHomeSection();
+              },
+              onBookAChargePressed: () {
+                context.read<ApplicationViewmodel>().showBookAChargeSection();
+              },
             ),
           ),
 

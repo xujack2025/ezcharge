@@ -1,30 +1,37 @@
+import 'dart:async';
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../core/utils/app_logger.dart';
 import '../models/emergency_request_model.dart';
+import '../services/emergency_request_service.dart';
 
 class EmergencyRequestViewModel extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  EmergencyRequestViewModel({
+    EmergencyRequestServiceContract? emergencyRequestService,
+  }) : _emergencyRequestService =
+           emergencyRequestService ?? EmergencyRequestService();
+
+  final EmergencyRequestServiceContract _emergencyRequestService;
+
   File? selectedImage;
   String? uploadedImageUrl;
   DateTime? scheduledDateTime;
   bool isLoading = false;
+  bool activeRequestExists = false;
+  String? imageUrl;
+  String? requestID;
+  String? errorMessage;
+  Stream<String?>? _driverAssignmentStream;
+  StreamSubscription<ActiveEmergencyRequest>? _activeRequestSubscription;
+
+  Stream<String?>? get driverAssignmentStream => _driverAssignmentStream;
 
   /// Get Emergency Requests as a Stream (Real-time Updates)
   Stream<List<EmergencyRequest>> getRequests(String customerID) {
-    return _firestore
-        .collection('emergency_requests')
-        .where('customerID', isEqualTo: customerID)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => EmergencyRequest.fromMap(doc.data()))
-              .toList(),
-        );
+    return _emergencyRequestService.watchRequests(customerID);
   }
 
   /// Create Emergency Request
@@ -45,25 +52,24 @@ class EmergencyRequestViewModel extends ChangeNotifier {
         imageUrl: request.imageUrl,
       );
 
-      await _firestore
-          .collection('emergency_requests')
-          .doc(requestID) // Use generated request ID
-          .set(request.toMap());
+      await _emergencyRequestService.createRequest(request);
 
-      debugPrint("Emergency request created successfully: $requestID");
+      AppLogger.info("Emergency request created successfully: $requestID");
     } catch (e) {
-      debugPrint("❌ Error creating request: $e");
+      AppLogger.error("Error creating request: $e");
+      errorMessage = "Failed to create emergency request.";
+      notifyListeners();
     }
   }
 
   /// Update Request Status (Real-time Changes)
   Future<void> updateRequestStatus(String requestID, String status) async {
     try {
-      await _firestore.collection('emergency_requests').doc(requestID).update({
-        'status': status,
-      });
+      await _emergencyRequestService.updateRequestStatus(requestID, status);
     } catch (e) {
-      debugPrint("Error updating status: $e");
+      AppLogger.error("Error updating status: $e");
+      errorMessage = "Failed to update request status.";
+      notifyListeners();
     }
   }
 
@@ -80,7 +86,7 @@ class EmergencyRequestViewModel extends ChangeNotifier {
   /// Upload Image to Firebase Storage
   Future<String?> uploadImageToFirebase() async {
     if (selectedImage == null) {
-      debugPrint("⚠️ No image selected. Skipping upload.");
+      AppLogger.warning("No image selected. Skipping upload.");
       return null;
     }
 
@@ -88,23 +94,17 @@ class EmergencyRequestViewModel extends ChangeNotifier {
       isLoading = true;
       notifyListeners(); // Show loading state
 
-      String fileName =
-          "requests/RQImage${DateTime.now().millisecondsSinceEpoch}.jpg";
-      Reference ref = FirebaseStorage.instance.ref().child(fileName);
-      UploadTask uploadTask = ref.putFile(selectedImage!);
-
-      // Wait for upload to complete
-      TaskSnapshot taskSnapshot = await uploadTask;
-
-      // Get the uploaded image URL
-      String imageUrl = await taskSnapshot.ref.getDownloadURL();
+      String imageUrl = await _emergencyRequestService.uploadRequestImage(
+        selectedImage!,
+      );
       uploadedImageUrl = imageUrl;
 
-      debugPrint("Image uploaded successfully: $imageUrl");
+      AppLogger.info("Image uploaded successfully: $imageUrl");
 
       return imageUrl; // Return image URL for Firestore
     } catch (e) {
-      debugPrint("❌ Image Upload Error: $e");
+      AppLogger.error("Image Upload Error: $e");
+      errorMessage = "Failed to upload image.";
       return null; // Handle failure case
     } finally {
       isLoading = false;
@@ -152,25 +152,112 @@ class EmergencyRequestViewModel extends ChangeNotifier {
 
   /// 🔹 **Update Status to Charging**
   Future<void> startCharging(String requestID) async {
-    await _firestore.collection('emergency_requests').doc(requestID).update({
-      'status': 'Charging',
-    });
+    await _emergencyRequestService.startCharging(requestID);
   }
 
   /// 🔹 **Update Charging Completed & Set Payment Due**
   Future<void> updateChargingComplete(String requestID, double kWhUsed) async {
-    double totalCost = calculateFee(kWhUsed);
-    await _firestore.collection('emergency_requests').doc(requestID).update({
-      'kWhUsed': kWhUsed,
-      'estimatedCost': totalCost,
-      'status': 'Payment',
-    });
+    await _emergencyRequestService.updateChargingComplete(requestID, kWhUsed);
   }
 
   /// 🔹 **Process Payment**
   Future<void> processPayment(String requestID) async {
-    await _firestore.collection('emergency_requests').doc(requestID).update({
-      'status': 'Completed',
-    });
+    await _emergencyRequestService.processPayment(requestID);
+  }
+
+  Future<void> loadBookAChargeHome() async {
+    _setLoading(true);
+    errorMessage = null;
+
+    await Future.wait([loadPowerBankImage(), listenForActiveRequest()]);
+
+    _setLoading(false);
+  }
+
+  Future<void> loadPowerBankImage() async {
+    try {
+      imageUrl = await _emergencyRequestService.getPowerBankImageUrl();
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error("Error loading power bank image: $e");
+      errorMessage = "Failed to load image.";
+      notifyListeners();
+    }
+  }
+
+  Future<void> listenForActiveRequest() async {
+    try {
+      final phoneNumber = _emergencyRequestService.getCurrentUserPhoneNumber();
+      if (phoneNumber == null || phoneNumber.isEmpty) {
+        activeRequestExists = false;
+        requestID = null;
+        return;
+      }
+
+      final customerId = await _emergencyRequestService
+          .getCustomerIdByPhoneNumber(phoneNumber);
+      if (customerId == null || customerId.isEmpty) {
+        activeRequestExists = false;
+        requestID = null;
+        return;
+      }
+
+      await _activeRequestSubscription?.cancel();
+      _activeRequestSubscription = _emergencyRequestService
+          .watchActiveRequest(customerId)
+          .listen((request) {
+            activeRequestExists = request.exists;
+            requestID = request.requestId;
+            notifyListeners();
+          });
+    } catch (e) {
+      AppLogger.error("Error checking active emergency request: $e");
+      errorMessage = "Failed to check active request.";
+      activeRequestExists = false;
+      requestID = null;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> getAssignedDriverId(String requestId) async {
+    try {
+      final driverId = await _emergencyRequestService.getDriverId(requestId);
+      if (driverId == null) {
+        errorMessage = "Request not found. Please try again.";
+        notifyListeners();
+        return null;
+      }
+
+      if (driverId == "Unknown" || driverId.isEmpty) {
+        _driverAssignmentStream = _emergencyRequestService.watchDriverId(
+          requestId,
+        );
+        notifyListeners();
+        return null;
+      }
+
+      return driverId;
+    } catch (e) {
+      AppLogger.error("Error fetching request details: $e");
+      errorMessage = "Error fetching request details.";
+      notifyListeners();
+      return null;
+    }
+  }
+
+  void clearDriverAssignmentStream() {
+    _driverAssignmentStream = null;
+    notifyListeners();
+  }
+
+  void _setLoading(bool value) {
+    isLoading = value;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _activeRequestSubscription?.cancel();
+    super.dispose();
   }
 }
