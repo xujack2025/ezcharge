@@ -330,6 +330,8 @@ architecture refactors unless there is a documented blocker.
 
 - Keep changes small and understandable.
 - Prefer clarity over clever abstractions.
+- Work directly on the current branch. Do not create a new branch or worktree
+  unless the user explicitly asks for one.
 - Do not rename Firestore fields casually.
 - Do not mix unrelated UI redesigns into architecture refactors.
 - Leave unrelated dirty files untouched.
@@ -337,8 +339,8 @@ architecture refactors unless there is a documented blocker.
 
 ## Automated Workflow Pipeline (The Relay Race)
 1. **Trigger**: When User says "Approved" or "Approve the plan", **@pm** splits the tasks and passes them to **@developer**.
-2. **Implementation**: **@developer** creates an isolated branch/worktree, refactors the code, and runs `dart format`. Once done, hands over to **@reviewer**.
+2. **Implementation**: **@developer** works directly on the current branch, refactors the code, and runs `dart format`. Once done, hands over to **@reviewer**.
 3. **Static Review & Test**: **@reviewer** calls Flutter MCP to run `dart analyze`. If warnings/errors exist, **@reviewer** directly rejects it and kicks it back to **@developer** with logs. This loops until 0 warnings.
 4. **Verification**: Once code is clean, **@tester** runs `flutter test`. If tests fail, loops back to **@developer**.
 5. **Acceptance**: When all checks pass, **@reviewer** pings **@pm** for final verification.
-6. **Report**: **@pm** merges the code, formats a summary report, and presents it to the User. The other agents remain silent.
+6. **Report**: **@pm** verifies the completed work, commit to the current branch, formats a summary report, and presents it to the User. The other agents remain silent.

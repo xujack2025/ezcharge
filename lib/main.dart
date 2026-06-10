@@ -10,6 +10,7 @@ import 'core/routes/app_routes.dart';
 import 'models/user_model.dart';
 import 'services/station_service.dart';
 import 'viewmodels/application/application_viewmodel.dart';
+import 'viewmodels/application/home_viewmodel.dart';
 import 'viewmodels/auth/auth_viewmodel.dart';
 import 'viewmodels/charging_station_viewmodel.dart';
 import 'viewmodels/emergency_request_viewmodel.dart';
@@ -53,6 +54,7 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (context) => OnboardingViewmodel()),
         ChangeNotifierProvider(create: (context) => ApplicationViewmodel()),
+        ChangeNotifierProvider(create: (context) => HomeViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -64,7 +66,7 @@ class MyApp extends StatelessWidget {
             primary: AppColors.textBlue,
           ),
         ),
-        initialRoute: AppRoutes.applicationScreen,
+        initialRoute: AppRoutes.signInScreen,
         routes: {
           AppRoutes.introScreen: (context) => IntroScreen(),
           AppRoutes.introScheduleScreen: (context) => IntroScheduleScreen(),

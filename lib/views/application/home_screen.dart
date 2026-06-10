@@ -1,22 +1,23 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/colors.dart';
 import '../../core/constants/text_styles.dart';
 import '../../core/utils/app_logger.dart';
+import '../../models/home_station_model.dart';
 import '../../viewmodels/application/application_viewmodel.dart';
+import '../../viewmodels/application/home_viewmodel.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
-import '../../viewmodels/charging_station_viewmodel.dart';
 import 'customer/ezcharge/filter_screen.dart';
 import 'customer/ezcharge/reservation_screen.dart';
 import 'customer/ezcharge/station_screen.dart';
-import 'widgets/top_nav_icon.dart';
+import 'widgets/home_station_markers.dart';
+import 'widgets/home_station_sheet.dart';
+import 'widgets/home_top_nav_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,8 +28,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   AuthViewModel get _authViewModel => context.read<AuthViewModel>();
-  ChargingStationViewModel get _chargingStationVM =>
-      context.read<ChargingStationViewModel>();
+  HomeViewModel get _homeViewModel => context.read<HomeViewModel>();
 
   final Completer<GoogleMapController> _controller = Completer();
   final Location _location = Location();
@@ -36,10 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
     3.2197929237993033,
     101.6437936423279,
   ); // Default: KL
-  List<Map<String, dynamic>> _stations = [];
-  List<Map<String, dynamic>> _filteredStations = [];
-  bool _isLoading = true;
-  ValueNotifier<double> sheetSize = ValueNotifier(0.15);
 
   // Search Controller
   final TextEditingController _searchController = TextEditingController();
@@ -48,9 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _getUserLocation();
-    _fetchStations();
-    _authViewModel.syncUserStatus();
-    _chargingStationVM.fetchChargingStations();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadHomeData();
+    });
   }
 
   @override
@@ -59,137 +55,9 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  //Fetch all stations and their Charger subcollection
-  Future<void> _fetchStations() async {
-    try {
-      //Get all stations
-      QuerySnapshot stationSnapshot = await FirebaseFirestore.instance
-          .collection("station")
-          .get();
-
-      //Temporary list to hold the final data
-      List<Map<String, dynamic>> tempStations = [];
-
-      //Loop through each station doc
-      for (var stationDoc in stationSnapshot.docs) {
-        final stationId = stationDoc.id; // or stationDoc["StationID"]
-        final stationData = stationDoc.data() as Map<String, dynamic>;
-
-        //Get the Charger subcollection for this station
-        QuerySnapshot chargerSnapshot = await FirebaseFirestore.instance
-            .collection("station")
-            .doc(stationId)
-            .collection("Charger")
-            .get();
-
-        // Gather all current types from the Charger docs
-        List<String> currentTypes = [];
-        for (var chargerDoc in chargerSnapshot.docs) {
-          final chargerData = chargerDoc.data() as Map<String, dynamic>;
-          final type = chargerData["CurrentType"] ?? "";
-          // Only add if it's not empty and not already in the list
-          if (type.isNotEmpty && !currentTypes.contains(type)) {
-            currentTypes.add(type);
-          }
-        }
-
-        // Build your station object
-        tempStations.add({
-          "StationID": stationData["StationID"] ?? stationId,
-          "StationName": stationData["StationName"] ?? "",
-          "Description": stationData["Description"] ?? "",
-          "Capacity": stationData["Capacity"] ?? 0,
-          "Location": stationData["Location"], // if you have a GeoPoint
-          "Latitude": stationData["Latitude"],
-          "Longitude": stationData["Longitude"],
-          "Nearby": stationData["Nearby"], // might be string or list
-          "ImageUrl":
-              stationData["ImageUrl"] ?? "https://via.placeholder.com/80",
-
-          // Store all the charger types found in the subcollection
-          "CurrentType": currentTypes,
-        });
-      }
-
-      // Update your state
-      setState(() {
-        _stations = tempStations; // Full station list
-        _filteredStations = _stations; // Default: show all
-        _isLoading = false;
-      });
-    } catch (e) {
-      AppLogger.error("Error fetching stations: $e");
-      // setState(() => _isLoading = false);
-    }
-  }
-
-  //Filter stations based on search query.
-  void _filterStations(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        // If user clears the search, show all stations again
-        _filteredStations = _stations;
-      } else {
-        // Filter stations whose name contains the query (ignoring case)
-        final matches = _stations.where((station) {
-          return station["StationName"].toString().toLowerCase().contains(
-            query.toLowerCase(),
-          );
-        }).toList();
-
-        if (matches.isNotEmpty) {
-          // Only display the first matching station
-          _filteredStations = [matches.first];
-        } else {
-          _filteredStations = [];
-        }
-      }
-    });
-  }
-
-  void _applyFilters(String power, List<String> nearby) {
-    setState(() {
-      if (power.isEmpty && nearby.isEmpty) {
-        // If user didn't select anything, show all stations
-        _filteredStations = _stations;
-      } else {
-        _filteredStations = _stations.where((station) {
-          // Match Power if selected
-          bool matchPower = true;
-          if (power.isNotEmpty) {
-            // Expecting a list of strings in station["CurrentTypes"]
-            final currentTypes = station["CurrentType"];
-            if (currentTypes is List) {
-              // Check CurrentTypes list contains selected power? (e.g., "AC" or "DC")
-              matchPower = currentTypes.contains(power);
-            } else {
-              // If CurrentTypes is missing or not a List, this station doesn't match
-              matchPower = false;
-            }
-          }
-
-          // Match Nearby if selected
-          bool matchNearby = true;
-          if (nearby.isNotEmpty) {
-            // station["Nearby"] can be a String or a List in your DB
-            final stationNearby = station["Nearby"];
-            if (stationNearby is String) {
-              // If it's a string, check if any of the filters is a substring
-              matchNearby = nearby.any(
-                (n) => stationNearby.toLowerCase().contains(n.toLowerCase()),
-              );
-            } else if (stationNearby is List) {
-              // If it's a list, check if any filter value is in the list
-              matchNearby = nearby.any((n) => stationNearby.contains(n));
-            } else {
-              // If there's no valid nearby data, no match if the user selected something
-              matchNearby = false;
-            }
-          }
-          return matchPower && matchNearby;
-        }).toList();
-      }
-    });
+  Future<void> _loadHomeData() async {
+    unawaited(_authViewModel.syncUserStatus());
+    await _homeViewModel.loadStations(customerId: _authViewModel.customerId);
   }
 
   void _showAuthReminder(BuildContext context) {
@@ -285,6 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final authVM = context.watch<AuthViewModel>();
     final appVM = context.watch<ApplicationViewmodel>();
+    final homeVM = context.watch<HomeViewModel>();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -320,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               myLocationEnabled: true,
               myLocationButtonEnabled: false,
-              markers: _buildMarkers(),
+              markers: HomeStationMarkers.fromStations(homeVM.stations),
             ),
           ),
 
@@ -330,44 +199,17 @@ class _HomeScreenState extends State<HomeScreen> {
             top: 0,
             left: 20,
             right: 20,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black12)],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  TopNavIcon(
-                    Icons.qr_code,
-                    isSelected:
-                        appVM.homeSection == ApplicationHomeSection.checkIn,
-                    onTap: () {
-                      context.read<ApplicationViewmodel>().showCheckInSection();
-                    },
-                  ),
-                  TopNavIcon(
-                    Icons.electric_bolt,
-                    isSelected:
-                        appVM.homeSection == ApplicationHomeSection.home,
-                    onTap: () {
-                      context.read<ApplicationViewmodel>().showHomeSection();
-                    },
-                  ),
-                  TopNavIcon(
-                    Icons.local_gas_station,
-                    isSelected:
-                        appVM.homeSection == ApplicationHomeSection.bookACharge,
-                    onTap: () {
-                      context
-                          .read<ApplicationViewmodel>()
-                          .showBookAChargeSection();
-                    },
-                  ),
-                ],
-              ),
+            child: HomeTopNavBar(
+              selectedSection: appVM.homeSection,
+              onCheckInPressed: () {
+                context.read<ApplicationViewmodel>().showCheckInSection();
+              },
+              onHomePressed: () {
+                context.read<ApplicationViewmodel>().showHomeSection();
+              },
+              onBookAChargePressed: () {
+                context.read<ApplicationViewmodel>().showBookAChargeSection();
+              },
             ),
           ),
 
@@ -390,67 +232,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   final selectedPower =
                       result['power'] as String; // "AC", "DC", or ""
                   final selectedNearby = result['nearby'] as List<String>;
-                  _applyFilters(selectedPower, selectedNearby);
+                  homeVM.applyFilters(selectedPower, selectedNearby);
                 }
               },
             ),
           ),
 
-          // Draggable Bottom Sheet (Search Bar + Station List)
-          DraggableScrollableSheet(
-            initialChildSize: 0.15,
-            minChildSize: 0.15,
-            maxChildSize: 0.6,
-            builder: (context, scrollController) {
-              return Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
-                ),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    Container(
-                      width: 40,
-                      height: 5,
-                      color: Colors.grey[400],
-                    ), // Drag Handle
-                    const SizedBox(height: 6),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (value) {
-                          _filterStations(value);
-                        },
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.search),
-                          hintText: "SEARCH",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: _isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : _filteredStations.isEmpty
-                          ? const Center(child: Text("No station found"))
-                          : ListView.builder(
-                              controller: scrollController,
-                              itemCount: _filteredStations.length,
-                              itemBuilder: (context, index) {
-                                final station = _filteredStations[index];
-                                return _buildStationCard(station, authVM);
-                              },
-                            ),
-                    ),
-                  ],
-                ),
-              );
-            },
+          HomeStationSheet(
+            searchController: _searchController,
+            isLoading: homeVM.isLoading,
+            stations: homeVM.filteredStations,
+            canReserve: authVM.isAuthenticated && !authVM.hasActiveReservation,
+            isBookmarked: homeVM.isBookmarked,
+            onSearchChanged: homeVM.filterStations,
+            onBookmarkPressed: (station) => _toggleBookmark(station, authVM),
+            onReservePressed: (station) => _openReservation(station, authVM),
+            onViewChargersPressed: _openStation,
           ),
           //Floating Location Button (omitted for brevity)
         ],
@@ -458,340 +255,50 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  //Build Station Card (Displays Station Name + Button)
-  Widget _buildStationCard(Map<String, dynamic> station, AuthViewModel authVM) {
+  Future<void> _toggleBookmark(
+    HomeStation station,
+    AuthViewModel authVM,
+  ) async {
     final message = ScaffoldMessenger.of(context);
-
-    return StatefulBuilder(
-      builder: (context, setState) {
-        bool isBookmarked = false; // Track bookmark state
-        String bookmarkId = ""; // Store Firestore document ID
-
-        //Check if the station is already bookmarked
-        Future<void> checkBookmark() async {
-          if (authVM.customerId.isEmpty) return;
-          try {
-            QuerySnapshot bookmarkSnapshot = await FirebaseFirestore.instance
-                .collection("customers")
-                .doc(authVM.customerId)
-                .collection("bookmark")
-                .where("StationID", isEqualTo: station["StationID"])
-                .limit(1)
-                .get();
-
-            if (!context.mounted) return;
-
-            if (bookmarkSnapshot.docs.isNotEmpty) {
-              setState(() {
-                isBookmarked = true;
-                bookmarkId = bookmarkSnapshot.docs.first.id;
-              });
-            }
-          } catch (e) {
-            AppLogger.error("Error checking bookmark: $e");
-          }
-        }
-
-        /// Toggle Bookmark
-        Future<void> toggleBookmark(Function setState) async {
-          if (authVM.customerId.isEmpty) return;
-
-          try {
-            if (isBookmarked) {
-              //Remove bookmark from Firestore
-              await FirebaseFirestore.instance
-                  .collection("customers")
-                  .doc(authVM.customerId)
-                  .collection("bookmark")
-                  .doc(bookmarkId)
-                  .delete();
-
-              setState(() {
-                isBookmarked = false;
-                bookmarkId = "";
-              });
-            } else {
-              // Format date as YYYYMMDD
-              String formattedDate = DateFormat(
-                'yyyyMMdd',
-              ).format(DateTime.now());
-              String newBookmarkId = "BKK$formattedDate"; //BookmarkID format
-
-              // Add bookmark to Firestore
-              await FirebaseFirestore.instance
-                  .collection("customers")
-                  .doc(authVM.customerId)
-                  .collection("bookmark")
-                  .doc(newBookmarkId) // Use the formatted ID
-                  .set({
-                    "BookmarkID": newBookmarkId,
-                    "StationID": station["StationID"],
-                    "CustomerID": authVM.customerId,
-                  });
-
-              setState(() {
-                isBookmarked = true;
-                bookmarkId = newBookmarkId;
-              });
-              // Display SnackBar message after successful addition
-              message.showSnackBar(
-                const SnackBar(
-                  content: Text("Successful add the station to bookmark"),
-                ),
-              );
-            }
-          } catch (e) {
-            AppLogger.error("Error toggling bookmark: $e");
-          }
-        }
-
-        //Check bookmark status when card is built
-        checkBookmark();
-
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(
-              color: Colors.black,
-              width: 1,
-            ), //Black Border
-          ),
-          color: Colors.white, // White Background
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              children: [
-                // Row for Image, Station Name & Bookmark
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Station Image
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        station["ImageUrl"] ?? "https://via.placeholder.com/80",
-                        width: 150,
-                        height: 100,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-
-                    //Station Name (Centered)
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.end, // Aligns text to the right
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200], //Grey background
-                              border: Border.all(
-                                color: Colors.black,
-                                width: 1.5,
-                              ), //Black border
-                              borderRadius: BorderRadius.circular(
-                                8,
-                              ), //Rounded corners
-                            ),
-                            child: Text(
-                              station["Nearby"],
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.black,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Text(
-                            station["StationName"],
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                          const SizedBox(
-                            height: 4,
-                          ), // Small spacing between name and description
-                          Text(
-                            station["Description"] ??
-                                "", // Display description if available
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey,
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              const Text(
-                                "Capacity: ",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Text(
-                                station["Capacity"]
-                                    .toString(), // Convert to String for display
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue, // Highlight in blue
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    //Bookmark Button
-                    IconButton(
-                      icon: Icon(
-                        Icons.bookmark,
-                        color: isBookmarked
-                            ? Colors.black
-                            : Colors.grey, //Fix color toggle
-                      ),
-                      onPressed: () => toggleBookmark(setState), //Pass setState
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 10),
-
-                // Button Row
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize
-                        .min, // Ensures row only takes required space
-                    children: [
-                      /// Reserve Button
-                      ElevatedButton(
-                        onPressed: () {
-                          // Check if user is authenticated
-                          AppLogger.info(
-                            "User ID: ${authVM.customerId}, Auth: ${authVM.isAuthenticated}, Res: ${authVM.hasActiveReservation}",
-                          );
-                          if (!authVM.isAuthenticated) {
-                            _showAuthReminder(context);
-                            return;
-                          }
-
-                          // 2. 检查是不是已经有预约在手了
-                          if (authVM.hasActiveReservation) {
-                            _showReservationReminder(context);
-                            return;
-                          }
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ReservationScreen(
-                                stationId: station["StationID"],
-                              ),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              (authVM.isAuthenticated &&
-                                  !authVM.hasActiveReservation)
-                              ? Colors.blue
-                              : Colors.grey, // Grey if disabled
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                        ),
-                        child: const Text(
-                          "RESERVE",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-
-                      /// View Chargers Button
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => StationScreen(
-                                stationId: station["StationID"],
-                              ),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                        ),
-                        child: const Text(
-                          "VIEW CHARGERS",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    final added = await _homeViewModel.toggleBookmark(
+      customerId: authVM.customerId,
+      station: station,
+    );
+    if (!mounted || !added) return;
+    message.showSnackBar(
+      const SnackBar(content: Text("Successful add the station to bookmark")),
     );
   }
 
-  //Build Markers for Stations
-  Set<Marker> _buildMarkers() {
-    final Set<Marker> markers = <Marker>{};
+  void _openReservation(HomeStation station, AuthViewModel authVM) {
+    AppLogger.info(
+      "User ID: ${authVM.customerId}, Auth: ${authVM.isAuthenticated}, Res: ${authVM.hasActiveReservation}",
+    );
 
-    for (final station in _stations) {
-      final dynamic rawLocation = station["Location"];
-      LatLng? markerPosition;
-
-      if (rawLocation is GeoPoint) {
-        markerPosition = LatLng(rawLocation.latitude, rawLocation.longitude);
-      } else if (rawLocation is LatLng) {
-        markerPosition = rawLocation;
-      } else {
-        final double? latitude = double.tryParse(
-          station["Latitude"]?.toString() ?? '',
-        );
-        final double? longitude = double.tryParse(
-          station["Longitude"]?.toString() ?? '',
-        );
-
-        if (latitude != null && longitude != null) {
-          markerPosition = LatLng(latitude, longitude);
-        }
-      }
-
-      if (markerPosition == null) {
-        continue;
-      }
-
-      markers.add(
-        Marker(
-          markerId: MarkerId(station["StationID"].toString()),
-          position: markerPosition,
-          infoWindow: InfoWindow(title: station["StationName"]?.toString()),
-        ),
-      );
+    if (!authVM.isAuthenticated) {
+      _showAuthReminder(context);
+      return;
     }
 
-    return markers;
+    if (authVM.hasActiveReservation) {
+      _showReservationReminder(context);
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReservationScreen(stationId: station.stationId),
+      ),
+    );
+  }
+
+  void _openStation(HomeStation station) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StationScreen(stationId: station.stationId),
+      ),
+    );
   }
 }
