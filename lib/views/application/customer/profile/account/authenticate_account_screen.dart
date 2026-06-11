@@ -121,11 +121,13 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
       String downloadUrl = await snapshot.ref.getDownloadURL();
 
       // Close Loading Dialog
+      if (!mounted) return;
       Navigator.pop(context);
 
       // Show Success Dialog
       _showSuccessDialog(downloadUrl);
     } catch (error) {
+      if (!mounted) return;
       Navigator.pop(context); // Close Loading Dialog
       _showErrorDialog("Failed to upload image. Please try again.");
       debugPrint("Upload error: $error");
@@ -149,11 +151,10 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              // Dismiss the current screen or dialog
               Navigator.pop(context);
-              // Navigate to TopUpScreen
+              if (!mounted) return;
               Navigator.push(
-                context,
+                this.context,
                 MaterialPageRoute(
                   builder: (context) => const UploadSelfieScreen(),
                 ),
@@ -180,7 +181,12 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
             Text(message),
           ],
         ),
-        actions: [TextButton(onPressed: () {}, child: const Text("OK"))],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
       ),
     );
   }

@@ -45,6 +45,7 @@ class TopUpScreenState extends State<TopUpScreen> {
         if (querySnapshot.docs.isNotEmpty) {
           var userDoc = querySnapshot.docs.first;
 
+          if (!mounted) return;
           setState(() {
             _accountId = userDoc["CustomerID"];
           });
@@ -74,6 +75,7 @@ class TopUpScreenState extends State<TopUpScreen> {
 
         if (querySnapshot.docs.isNotEmpty) {
           var userDoc = querySnapshot.docs.first;
+          if (!mounted) return;
           setState(() {
             _accountId = userDoc["CustomerID"];
             _walletBalance = userDoc["WalletBalance"].toDouble();
@@ -116,6 +118,7 @@ class TopUpScreenState extends State<TopUpScreen> {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _cardNumber = querySnapshot.docs.first["CardNumber"];
         });
@@ -351,54 +354,63 @@ class TopUpScreenState extends State<TopUpScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _isNextButtonEnabled() && !isLoading
-                      ? () {
-                          double enteredAmount =
+                      ? () async {
+                          final enteredAmount =
                               double.tryParse(_amountController.text) ?? 0.0;
+                          if (enteredAmount <= 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Enter a valid top-up amount."),
+                              ),
+                            );
+                            return;
+                          }
                           if (isReloadPinSelected) {
                             // Navigate to ReloadPINScreen with the top-up amount
-                            Navigator.push(
+                            final didTopUp = await Navigator.push<bool>(
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
                                     ReloadPINScreen(topUpAmount: enteredAmount),
                               ),
                             );
+                            if (didTopUp == true && context.mounted) {
+                              Navigator.pop(context, true);
+                            }
                           } else if (isCardSelected) {
                             // Set loading state and simulate processing for 3 seconds
                             setState(() {
                               isLoading = true;
                             });
-                            double newWalletBalance =
+                            final newWalletBalance =
                                 _walletBalance + enteredAmount;
-                            Future.delayed(const Duration(seconds: 3), () {
-                              FirebaseFirestore.instance
+                            try {
+                              await Future.delayed(const Duration(seconds: 3));
+                              await FirebaseFirestore.instance
                                   .collection("Customers")
                                   .doc(_accountId)
-                                  .update({"WalletBalance": newWalletBalance})
-                                  .then((value) {
-                                    setState(() {
-                                      _walletBalance = newWalletBalance;
-                                      isLoading = false;
-                                    });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Top-up successful!"),
-                                      ),
-                                    );
-                                  })
-                                  .catchError((error) {
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          "Error updating wallet: $error",
-                                        ),
-                                      ),
-                                    );
-                                  });
-                            });
+                                  .update({"WalletBalance": newWalletBalance});
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Top-up successful!"),
+                                ),
+                              );
+                              Navigator.pop(context, true);
+                            } catch (error) {
+                              if (!mounted) return;
+                              setState(() {
+                                isLoading = false;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Unable to update wallet. Please try again.",
+                                  ),
+                                ),
+                              );
+                              debugPrint("Error updating wallet: $error");
+                            }
                           }
                         }
                       : null,

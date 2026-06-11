@@ -40,6 +40,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
         if (querySnapshot.docs.isNotEmpty) {
           var userDoc = querySnapshot.docs.first;
 
+          if (!mounted) return;
           setState(() {
             _accountId = userDoc["CustomerID"];
           });
@@ -67,6 +68,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
 
         if (querySnapshot.docs.isNotEmpty) {
           var userDoc = querySnapshot.docs.first;
+          if (!mounted) return;
           setState(() {
             _accountId = userDoc["CustomerID"];
             _walletBalance = userDoc["WalletBalance"].toDouble();
@@ -94,6 +96,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _cardNumber = querySnapshot.docs.first["CardNumber"];
         });
@@ -207,13 +210,16 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
                     ],
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      final didTopUp = await Navigator.push<bool>(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const TopUpScreen(),
                         ),
                       );
+                      if (didTopUp == true) {
+                        await _fetchWalletBalance();
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../viewmodels/application/application_viewmodel.dart';
 import '../../../../viewmodels/auth/auth_viewmodel.dart';
 import 'account/activity_screen.dart';
 import 'account/authenticate_account_screen.dart';
@@ -30,6 +31,7 @@ class ProfileScreenState extends State<ProfileScreen> {
   double _walletBalance = 0.0;
   int _pointBalance = 0;
   String _authStatus = "";
+  bool _wasVisible = false;
 
   @override
   void initState() {
@@ -54,6 +56,7 @@ class ProfileScreenState extends State<ProfileScreen> {
         if (querySnapshot.docs.isNotEmpty) {
           var userDoc = querySnapshot.docs.first;
 
+          if (!mounted) return;
           setState(() {
             _customerName = "${userDoc["FirstName"]} ${userDoc["LastName"]}";
             _accountId = userDoc["CustomerID"];
@@ -81,6 +84,7 @@ class ProfileScreenState extends State<ProfileScreen> {
           .get();
 
       if (doc.exists) {
+        if (!mounted) return;
         setState(() {
           _authStatus = doc["Status"];
         });
@@ -92,6 +96,18 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isVisible = context.select<ApplicationViewmodel, bool>(
+      (viewModel) => viewModel.selectedPages == 3,
+    );
+    if (isVisible && !_wasVisible) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _fetchCustomerData();
+        }
+      });
+    }
+    _wasVisible = isVisible;
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -214,13 +230,16 @@ class ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                         ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
+                          onPressed: () async {
+                            final didTopUp = await Navigator.push<bool>(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const TopUpScreen(),
                               ),
                             );
+                            if (didTopUp == true) {
+                              await _fetchCustomerData();
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
@@ -237,13 +256,14 @@ class ProfileScreenState extends State<ProfileScreen> {
                   _buildSection("My Account", [
                     _buildListItem(
                       "Edit Profile",
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const EditProfileScreen(),
                           ),
                         );
+                        await _fetchCustomerData();
                       },
                     ),
                     _buildListItem(
@@ -259,30 +279,30 @@ class ProfileScreenState extends State<ProfileScreen> {
                     ),
                     _buildListItem(
                       "Authenticate Account",
-                      onTap: () {
+                      onTap: () async {
                         if (_authStatus == "Pending") {
-                          Navigator.push(
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const PendingScreen(),
                             ),
                           );
                         } else if (_authStatus == "Pass") {
-                          Navigator.push(
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const PassScreen(),
                             ),
                           );
                         } else if (_authStatus == "Fail") {
-                          Navigator.push(
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const FailScreen(),
                             ),
                           );
                         } else {
-                          Navigator.push(
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
@@ -290,6 +310,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                             ),
                           );
                         }
+                        await _fetchCustomerData();
                       },
                     ),
                     _buildListItem(
@@ -307,13 +328,14 @@ class ProfileScreenState extends State<ProfileScreen> {
                   _buildSection("Payments", [
                     _buildListItem(
                       "Payment Methods",
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const PaymentMethodScreen(),
                           ),
                         );
+                        await _fetchCustomerData();
                       },
                     ),
                     _buildListItem(

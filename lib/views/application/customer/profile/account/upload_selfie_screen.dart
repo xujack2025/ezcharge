@@ -120,11 +120,13 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
       String downloadUrl = await snapshot.ref.getDownloadURL();
 
       // Close Loading Dialog
+      if (!mounted) return;
       Navigator.pop(context);
 
       // Show Success Dialog
       _showSuccessDialog(downloadUrl);
     } catch (error) {
+      if (!mounted) return;
       Navigator.pop(context); // Close Loading Dialog
       _showErrorDialog("Failed to upload image. Please try again.");
       debugPrint("Upload error: $error");
@@ -147,8 +149,10 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
         actions: [
           TextButton(
             onPressed: () {
+              Navigator.pop(context);
+              if (!mounted) return;
               Navigator.pushReplacement(
-                context,
+                this.context,
                 MaterialPageRoute(builder: (context) => const PendingScreen()),
               );
             },
@@ -173,7 +177,12 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
             Text(message),
           ],
         ),
-        actions: [TextButton(onPressed: () {}, child: const Text("OK"))],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
       ),
     );
   }

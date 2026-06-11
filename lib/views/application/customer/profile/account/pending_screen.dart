@@ -18,6 +18,7 @@ class _PendingScreenState extends State<PendingScreen> {
   String _customerId = "";
   String? _licenseImageUrl;
   String? _selfieImageUrl;
+  Timer? _navigationTimer;
 
   @override
   void initState() {
@@ -92,14 +93,24 @@ class _PendingScreenState extends State<PendingScreen> {
 
   // Auto-Navigate to ProfileScreen after 10 seconds
   void _navigateToAccountScreen() {
-    Future.delayed(const Duration(seconds: 10), () {
+    _navigationTimer = Timer(const Duration(seconds: 10), () {
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ProfileScreen()),
-        );
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ProfileScreen()),
+          );
+        }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _navigationTimer?.cancel();
+    super.dispose();
   }
 
   @override

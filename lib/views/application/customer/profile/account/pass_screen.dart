@@ -12,12 +12,14 @@ class PassScreen extends StatefulWidget {
 }
 
 class PassScreenState extends State<PassScreen> {
+  Timer? _navigationTimer;
+
   @override
   void initState() {
     super.initState();
 
     //Auto Navigate to ProfileScreen after 5 seconds
-    Timer(const Duration(seconds: 5), () {
+    _navigationTimer = Timer(const Duration(seconds: 5), () {
       if (mounted) {
         _navigateToAccountScreen();
       }
@@ -26,10 +28,22 @@ class PassScreenState extends State<PassScreen> {
 
   //Navigate Back to ProfileScreen
   void _navigateToAccountScreen() {
+    _navigationTimer?.cancel();
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+      return;
+    }
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const ApplicationScreen()),
     );
+  }
+
+  @override
+  void dispose() {
+    _navigationTimer?.cancel();
+    super.dispose();
   }
 
   @override

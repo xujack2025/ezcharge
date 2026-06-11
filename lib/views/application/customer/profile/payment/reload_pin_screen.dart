@@ -41,6 +41,7 @@ class ReloadPINScreenState extends State<ReloadPINScreen> {
 
         if (querySnapshot.docs.isNotEmpty) {
           var userDoc = querySnapshot.docs.first;
+          if (!mounted) return;
           setState(() {
             _accountId = userDoc["CustomerID"];
             _userPhone = userDoc["PhoneNumber"];
@@ -52,12 +53,14 @@ class ReloadPINScreenState extends State<ReloadPINScreen> {
       }
     } catch (e) {
       debugPrint("Error fetching customer data: $e");
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }
 
   // Send OTP using Firebase Authentication
   Future<void> _sendFirebaseOTP() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
@@ -69,9 +72,11 @@ class ReloadPINScreenState extends State<ReloadPINScreen> {
         },
         verificationFailed: (FirebaseAuthException e) {
           debugPrint("Verification Failed: ${e.message}");
+          if (!mounted) return;
           setState(() => _isLoading = false);
         },
         codeSent: (String verificationId, int? resendToken) {
+          if (!mounted) return;
           setState(() {
             _verificationId = verificationId; // Store verification ID
             _isLoading = false;
@@ -84,6 +89,8 @@ class ReloadPINScreenState extends State<ReloadPINScreen> {
       );
     } catch (e) {
       debugPrint("Error sending OTP: $e");
+      if (!mounted) return;
+      setState(() => _isLoading = false);
     }
   }
 
@@ -114,16 +121,20 @@ class ReloadPINScreenState extends State<ReloadPINScreen> {
           .doc(_accountId)
           .update({"WalletBalance": newBalance});
 
+      if (!mounted) return;
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Top-up successful!")));
 
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } catch (e) {
       debugPrint("Invalid Reload OTP: $e");
-      setState(() => _isOtpValid = false); // Show invalid code message
-    } finally {
-      setState(() => _isLoading = false);
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _isOtpValid = false;
+      });
     }
   }
 
