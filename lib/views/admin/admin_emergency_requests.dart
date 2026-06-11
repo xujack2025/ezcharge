@@ -103,7 +103,9 @@ class AdminEmergencyRequestsPageState
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.grey[100], // Subtle background color
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
               ),
               child: StreamBuilder<QuerySnapshot>(
                 stream: _fetchRequests(),
@@ -141,7 +143,10 @@ class AdminEmergencyRequestsPageState
                         ),
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(12),
-                          leading: const Icon(Icons.location_on, color: Colors.blue),
+                          leading: const Icon(
+                            Icons.location_on,
+                            color: Colors.blue,
+                          ),
                           title: Text(
                             "Location: ${request["Address"]}",
                             style: const TextStyle(fontWeight: FontWeight.bold),

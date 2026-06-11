@@ -119,8 +119,12 @@ class ChatbotScreenState extends State<ChatbotScreen> {
     final borderRadius = BorderRadius.only(
       topLeft: const Radius.circular(12),
       topRight: const Radius.circular(12),
-      bottomLeft: message.isMe ? const Radius.circular(12) : const Radius.circular(0),
-      bottomRight: message.isMe ? const Radius.circular(0) : const Radius.circular(12),
+      bottomLeft: message.isMe
+          ? const Radius.circular(12)
+          : const Radius.circular(0),
+      bottomRight: message.isMe
+          ? const Radius.circular(0)
+          : const Radius.circular(12),
     );
 
     return Container(
@@ -229,7 +233,10 @@ class ChatbotScreenState extends State<ChatbotScreen> {
                     ),
                   ),
                 ),
-                IconButton(icon: const Icon(Icons.send), onPressed: onSendMessage),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: onSendMessage,
+                ),
               ],
             ),
           ),

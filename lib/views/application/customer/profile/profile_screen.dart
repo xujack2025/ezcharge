@@ -322,7 +322,8 @@ class ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const PaymentHistoryListScreen(),
+                            builder: (context) =>
+                                const PaymentHistoryListScreen(),
                           ),
                         );
                       },

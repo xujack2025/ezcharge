@@ -140,7 +140,8 @@ class AdminProfilePageState extends State<AdminProfilePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const EditAdminProfileScreen(),
+                            builder: (context) =>
+                                const EditAdminProfileScreen(),
                           ),
                         );
                       },

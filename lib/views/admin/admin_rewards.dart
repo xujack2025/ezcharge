@@ -48,7 +48,11 @@ class AdminRewardsScreenState extends State<AdminRewardsScreen> {
                   int year = int.parse(parts[2]);
 
                   // Create DateTime in UTC and convert to UTC+8
-                  dob = DateTime.utc(year, month, day).add(const Duration(hours: 8));
+                  dob = DateTime.utc(
+                    year,
+                    month,
+                    day,
+                  ).add(const Duration(hours: 8));
                 } catch (e) {
                   debugPrint("Invalid Date Format for User: ${doc.id}");
                   return false; // Skip users with invalid dates
@@ -449,7 +453,9 @@ class AdminRewardsScreenState extends State<AdminRewardsScreen> {
                                 }).toList();
 
                                 if (users.isEmpty) {
-                                  return const Center(child: Text("No users found."));
+                                  return const Center(
+                                    child: Text("No users found."),
+                                  );
                                 }
 
                                 return ListView.builder(

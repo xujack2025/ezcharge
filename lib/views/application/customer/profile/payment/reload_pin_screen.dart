@@ -171,11 +171,7 @@ class ReloadPINScreenState extends State<ReloadPINScreen> {
                       ),
                       child: const Column(
                         children: [
-                          Icon(
-                            Icons.wallet,
-                            size: 50,
-                            color: Colors.white,
-                          ),
+                          Icon(Icons.wallet, size: 50, color: Colors.white),
                           SizedBox(height: 10),
                           Text(
                             "RELOAD PIN\n"

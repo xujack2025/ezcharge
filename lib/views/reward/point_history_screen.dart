@@ -175,7 +175,10 @@ class PointHistoryScreenState extends State<PointHistoryScreen>
               var reward = _expiredRewards[index];
 
               return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 15,
+                ),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 20,
@@ -230,9 +233,14 @@ class PointHistoryScreenState extends State<PointHistoryScreen>
                         const SizedBox(height: 4),
                         Text(
                           "Valid Till: ${reward["ExpiredDate"].toDate()}",
-                          style: const TextStyle(fontSize: 12, color: Colors.black54),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
                         ),
-                        const SizedBox(height: 10), // Extra space for better layout
+                        const SizedBox(
+                          height: 10,
+                        ), // Extra space for better layout
                       ],
                     ),
                   ],

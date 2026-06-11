@@ -181,7 +181,7 @@ class AuthService implements AuthServiceContract {
         .collection("Customers")
         .doc(customerId)
         .collection("Authenticate")
-        .doc("Authentication")
+        .doc("authentication")
         .get();
     return querySnapshot.exists ? querySnapshot["Status"] : "";
   }

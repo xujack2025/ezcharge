@@ -34,7 +34,7 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
           .map<Future<Map<String, dynamic>>>((doc) async {
             var authDoc = await doc.reference
                 .collection('Authenticate')
-                .doc('Authentication')
+                .doc('authentication')
                 .get();
             final authData = authDoc.data() ?? {}; // Ensure no null errors
 
@@ -57,7 +57,7 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
         .collection('Customers')
         .doc(customerId)
         .collection('Authenticate')
-        .doc('Authentication')
+        .doc('authentication')
         .update({"Status": "Pass"});
   }
 
@@ -67,7 +67,7 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
         .collection('Customers')
         .doc(customerId)
         .collection('Authenticate')
-        .doc('Authentication')
+        .doc('authentication')
         .update({"Status": "Failed"});
   }
 

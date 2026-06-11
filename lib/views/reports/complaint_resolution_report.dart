@@ -118,7 +118,9 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
   }
 
   Future<List<Map<String, dynamic>>> _fetchComplaintData() async {
-    DateTime adjustedEndDate = selectedDateRange!.end.add(const Duration(days: 1));
+    DateTime adjustedEndDate = selectedDateRange!.end.add(
+      const Duration(days: 1),
+    );
     final snapshot = await FirebaseFirestore.instance
         .collectionGroup('complaints')
         .where(

@@ -134,7 +134,9 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
 
   /// **Fetch Charging Sessions for the Selected Station & Date Range**
   Future<Map<String, dynamic>> _fetchAnalyticsData() async {
-    DateTime adjustedEndDate = selectedDateRange!.end.add(const Duration(days: 1));
+    DateTime adjustedEndDate = selectedDateRange!.end.add(
+      const Duration(days: 1),
+    );
     final snapshot = await FirebaseFirestore.instance
         .collection('Attendance')
         .where("StationID", isEqualTo: selectedStationId)

@@ -100,7 +100,9 @@ class _ChargingPileUtilizationReportState
   }
 
   Future<List<Map<String, dynamic>>> _fetchChargingPileData() async {
-    DateTime adjustedEndDate = selectedDateRange!.end.add(const Duration(days: 1));
+    DateTime adjustedEndDate = selectedDateRange!.end.add(
+      const Duration(days: 1),
+    );
     final snapshot = await FirebaseFirestore.instance
         .collection('Attendance')
         .where(

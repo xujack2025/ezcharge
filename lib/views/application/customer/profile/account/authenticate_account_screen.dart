@@ -154,7 +154,9 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
               // Navigate to TopUpScreen
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const UploadSelfieScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const UploadSelfieScreen(),
+                ),
               );
             },
             child: const Text("OK"),
