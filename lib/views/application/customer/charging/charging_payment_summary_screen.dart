@@ -1,7 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../viewmodels/charging/charging_payment_viewmodel.dart';
 import 'charging_payment_method_screen.dart';
 import 'charging_reward_selection_screen.dart';
 
@@ -24,316 +24,191 @@ class ChargingPaymentSummaryScreen extends StatefulWidget {
 
 class _ChargingPaymentSummaryScreenState
     extends State<ChargingPaymentSummaryScreen> {
-  // Loading indicator
-  bool isLoading = false;
-
-  // Firestore fields
-  String _accountId = "";
-  String _stationId = "";
-  String _chargerId = "";
-  String _stationName = "";
-  String _chargerName = "";
-  String _chargerType = "";
-  String _reservationStatus = "";
-  String _stationImageUrl = "";
-  double _rewardDiscount = 0.0;
-  String _selectedRewardID = "";
+  double _rewardDiscount = 0;
+  String _selectedRewardId = '';
   int _rewardPoints = 0;
 
   @override
-  void initState() {
-    super.initState();
-    _getCustomerID();
-  }
-
-  //Get the logged-in user's CustomerID from Firestore
-  Future<void> _getCustomerID() async {
-    setState(() => isLoading = true);
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isNotEmpty) {
-          QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-              .collection("Customers")
-              .where("PhoneNumber", isEqualTo: userPhone)
-              .limit(1)
-              .get();
-
-          if (querySnapshot.docs.isNotEmpty) {
-            var userDoc = querySnapshot.docs.first;
-            _accountId = userDoc["CustomerID"] ?? "";
-
-            // Once we have _accountId, fetch the reservation record
-            await _fetchReservationRecord();
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-    }
-    setState(() => isLoading = false);
-  }
-
-  //Fetch the reservation record for this user
-  Future<void> _fetchReservationRecord() async {
-    if (_accountId.isEmpty) return;
-
-    try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("Reservation")
-          .doc(_accountId)
-          .get();
-
-      if (doc.exists) {
-        _chargerId = doc["ChargerID"] ?? "";
-        _stationId = doc["StationID"] ?? "";
-        _reservationStatus = doc["Status"] ?? "";
-
-        // Only fetch station & charger if reservation status is "Ended"
-        if (_reservationStatus == "Ended") {
-          await _fetchStation();
-          await _fetchCharger();
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching reservation record: $e");
-    }
-  }
-
-  //Fetch station details
-  Future<void> _fetchStation() async {
-    if (_stationId.isEmpty) return;
-    try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("Station")
-          .doc(_stationId)
-          .get();
-
-      if (doc.exists) {
-        _stationName = doc["StationName"] ?? "";
-        _stationImageUrl = doc["ImageUrl"] ?? "";
-        setState(() {});
-      }
-    } catch (e) {
-      debugPrint("Error fetching station: $e");
-    }
-  }
-
-  //Fetch charger details
-  Future<void> _fetchCharger() async {
-    if (_stationId.isEmpty || _chargerId.isEmpty) return;
-    try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("Station")
-          .doc(_stationId)
-          .collection("Charger")
-          .doc(_chargerId)
-          .get();
-
-      if (doc.exists) {
-        _chargerName = doc["ChargerName"] ?? "";
-        _chargerType = doc["ChargerType"] ?? "";
-      }
-      // Trigger a rebuild to show the updated fields
-      setState(() {});
-    } catch (e) {
-      debugPrint("Error fetching charger: $e");
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    //Calculate subtotal
-    final double subtotal = widget.chargingCost + widget.penaltyCost;
-    //Calculate final total after discount
-    final double totalAmount = subtotal - _rewardDiscount;
+    return ChangeNotifierProvider(
+      create: (_) => ChargingPaymentViewModel()..loadSummaryDetails(),
+      child: Consumer<ChargingPaymentViewModel>(
+        builder: (context, viewModel, _) {
+          final subtotal = viewModel.subtotal(
+            chargingCost: widget.chargingCost,
+            penaltyCost: widget.penaltyCost,
+          );
+          final totalAmount = viewModel.totalAfterDiscount(
+            chargingCost: widget.chargingCost,
+            penaltyCost: widget.penaltyCost,
+            rewardDiscount: _rewardDiscount,
+          );
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    //Title "Payment" at the top
-                    const Text(
-                      "Payment",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    //Station image
-                    Container(
-                      height: 200,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: NetworkImage(_stationImageUrl),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    //Station info rows
-                    _infoRow("Charging Station:", _stationName),
-                    _infoRow("Charging Slot:", _chargerName),
-                    _infoRow("Charger Type:", _chargerType),
-                    _infoRow("Total Duration:", widget.duration),
-
-                    const SizedBox(height: 16),
-
-                    //Reward discount label
-                    const Text(
-                      "Reward Discount",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Instead of Dropdown, use a button/tappable widget
-                    InkWell(
-                      onTap: () async {
-                        final result =
-                            await Navigator.push<Map<String, dynamic>>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const ChargingRewardSelectionScreen(),
+          return Scaffold(
+            backgroundColor: Colors.white,
+            body: SafeArea(
+              child: viewModel.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Payment',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            height: 200,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(8),
+                              image: viewModel.stationImageUrl.isEmpty
+                                  ? null
+                                  : DecorationImage(
+                                      image: NetworkImage(
+                                        viewModel.stationImageUrl,
+                                      ),
+                                      fit: BoxFit.cover,
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _infoRow('Charging Station:', viewModel.stationName),
+                          _infoRow('Charging Slot:', viewModel.chargerName),
+                          _infoRow('Charger Type:', viewModel.chargerType),
+                          _infoRow('Total Duration:', widget.duration),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Reward Discount',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          InkWell(
+                            onTap: _selectReward,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 8,
                               ),
-                            );
-                        if (result != null) {
-                          setState(() {
-                            _rewardDiscount = result["discount"];
-                            _selectedRewardID = result["rewardID"];
-                            _rewardPoints =
-                                result["points"]; // save the points value
-                          });
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text("Select Reward"),
-                            // If discount is zero, show "-", else show the discount
-                            Text(
-                              _rewardDiscount == 0
-                                  ? "-"
-                                  : "-RM${_rewardDiscount.toStringAsFixed(2)}",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: _rewardDiscount == 0
-                                    ? Colors.black
-                                    : Colors.red,
-                                fontWeight: FontWeight.bold,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('Select Reward'),
+                                  Text(
+                                    _rewardDiscount == 0
+                                        ? '-'
+                                        : '-RM${_rewardDiscount.toStringAsFixed(2)}',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: _rewardDiscount == 0
+                                          ? Colors.black
+                                          : Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-                    _infoRow(
-                      "Charging total:",
-                      "RM ${widget.chargingCost.toStringAsFixed(2)}",
-                    ),
-                    _infoRow(
-                      "Penalty total:",
-                      "RM ${widget.penaltyCost.toStringAsFixed(2)}",
-                    ),
-                    // Subtotal row
-                    _infoRow("Subtotal:", "RM ${subtotal.toStringAsFixed(2)}"),
-                    // Reward discount row
-                    _infoRow(
-                      "Reward Discount:",
-                      _rewardDiscount == 0
-                          ? "-"
-                          : "-RM${_rewardDiscount.toStringAsFixed(2)}",
-                    ),
-
-                    const Divider(height: 32),
-
-                    //Total row
-                    _infoRow(
-                      "Total Amount:",
-                      "RM ${(totalAmount < 0 ? 0.0 : totalAmount).toStringAsFixed(2)}",
-                      isBold: true,
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    //CONTINUE button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
                           ),
-                        ),
-                        onPressed: () {
-                          // 1) Calculate final total
-                          final double subtotal =
-                              widget.chargingCost + widget.penaltyCost;
-                          final double finalTotal = subtotal - _rewardDiscount;
-                          // Ensure it never goes below 0
-                          final double safeTotal = finalTotal < 0
-                              ? 0
-                              : finalTotal;
-
-                          //Navigate to ChargingPaymentMethodScreen with the final total, rewardID, and rewardPoints
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChargingPaymentMethodScreen(
-                                totalAmount: safeTotal,
-                                rewardID: _selectedRewardID,
-                                rewardPoints: _rewardPoints,
+                          const SizedBox(height: 16),
+                          _infoRow(
+                            'Charging total:',
+                            'RM ${widget.chargingCost.toStringAsFixed(2)}',
+                          ),
+                          _infoRow(
+                            'Penalty total:',
+                            'RM ${widget.penaltyCost.toStringAsFixed(2)}',
+                          ),
+                          _infoRow(
+                            'Subtotal:',
+                            'RM ${subtotal.toStringAsFixed(2)}',
+                          ),
+                          _infoRow(
+                            'Reward Discount:',
+                            _rewardDiscount == 0
+                                ? '-'
+                                : '-RM${_rewardDiscount.toStringAsFixed(2)}',
+                          ),
+                          const Divider(height: 32),
+                          _infoRow(
+                            'Total Amount:',
+                            'RM ${totalAmount.toStringAsFixed(2)}',
+                            isBold: true,
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ChargingPaymentMethodScreen(
+                                          totalAmount: totalAmount,
+                                          rewardID: _selectedRewardId,
+                                          rewardPoints: _rewardPoints,
+                                        ),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'CONTINUE',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                          );
-                        },
-                        child: const Text(
-                          "CONTINUE",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  // Helper widget for row label + value
+  Future<void> _selectReward() async {
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(builder: (_) => const ChargingRewardSelectionScreen()),
+    );
+    if (result == null || !mounted) return;
+
+    setState(() {
+      _rewardDiscount = (result['discount'] as num?)?.toDouble() ?? 0;
+      _selectedRewardId = result['rewardID']?.toString() ?? '';
+      _rewardPoints = (result['points'] as num?)?.toInt() ?? 0;
+    });
+  }
+
   Widget _infoRow(String label, String value, {bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -347,7 +222,7 @@ class _ChargingPaymentSummaryScreenState
           Expanded(
             flex: 5,
             child: Text(
-              value.isNotEmpty ? value : "-",
+              value.isNotEmpty ? value : '-',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isBold ? FontWeight.bold : FontWeight.normal,

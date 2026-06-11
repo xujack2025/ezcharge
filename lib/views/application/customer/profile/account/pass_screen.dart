@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../profile_screen.dart';
+import '../../../application_screen.dart';
 
 class PassScreen extends StatefulWidget {
   const PassScreen({super.key});
@@ -28,7 +28,7 @@ class PassScreenState extends State<PassScreen> {
   void _navigateToAccountScreen() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const ProfileScreen()),
+      MaterialPageRoute(builder: (context) => const ApplicationScreen()),
     );
   }
 

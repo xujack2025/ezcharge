@@ -37,8 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCurrentLocation();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadCurrentLocation();
       _loadHomeData();
     });
   }
