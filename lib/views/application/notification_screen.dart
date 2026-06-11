@@ -1,6 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../../models/notification_model.dart';
+import '../../viewmodels/application/notification_viewmodel.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -10,88 +13,19 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class NotificationScreenState extends State<NotificationScreen> {
-  List<Map<String, dynamic>> _notifications = [];
-  bool _isLoading = true;
-  // ignore: unused_field TODO
-  bool _hasNewNotification = false; // Track if there's a new notification
-
   @override
   void initState() {
     super.initState();
-    _fetchNotifications();
-  }
-
-  //Fetch Notifications from Firestore
-
-  Future<void> _fetchNotifications() async {
-    try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("Notifications")
-          .orderBy("CreatedTime", descending: true)
-          .get();
-
-      setState(() {
-        _notifications = querySnapshot.docs.map((doc) {
-          var data = doc.data() as Map<String, dynamic>;
-
-          // Convert Firestore Timestamp to DateTime and then format it
-          String formattedCreatedTime = "";
-          String? formattedReadTime;
-
-          if (data["CreatedTime"] is Timestamp) {
-            formattedCreatedTime = DateFormat(
-              "dd MMM yyyy",
-            ).format(data["CreatedTime"].toDate());
-          }
-
-          if (data["ReadTime"] is Timestamp) {
-            formattedReadTime = DateFormat(
-              "dd MMM yyyy HH:mm:ss",
-            ).format(data["ReadTime"].toDate());
-          }
-
-          return {
-            "id": doc.id,
-            "title": data["Title"],
-            "description": data["Description"],
-            "createdTime": formattedCreatedTime, // Now a formatted String
-            "readTime": formattedReadTime, // Now a formatted String (nullable)
-          };
-        }).toList();
-
-        _hasNewNotification = _notifications.any((n) => n["readTime"] == null);
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint("Error fetching notifications: $e");
-      // setState(() => _isLoading = false);
-    }
-  }
-
-  //Mark notification as read & update Firestore
-  void _markAsRead(String notificationId) async {
-    String readTime = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now());
-
-    await FirebaseFirestore.instance
-        .collection("Notifications")
-        .doc(notificationId)
-        .update({"ReadTime": readTime});
-
-    setState(() {
-      _notifications = _notifications.map((notification) {
-        if (notification["id"] == notificationId) {
-          notification["readTime"] = readTime;
-        }
-        return notification;
-      }).toList();
-
-      // Check if there are still unread notifications
-      _hasNewNotification = _notifications.any((n) => n["readTime"] == null);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ApplicationNotificationViewModel>().loadNotifications();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final notificationViewModel = context
+        .watch<ApplicationNotificationViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -107,42 +41,51 @@ class NotificationScreenState extends State<NotificationScreen> {
           ),
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator()) //Show loading
-          : _notifications.isEmpty
-          ? const Center(child: Text("No notifications available."))
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _notifications.length,
-              itemBuilder: (context, index) {
-                var notification = _notifications[index];
-                return _buildNotificationItem(notification);
-              },
-            ),
+      body: _buildBody(notificationViewModel),
     );
   }
 
-  //Build a Notification Item
-  Widget _buildNotificationItem(Map<String, dynamic> notification) {
-    bool isRead = notification["readTime"] != null;
+  Widget _buildBody(ApplicationNotificationViewModel notificationViewModel) {
+    if (notificationViewModel.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
+    if (notificationViewModel.errorMessage != null) {
+      return Center(child: Text(notificationViewModel.errorMessage!));
+    }
+
+    if (notificationViewModel.notifications.isEmpty) {
+      return const Center(child: Text("No notifications available."));
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: notificationViewModel.notifications.length,
+      itemBuilder: (context, index) {
+        final notification = notificationViewModel.notifications[index];
+        return _buildNotificationItem(notification);
+      },
+    );
+  }
+
+  Widget _buildNotificationItem(NotificationModel notification) {
     return InkWell(
       onTap: () {
-        _markAsRead(notification["id"]); //Mark notification as read
+        context.read<ApplicationNotificationViewModel>().markAsRead(
+          notification.notificationID,
+        );
         _showNotificationDetails(notification);
       },
       child: Card(
         margin: const EdgeInsets.symmetric(vertical: 8),
-        color: isRead
-            ? Colors.white
-            : Colors.blue[50], //Highlight unread notifications
+        color: notification.isRead ? Colors.white : Colors.blue[50],
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                notification["title"],
+                notification.title,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -150,13 +93,13 @@ class NotificationScreenState extends State<NotificationScreen> {
               ),
               const SizedBox(height: 5),
               Text(
-                notification["description"],
+                notification.description,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 5),
               Text(
-                notification["createdTime"],
+                DateFormat("dd MMM yyyy").format(notification.createdTime),
                 style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
             ],
@@ -166,17 +109,16 @@ class NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-  //Show Expanded Notification Details
-  void _showNotificationDetails(Map<String, dynamic> notification) {
+  void _showNotificationDetails(NotificationModel notification) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text(
-            notification["title"],
+            notification.title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          content: Text(notification["description"]),
+          content: Text(notification.description),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),

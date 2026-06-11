@@ -1,7 +1,9 @@
 import 'package:ezcharge/models/home_station_model.dart';
 import 'package:ezcharge/services/home_service.dart';
+import 'package:ezcharge/services/location_service.dart';
 import 'package:ezcharge/viewmodels/application/home_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class FakeHomeService implements HomeServiceContract {
   FakeHomeService({this.stations = const []});
@@ -47,6 +49,19 @@ class FakeHomeService implements HomeServiceContract {
     required String bookmarkId,
   }) async {
     removedBookmarkId = bookmarkId;
+  }
+}
+
+class FakeLocationService implements LocationServiceContract {
+  FakeLocationService({this.location});
+
+  final LatLng? location;
+  int getCurrentLocationCallCount = 0;
+
+  @override
+  Future<LatLng?> getCurrentLocation() async {
+    getCurrentLocationCallCount++;
+    return location;
   }
 }
 
@@ -142,5 +157,39 @@ void main() {
       expect(service.removedBookmarkId, 'BKK1');
       expect(viewModel.isBookmarked(acStation.stationId), isFalse);
     });
+
+    test('loads current location from location service', () async {
+      const location = LatLng(3.3, 101.3);
+      final locationService = FakeLocationService(location: location);
+      final viewModel = HomeViewModel(
+        homeService: FakeHomeService(),
+        locationService: locationService,
+      );
+
+      final result = await viewModel.loadCurrentLocation();
+
+      expect(locationService.getCurrentLocationCallCount, 1);
+      expect(result, location);
+      expect(viewModel.currentLocation, location);
+      expect(viewModel.isLocationLoading, isFalse);
+      expect(viewModel.locationErrorMessage, isNull);
+    });
+
+    test(
+      'keeps default location when location service cannot resolve user',
+      () async {
+        final viewModel = HomeViewModel(
+          homeService: FakeHomeService(),
+          locationService: FakeLocationService(),
+        );
+
+        final result = await viewModel.loadCurrentLocation();
+
+        expect(result, isNull);
+        expect(viewModel.currentLocation, HomeViewModel.defaultLocation);
+        expect(viewModel.isLocationLoading, isFalse);
+        expect(viewModel.locationErrorMessage, isNotNull);
+      },
+    );
   });
 }

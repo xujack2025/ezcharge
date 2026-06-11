@@ -5,7 +5,7 @@ class NotificationModel {
   final String title;
   final String description;
   final DateTime createdTime;
-  final String? readTime;
+  final DateTime? readTime;
 
   NotificationModel({
     required this.notificationID,
@@ -23,8 +23,8 @@ class NotificationModel {
       notificationID: documentId,
       title: data['Title'] ?? '',
       description: data['Description'] ?? '',
-      createdTime: (data['CreatedTime'] as Timestamp).toDate(),
-      readTime: data['ReadTime'],
+      createdTime: _parseDateTime(data['CreatedTime']) ?? DateTime.now(),
+      readTime: _parseDateTime(data['ReadTime']),
     );
   }
 
@@ -36,5 +36,37 @@ class NotificationModel {
       'CreatedTime': createdTime,
       'ReadTime': readTime,
     };
+  }
+
+  bool get isRead => readTime != null;
+
+  NotificationModel copyWith({DateTime? readTime}) {
+    return NotificationModel(
+      notificationID: notificationID,
+      title: title,
+      description: description,
+      createdTime: createdTime,
+      readTime: readTime ?? this.readTime,
+    );
+  }
+
+  static DateTime? _parseDateTime(Object? value) {
+    if (value == null) {
+      return null;
+    }
+
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+
+    if (value is DateTime) {
+      return value;
+    }
+
+    if (value is String) {
+      return DateTime.tryParse(value);
+    }
+
+    return null;
   }
 }

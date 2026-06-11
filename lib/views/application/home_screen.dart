@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/colors.dart';
@@ -31,11 +30,6 @@ class _HomeScreenState extends State<HomeScreen> {
   HomeViewModel get _homeViewModel => context.read<HomeViewModel>();
 
   final Completer<GoogleMapController> _controller = Completer();
-  final Location _location = Location();
-  LatLng _currentLocation = const LatLng(
-    3.2197929237993033,
-    101.6437936423279,
-  ); // Default: KL
 
   // Search Controller
   final TextEditingController _searchController = TextEditingController();
@@ -43,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _getUserLocation();
+    _loadCurrentLocation();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadHomeData();
     });
@@ -97,57 +91,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _getUserLocation() async {
-    try {
-      bool serviceEnabled;
-      PermissionStatus permissionGranted;
+  Future<void> _loadCurrentLocation() async {
+    final location = await _homeViewModel.loadCurrentLocation();
+    if (!mounted || location == null) return;
 
-      // Check if location services are enabled
-      serviceEnabled = await _location.serviceEnabled();
-      if (!serviceEnabled) {
-        serviceEnabled = await _location.requestService();
-        if (!serviceEnabled) {
-          AppLogger.warning("Location services are disabled.");
-          return;
-        }
-      }
-
-      //Check location permissions
-      permissionGranted = await _location.hasPermission();
-      if (permissionGranted == PermissionStatus.denied) {
-        permissionGranted = await _location.requestPermission();
-        if (permissionGranted != PermissionStatus.granted) {
-          AppLogger.warning("Location permission denied.");
-          return;
-        }
-      }
-
-      // Get the current user location
-      LocationData locationData = await _location.getLocation();
-      if (!mounted) return;
-      LatLng userLocation = LatLng(
-        locationData.latitude!,
-        locationData.longitude!,
-      );
-
-      setState(() {
-        _currentLocation = userLocation;
-      });
-
-      //Move camera to user's location
-      final GoogleMapController controller = await _controller.future;
-      controller.animateCamera(
-        CameraUpdate.newLatLngZoom(_currentLocation, 14),
-      );
-    } catch (e) {
-      AppLogger.error("Error getting location: $e");
-    }
-  }
-
-  /*Future<void> _moveCamera(LatLng position) async {
     final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newLatLngZoom(position, 14));
-  }*/
+    controller.animateCamera(CameraUpdate.newLatLngZoom(location, 14));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               },
               initialCameraPosition: CameraPosition(
-                target: _currentLocation,
+                target: homeVM.currentLocation,
                 zoom: 14.0,
               ),
               myLocationEnabled: true,
