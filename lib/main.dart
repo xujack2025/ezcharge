@@ -13,6 +13,7 @@ import 'viewmodels/application/application_viewmodel.dart';
 import 'viewmodels/application/check_in_viewmodel.dart';
 import 'viewmodels/application/home_viewmodel.dart';
 import 'viewmodels/application/notification_viewmodel.dart';
+import 'viewmodels/application/profile_viewmodel.dart';
 import 'viewmodels/application/reward_viewmodel.dart';
 import 'viewmodels/auth/auth_viewmodel.dart';
 import 'viewmodels/charging_station_viewmodel.dart';
@@ -66,6 +67,7 @@ class MyApp extends StatelessWidget {
           create: (context) => ApplicationNotificationViewModel(),
         ),
         ChangeNotifierProvider(create: (context) => RewardViewModel()),
+        ChangeNotifierProvider(create: (context) => ProfileViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

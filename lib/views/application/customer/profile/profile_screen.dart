@@ -1,10 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../viewmodels/application/application_viewmodel.dart';
+import '../../../../viewmodels/application/profile_viewmodel.dart';
 import '../../../../viewmodels/auth/auth_viewmodel.dart';
 import 'account/activity_screen.dart';
 import 'account/authenticate_account_screen.dart';
@@ -26,83 +25,32 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class ProfileScreenState extends State<ProfileScreen> {
-  String _customerName = "Loading...";
-  String _accountId = "00000000";
-  double _walletBalance = 0.0;
-  int _pointBalance = 0;
-  String _authStatus = "";
   bool _wasVisible = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchCustomerData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _refreshProfile();
+      }
+    });
   }
 
-  // Fetch current log in user id from Firestore
-  Future<void> _fetchCustomerData() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-
-          if (!mounted) return;
-          setState(() {
-            _customerName = "${userDoc["FirstName"]} ${userDoc["LastName"]}";
-            _accountId = userDoc["CustomerID"];
-            _walletBalance = userDoc["WalletBalance"].toDouble();
-            _pointBalance = userDoc["PointBalance"];
-          });
-          _fetchAuthenticationStatus();
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-    }
-  }
-
-  // Fetch current sign in user's Authentication Status from Firestore
-  Future<void> _fetchAuthenticationStatus() async {
-    if (_accountId.isEmpty) return;
-
-    try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("Customers")
-          .doc(_accountId)
-          .collection("Authenticate")
-          .doc("authentication")
-          .get();
-
-      if (doc.exists) {
-        if (!mounted) return;
-        setState(() {
-          _authStatus = doc["Status"];
-        });
-      }
-    } catch (e) {
-      debugPrint("Error fetching authentication status: $e");
-    }
+  Future<void> _refreshProfile() {
+    return context.read<ProfileViewModel>().loadProfile();
   }
 
   @override
   Widget build(BuildContext context) {
+    final profileViewModel = context.watch<ProfileViewModel>();
     final isVisible = context.select<ApplicationViewmodel, bool>(
       (viewModel) => viewModel.selectedPages == 3,
     );
     if (isVisible && !_wasVisible) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          _fetchCustomerData();
+          _refreshProfile();
         }
       });
     }
@@ -137,7 +85,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _customerName,
+                          profileViewModel.customerName,
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -149,7 +97,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              "Account ID: $_accountId",
+                              "Account ID: ${profileViewModel.accountId}",
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.white,
@@ -173,7 +121,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                   const SizedBox(width: 5),
                                   Text(
-                                    "$_pointBalance pts",
+                                    "${profileViewModel.pointBalance} pts",
                                     style: const TextStyle(
                                       color: Colors.blue,
                                       fontWeight: FontWeight.bold,
@@ -218,7 +166,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ),
                                 Text(
-                                  "RM ${_walletBalance.toStringAsFixed(2)}",
+                                  "RM ${profileViewModel.walletBalance.toStringAsFixed(2)}",
                                   style: const TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
@@ -238,7 +186,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                               ),
                             );
                             if (didTopUp == true) {
-                              await _fetchCustomerData();
+                              await _refreshProfile();
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -263,7 +211,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                             builder: (context) => const EditProfileScreen(),
                           ),
                         );
-                        await _fetchCustomerData();
+                        await _refreshProfile();
                       },
                     ),
                     _buildListItem(
@@ -280,21 +228,24 @@ class ProfileScreenState extends State<ProfileScreen> {
                     _buildListItem(
                       "Authenticate Account",
                       onTap: () async {
-                        if (_authStatus == "Pending") {
+                        if (profileViewModel.authenticationStatus ==
+                            "Pending") {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const PendingScreen(),
                             ),
                           );
-                        } else if (_authStatus == "Pass") {
+                        } else if (profileViewModel.authenticationStatus ==
+                            "Pass") {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const PassScreen(),
                             ),
                           );
-                        } else if (_authStatus == "Fail") {
+                        } else if (profileViewModel.authenticationStatus ==
+                            "Fail") {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -310,7 +261,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                             ),
                           );
                         }
-                        await _fetchCustomerData();
+                        await _refreshProfile();
                       },
                     ),
                     _buildListItem(
@@ -335,7 +286,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                             builder: (context) => const PaymentMethodScreen(),
                           ),
                         );
-                        await _fetchCustomerData();
+                        await _refreshProfile();
                       },
                     ),
                     _buildListItem(
