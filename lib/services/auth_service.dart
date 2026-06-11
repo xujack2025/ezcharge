@@ -23,6 +23,8 @@ abstract class AuthServiceContract {
 
   Future<CustomerModel?> getCustomerByPhoneNumber(String phoneNumber);
 
+  Future<CustomerModel> getOrCreateCustomerByPhoneNumber(String phoneNumber);
+
   Future<String> getAuthStatus(String customerId);
 
   String? getCurrentUserPhoneNumber();
@@ -139,6 +141,37 @@ class AuthService implements AuthServiceContract {
     } catch (e) {
       AppLogger.error("Error fetching customer by phone number: $e");
       return null;
+    }
+  }
+
+  @override
+  Future<CustomerModel> getOrCreateCustomerByPhoneNumber(
+    String phoneNumber,
+  ) async {
+    final existingCustomer = await getCustomerByPhoneNumber(phoneNumber);
+    if (existingCustomer != null) return existingCustomer;
+
+    try {
+      final customerRef = _firestore.collection('Customers').doc();
+      final customer = CustomerModel(
+        id: customerRef.id,
+        firstName: '',
+        lastName: '',
+        gender: '',
+        walletBalance: 0,
+        pointBalance: 0,
+        dateOfBirth: '',
+        createdAt: Timestamp.now(),
+        email: '',
+        phone: phoneNumber,
+      );
+
+      await customerRef.set(customer.toFirestore());
+      AppLogger.info("Created customer account for phone number: $phoneNumber");
+      return customer;
+    } catch (e) {
+      AppLogger.error("Error creating customer by phone number: $e");
+      rethrow;
     }
   }
 

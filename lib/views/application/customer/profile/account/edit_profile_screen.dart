@@ -46,8 +46,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
           var userDoc = querySnapshot.docs.first;
 
           setState(() {
-            _customerId =
-                userDoc["CustomerID"]; // Store CustomerID for updating later
+            _customerId = userDoc["CustomerID"]; // Store CustomerID for updating later
             _firstNameController.text = userDoc["FirstName"];
             _lastNameController.text = userDoc["LastName"];
             _emailController.text = userDoc["EmailAddress"];
@@ -65,9 +64,9 @@ class EditProfileScreenState extends State<EditProfileScreen> {
   //Save updated profile to Firestore
   Future<void> _saveProfile() async {
     if (_customerId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error: Customer not found.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Error: Customer not found.")));
       return;
     }
     final email = _emailController.text.trim();
@@ -83,27 +82,24 @@ class EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
     try {
-      await FirebaseFirestore.instance
-          .collection("Customers")
-          .doc(_customerId)
-          .update({
-            "FirstName": _firstNameController.text,
-            "LastName": _lastNameController.text,
-            "EmailAddress": _emailController.text,
-            "Gender": _selectedGender,
-            "DateOfBirth": _selectedDateOfBirth,
-          });
+      await FirebaseFirestore.instance.collection("Customers").doc(_customerId).update({
+        "FirstName": _firstNameController.text,
+        "LastName": _lastNameController.text,
+        "EmailAddress": _emailController.text,
+        "Gender": _selectedGender,
+        "DateOfBirth": _selectedDateOfBirth,
+      });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Profile updated successfully!")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Profile updated successfully!")));
 
       Navigator.pop(context);
     } catch (e) {
       debugPrint("Error updating profile: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to update profile.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Failed to update profile.")));
     }
   }
 
@@ -117,8 +113,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
 
     if (pickedDate != null) {
       setState(() {
-        _selectedDateOfBirth =
-            "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+        _selectedDateOfBirth = "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
       });
     }
   }
@@ -131,10 +126,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: Container(
-            decoration: const BoxDecoration(
-              color: Colors.blue,
-              shape: BoxShape.circle,
-            ),
+            decoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
             padding: const EdgeInsets.all(8),
             child: const Icon(Icons.arrow_back, color: Colors.white),
           ),
@@ -156,32 +148,18 @@ class EditProfileScreenState extends State<EditProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTextField(
-              "First Name",
-              _firstNameController,
-              isRequired: true,
-            ),
+            _buildTextField("First Name", _firstNameController, isRequired: true),
             _buildTextField("Last Name", _lastNameController, isRequired: true),
             _buildTextField(
               "Email Address",
               _emailController,
               hint: "Enter Email Address",
             ),
-            _buildTextField(
-              "Phone Number",
-              _phoneController,
-              isEditable: false,
-            ),
-            _buildDropdownField("Gender", _genders, _selectedGender, (
-              newValue,
-            ) {
+            _buildTextField("Phone Number", _phoneController, isEditable: false),
+            _buildDropdownField("Gender", _genders, _selectedGender, (newValue) {
               setState(() => _selectedGender = newValue);
             }),
-            _buildDatePickerField(
-              "Date of Birth",
-              _selectedDateOfBirth,
-              _pickDate,
-            ),
+            _buildDatePickerField("Date of Birth", _selectedDateOfBirth, _pickDate),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -190,9 +168,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                 ),
                 child: const Text(
                   "SAVE",
@@ -227,13 +203,9 @@ class EditProfileScreenState extends State<EditProfileScreen> {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
-              if (isRequired)
-                const Text(" *", style: TextStyle(color: Colors.red)),
+              if (isRequired) const Text(" *", style: TextStyle(color: Colors.red)),
             ],
           ),
           const SizedBox(height: 5),
@@ -244,9 +216,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
               hintText: hint,
               filled: true,
               fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(5),
-              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
             ),
           ),
         ],
@@ -266,10 +236,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ),
+          Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           const SizedBox(height: 5),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -280,15 +247,17 @@ class EditProfileScreenState extends State<EditProfileScreen> {
             ),
             child: DropdownButton<String>(
               isExpanded: true,
-              value: selectedValue,
+              value:
+                  (selectedValue == null ||
+                      selectedValue.isEmpty ||
+                      !items.contains(selectedValue))
+                  ? null
+                  : selectedValue,
               hint: const Text("Select Gender"),
               underline: const SizedBox(),
               onChanged: onChanged,
               items: items.map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
+                return DropdownMenuItem<String>(value: value, child: Text(value));
               }).toList(),
             ),
           ),
@@ -298,20 +267,13 @@ class EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   // Function to build date picker field
-  Widget _buildDatePickerField(
-    String label,
-    String? selectedDate,
-    VoidCallback onTap,
-  ) {
+  Widget _buildDatePickerField(String label, String? selectedDate, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ),
+          Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           const SizedBox(height: 5),
           InkWell(
             onTap: onTap,
@@ -326,11 +288,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
                 children: [
                   Text(selectedDate ?? "Select Date of Birth"),
                   const Spacer(),
-                  const Icon(
-                    Icons.calendar_today,
-                    color: Colors.black54,
-                    size: 16,
-                  ),
+                  const Icon(Icons.calendar_today, color: Colors.black54, size: 16),
                 ],
               ),
             ),

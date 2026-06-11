@@ -25,6 +25,8 @@ class FakeAuthService implements AuthServiceContract {
   final String authStatus;
   String? requestedPhoneNumber;
   UserRole? requestedRole;
+  String? ensuredCustomerPhoneNumber;
+  int ensureCustomerCallCount = 0;
 
   @override
   Future<void> sendOtp(
@@ -64,6 +66,28 @@ class FakeAuthService implements AuthServiceContract {
   Future<CustomerModel?> getCustomerByPhoneNumber(String phoneNumber) async {
     requestedPhoneNumber = phoneNumber;
     return customer;
+  }
+
+  @override
+  Future<CustomerModel> getOrCreateCustomerByPhoneNumber(
+    String phoneNumber,
+  ) async {
+    ensuredCustomerPhoneNumber = phoneNumber;
+    ensureCustomerCallCount++;
+
+    return customer ??
+        CustomerModel(
+          id: "CUS_NEW",
+          firstName: "",
+          lastName: "",
+          gender: "",
+          walletBalance: 0,
+          pointBalance: 0,
+          dateOfBirth: "",
+          createdAt: Timestamp.fromMillisecondsSinceEpoch(0),
+          email: "",
+          phone: phoneNumber,
+        );
   }
 
   @override
@@ -182,6 +206,8 @@ void main() {
       );
 
       expect(verificationId, 'verification-123');
+      expect(authService.ensuredCustomerPhoneNumber, '+60123456789');
+      expect(authService.ensureCustomerCallCount, 1);
       expect(authService.requestedPhoneNumber, '+60123456789');
       expect(authService.requestedRole, UserRole.customer);
       expect(viewModel.isLoading, isFalse);
@@ -203,6 +229,8 @@ void main() {
         );
 
         expect(verificationId, isNull);
+        expect(authService.ensuredCustomerPhoneNumber, isNull);
+        expect(authService.ensureCustomerCallCount, 0);
         expect(authService.requestedPhoneNumber, '+60123456789');
         expect(authService.requestedRole, UserRole.admin);
         expect(viewModel.isLoading, isFalse);

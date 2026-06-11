@@ -120,6 +120,13 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     try {
+      if (role == UserRole.customer) {
+        _customer = await _authService.getOrCreateCustomerByPhoneNumber(
+          phoneNumber,
+        );
+        _admin = null;
+      }
+
       await _authService.sendOtp(
         phoneNumber,
         role,
