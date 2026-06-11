@@ -1,7 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../models/reward_model.dart';
+import '../../viewmodels/application/reward_viewmodel.dart';
 import '../reward/point_history_screen.dart';
 
 class RewardScreen extends StatefulWidget {
@@ -12,93 +13,21 @@ class RewardScreen extends StatefulWidget {
 }
 
 class RewardScreenState extends State<RewardScreen> {
-  int _customerPoints = 0;
-  String _customerId = "";
-  List<Map<String, dynamic>> _rewards = [];
-  List<String> _redeemedRewards = []; // Stores redeemed reward IDs
-
   @override
   void initState() {
     super.initState();
-    _fetchUserData();
-    _fetchRewards();
-  }
-
-  //Fetch user data (points & redeemed rewards)
-  Future<void> _fetchUserData() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-          setState(() {
-            _customerPoints = userDoc["PointBalance"];
-            _customerId = userDoc["CustomerID"]; // Use Firestore Document ID
-            _redeemedRewards = List<String>.from(
-              userDoc["RedeemedRewards"] ?? [],
-            );
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching user data: $e");
-    }
-  }
-
-  // Fetch rewards from Firestore
-  Future<void> _fetchRewards() async {
-    try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("reward")
-          .get();
-      DateTime now = DateTime.now();
-
-      setState(() {
-        _rewards = querySnapshot.docs
-            .map((doc) {
-              var reward = doc.data() as Map<String, dynamic>;
-              Timestamp? expiryTimestamp = reward["ExpiredDate"];
-
-              if (expiryTimestamp != null) {
-                DateTime expiryDate = expiryTimestamp
-                    .toDate(); //Convert Firestore Timestamp
-                if (expiryDate.isAfter(now)) {
-                  return {
-                    "RewardID": reward["RewardID"],
-                    "RewardDetails": reward["RewardDetails"],
-                    "Points": reward["Points"],
-                    "ExpiredDate": expiryDate,
-                  };
-                }
-              }
-              return null;
-            })
-            .whereType<Map<String, dynamic>>()
-            .toList();
-      });
-    } catch (e) {
-      debugPrint("Error fetching rewards: $e");
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RewardViewModel>().loadRewards();
+    });
   }
 
   // Redeem reward and accumulate points (if not already redeemed)
-  void _redeemReward(
-    BuildContext context,
-    String rewardId,
-    String rewardDetails,
-    int rewardPoints,
-  ) async {
-    if (_redeemedRewards.contains(rewardId)) {
-      ScaffoldMessenger.of(context).showSnackBar(
+  Future<void> _redeemReward(BuildContext context, RewardModel reward) async {
+    final rewardViewModel = context.read<RewardViewModel>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    if (rewardViewModel.isRedeemed(reward.id)) {
+      messenger.showSnackBar(
         const SnackBar(content: Text("You have already redeemed this reward.")),
       );
       return;
@@ -106,49 +35,46 @@ class RewardScreenState extends State<RewardScreen> {
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text("Redeem Points"),
-          content: Text("Are you sure you want to redeem:\n$rewardDetails?"),
+          content: Text("Are you sure you want to redeem:\n${reward.details}?"),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text("Cancel", style: TextStyle(color: Colors.blue)),
             ),
             TextButton(
               onPressed: () async {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
 
-                try {
-                  // 🔹 Add points and mark reward as redeemed
-                  int updatedPoints = _customerPoints + rewardPoints;
-                  _redeemedRewards.add(rewardId); // Update local redeemed list
+                final outcome = await rewardViewModel.redeemReward(reward);
+                if (!mounted) return;
 
-                  await FirebaseFirestore.instance
-                      .collection("customers")
-                      .doc(_customerId)
-                      .update({
-                        "PointBalance": updatedPoints,
-                        "RedeemedRewards":
-                            _redeemedRewards, // Store redeemed rewards
-                      });
-
-                  setState(() {
-                    _customerPoints = updatedPoints;
-                  });
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Successfully redeemed: $rewardDetails"),
-                    ),
-                  );
-                } catch (e) {
-                  debugPrint("Error redeeming reward: $e");
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Failed to redeem reward. Try again."),
-                    ),
-                  );
+                switch (outcome) {
+                  case RewardRedeemOutcome.success:
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          "Successfully redeemed: ${reward.details}",
+                        ),
+                      ),
+                    );
+                    return;
+                  case RewardRedeemOutcome.alreadyRedeemed:
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text("You have already redeemed this reward."),
+                      ),
+                    );
+                    return;
+                  case RewardRedeemOutcome.failed:
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text("Failed to redeem reward. Try again."),
+                      ),
+                    );
+                    return;
                 }
               },
               child: const Text("Confirm", style: TextStyle(color: Colors.red)),
@@ -161,6 +87,8 @@ class RewardScreenState extends State<RewardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final rewardViewModel = context.watch<RewardViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -176,69 +104,91 @@ class RewardScreenState extends State<RewardScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPointsCard(),
-            const SizedBox(height: 20),
-
-            //View Points History Button
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PointHistoryScreen()),
-                );
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: rewardViewModel.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  _buildPointsCard(rewardViewModel.customerPoints),
+                  const SizedBox(height: 20),
+
+                  //View Points History Button
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PointHistoryScreen(),
+                        ),
+                      );
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "View my points history",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                        Container(
+                          width: 30, // Set size of the circle
+                          height: 30,
+                          decoration: const BoxDecoration(
+                            color: Colors.blue, // Blue background
+                            shape: BoxShape.circle, // Circular shape
+                          ),
+                          child: const Icon(
+                            Icons.arrow_forward,
+                            color: Colors.white, // White arrow
+                            size: 20, // Adjust arrow size
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Divider(
+                    color: Colors.grey, // Light gray color
+                    thickness: 1, // Line thickness
+                  ),
+                  const SizedBox(height: 10),
                   const Text(
-                    "View my points history",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
+                    "EZCHARGE Promotions",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  Container(
-                    width: 30, // Set size of the circle
-                    height: 30,
-                    decoration: const BoxDecoration(
-                      color: Colors.blue, // Blue background
-                      shape: BoxShape.circle, // Circular shape
+
+                  if (rewardViewModel.errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        rewardViewModel.errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.arrow_forward,
-                      color: Colors.white, // White arrow
-                      size: 20, // Adjust arrow size
+
+                  if (rewardViewModel.rewards.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(child: Text("No rewards available.")),
+                    )
+                  else
+                    ...rewardViewModel.rewards.map(
+                      (reward) =>
+                          _buildPromotionItem(context, rewardViewModel, reward),
                     ),
-                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
-            const Divider(
-              color: Colors.grey, // Light gray color
-              thickness: 1, // Line thickness
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              "EZCHARGE Promotions",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-
-            ..._rewards.map((reward) => _buildPromotionItem(context, reward)),
-          ],
-        ),
-      ),
     );
   }
 
   //Display User Points
-  Widget _buildPointsCard() {
+  Widget _buildPointsCard(int customerPoints) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -255,7 +205,7 @@ class RewardScreenState extends State<RewardScreen> {
           ),
           const SizedBox(height: 5),
           Text(
-            "$_customerPoints pts",
+            "$customerPoints pts",
             style: const TextStyle(
               color: Colors.white,
               fontSize: 28,
@@ -270,9 +220,10 @@ class RewardScreenState extends State<RewardScreen> {
   //Build a Redeemable Promotion Item
   Widget _buildPromotionItem(
     BuildContext context,
-    Map<String, dynamic> reward,
+    RewardViewModel rewardViewModel,
+    RewardModel reward,
   ) {
-    bool isRedeemed = _redeemedRewards.contains(reward["RewardID"]);
+    bool isRedeemed = rewardViewModel.isRedeemed(reward.id);
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -299,7 +250,7 @@ class RewardScreenState extends State<RewardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    reward["RewardDetails"],
+                    reward.details,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -313,7 +264,7 @@ class RewardScreenState extends State<RewardScreen> {
                       const Icon(Icons.bolt, color: Colors.blue, size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        "${reward["Points"]} pts",
+                        "${reward.points} pts",
                         style: const TextStyle(
                           color: Colors.blue,
                           fontSize: 14,
@@ -327,12 +278,7 @@ class RewardScreenState extends State<RewardScreen> {
             ElevatedButton(
               onPressed: isRedeemed
                   ? null
-                  : () => _redeemReward(
-                      context,
-                      reward["RewardID"],
-                      reward["RewardDetails"],
-                      reward["Points"],
-                    ),
+                  : () => _redeemReward(context, reward),
               style: ElevatedButton.styleFrom(
                 backgroundColor: isRedeemed ? Colors.grey : Colors.blue,
               ),

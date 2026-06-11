@@ -12,6 +12,7 @@ import 'services/station_service.dart';
 import 'viewmodels/application/application_viewmodel.dart';
 import 'viewmodels/application/check_in_viewmodel.dart';
 import 'viewmodels/application/home_viewmodel.dart';
+import 'viewmodels/application/reward_viewmodel.dart';
 import 'viewmodels/auth/auth_viewmodel.dart';
 import 'viewmodels/charging_station_viewmodel.dart';
 import 'viewmodels/emergency_request_viewmodel.dart';
@@ -60,6 +61,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => ApplicationViewmodel()),
         ChangeNotifierProvider(create: (context) => CheckInViewModel()),
         ChangeNotifierProvider(create: (context) => HomeViewModel()),
+        ChangeNotifierProvider(create: (context) => RewardViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
