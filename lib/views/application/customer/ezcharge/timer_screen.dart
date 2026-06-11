@@ -79,7 +79,7 @@ class _TimerScreenState extends State<TimerScreen> {
   Future<void> _handleTimeLimitReached() async {
     try {
       await FirebaseFirestore.instance
-          .collection("reservation")
+          .collection("Reservation")
           .doc(_accountId)
           .update({"Status": "Ended"});
 
@@ -112,7 +112,7 @@ class _TimerScreenState extends State<TimerScreen> {
         if (userPhone.isEmpty) return;
 
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -140,7 +140,7 @@ class _TimerScreenState extends State<TimerScreen> {
     try {
       //Fetch reservation document for the user
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("reservation")
+          .collection("Reservation")
           .doc(_accountId)
           .get();
 
@@ -162,7 +162,7 @@ class _TimerScreenState extends State<TimerScreen> {
 
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .get();
 
@@ -181,7 +181,7 @@ class _TimerScreenState extends State<TimerScreen> {
 
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .collection("Charger")
           .doc(_chargerId)
@@ -231,7 +231,7 @@ class _TimerScreenState extends State<TimerScreen> {
                       onPressed: () async {
                         try {
                           await FirebaseFirestore.instance
-                              .collection("reservation")
+                              .collection("Reservation")
                               .doc(_accountId)
                               .update({"Status": "Ended"});
 

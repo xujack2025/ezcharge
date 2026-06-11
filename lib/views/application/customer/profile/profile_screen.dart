@@ -46,7 +46,7 @@ class ProfileScreenState extends State<ProfileScreen> {
         if (userPhone.isEmpty) return;
 
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -74,9 +74,9 @@ class ProfileScreenState extends State<ProfileScreen> {
 
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
-          .collection("authenticate")
+          .collection("Authenticate")
           .doc("authentication")
           .get();
 

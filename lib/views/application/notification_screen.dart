@@ -26,7 +26,7 @@ class NotificationScreenState extends State<NotificationScreen> {
   Future<void> _fetchNotifications() async {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("notification")
+          .collection("Notifications")
           .orderBy("CreatedTime", descending: true)
           .get();
 
@@ -73,7 +73,7 @@ class NotificationScreenState extends State<NotificationScreen> {
     String readTime = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now());
 
     await FirebaseFirestore.instance
-        .collection("notification")
+        .collection("Notifications")
         .doc(notificationId)
         .update({"ReadTime": readTime});
 

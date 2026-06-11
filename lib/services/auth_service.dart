@@ -98,7 +98,7 @@ class AuthService implements AuthServiceContract {
   Future<AdminModel?> getAdminByPhoneNumber(String phoneNumber) async {
     try {
       final querySnapshot = await _firestore
-          .collection('admins')
+          .collection('Admins')
           .where('PhoneNumber', isEqualTo: phoneNumber)
           .get();
 
@@ -121,7 +121,7 @@ class AuthService implements AuthServiceContract {
   Future<CustomerModel?> getCustomerByPhoneNumber(String phoneNumber) async {
     try {
       final querySnapshot = await _firestore
-          .collection('customers')
+          .collection('Customers')
           .where('PhoneNumber', isEqualTo: phoneNumber)
           .get();
 
@@ -145,10 +145,10 @@ class AuthService implements AuthServiceContract {
   @override
   Future<String> getAuthStatus(String customerId) async {
     final querySnapshot = await _firestore
-        .collection("customers")
+        .collection("Customers")
         .doc(customerId)
-        .collection("authenticate")
-        .doc("authentication")
+        .collection("Authenticate")
+        .doc("Authentication")
         .get();
     return querySnapshot.exists ? querySnapshot["Status"] : "";
   }

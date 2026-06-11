@@ -39,7 +39,7 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
 
       // Fetch admin details from Firestore using the phone number
       final adminQuery = await FirebaseFirestore.instance
-          .collection('admins') // Ensure correct collection name
+          .collection('Admins') // Ensure correct collection name
           .where(
             'PhoneNumber',
             isEqualTo: phoneNumber,
@@ -101,7 +101,7 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
   Future<String> _fetchCustomerName(String customerID) async {
     try {
       final customerSnapshot = await FirebaseFirestore.instance
-          .collection('customers') // Query the `customers` collection
+          .collection('Customers') // Query the `customers` collection
           .doc(customerID)
           .get();
 
@@ -122,7 +122,7 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
     final snapshot = await FirebaseFirestore.instance
         .collectionGroup('complaints')
         .where(
-          "status",
+          "Status",
           whereIn: ["Resolved", "Pending", "In Progress"],
         ) // Include 'status' to match the index
         .where(
@@ -163,7 +163,7 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
         "customerID": customerID, // Store Customer ID
         "userName": userName, // Now retrieved from `customers` collection
         "issueType": data['Reason'] ?? "N/A",
-        "status": data['status'] ?? "Pending",
+        "Status": data['Status'] ?? "Pending",
         "submittedAt": submittedAt,
         "resolvedAt": resolvedAt,
         "resolutionTime": resolutionTime != null
@@ -224,7 +224,7 @@ class _ComplaintResolutionReportState extends State<ComplaintResolutionReport> {
                 complaint['complaintID'],
                 complaint['userName'],
                 complaint['issueType'],
-                complaint['status'],
+                complaint['Status'],
                 complaint['submittedAt'].toString(),
                 complaint['resolvedAt']?.toString() ?? "Not Resolved",
                 complaint['resolutionTime'],

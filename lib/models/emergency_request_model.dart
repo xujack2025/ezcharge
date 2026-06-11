@@ -31,37 +31,37 @@ class EmergencyRequest {
 
   factory EmergencyRequest.fromMap(Map<String, dynamic> map) {
     return EmergencyRequest(
-      requestID: map['requestID'] ?? '',
+      requestID: map['RequestID'] ?? '',
       customerID: map['CustomerID'] ?? '',
-      location: map['location'] is GeoPoint
-          ? map['location'] as GeoPoint
+      location: map['Location'] is GeoPoint
+          ? map['Location'] as GeoPoint
           : const GeoPoint(0, 0), // Handle GeoPoint
-      address: map['address'] ?? '', // Readable address for UI
-      bookingReason: map['bookingReason'] ?? '',
-      imageUrl: map['imageUrl'],
-      preferredTime: map['preferredTime'] ?? '',
-      status: map['status'] ?? 'Pending',
-      driverID: map['driverID'] ?? '',
-      eta: (map['eta'] as num?)?.toInt() ?? 0,
-      kWhUsed: (map['kWhUsed'] as num?)?.toDouble() ?? 0.0,
-      chatID: map['chatID'] ?? '',
+      address: map['Address'] ?? '', // Readable address for UI
+      bookingReason: map['BookingReason'] ?? '',
+      imageUrl: map['ImageUrl'],
+      preferredTime: map['PreferredTime'] ?? '',
+      status: map['Status'] ?? 'Pending',
+      driverID: map['DriverID'] ?? '',
+      eta: (map['Eta'] as num?)?.toInt() ?? 0,
+      kWhUsed: (map['KWhUsed'] as num?)?.toDouble() ?? 0.0,
+      chatID: map['ChatID'] ?? '',
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'requestID': requestID,
+      'RequestID': requestID,
       'CustomerID': customerID,
-      'location': location, // Store as GeoPoint
-      'address': address, // Store human-readable address
-      'bookingReason': bookingReason,
-      'imageUrl': imageUrl,
-      'preferredTime': preferredTime,
-      'status': status,
-      'driverID': driverID,
-      'eta': eta,
-      'kWhUsed': kWhUsed,
-      'chatID': chatID,
+      'Location': location, // Store as GeoPoint
+      'Address': address, // Store human-readable address
+      'BookingReason': bookingReason,
+      'ImageUrl': imageUrl,
+      'PreferredTime': preferredTime,
+      'Status': status,
+      'DriverID': driverID,
+      'Eta': eta,
+      'KWhUsed': kWhUsed,
+      'ChatID': chatID,
     };
   }
 }

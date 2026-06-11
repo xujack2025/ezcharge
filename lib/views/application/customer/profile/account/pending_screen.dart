@@ -33,7 +33,7 @@ class _PendingScreenState extends State<PendingScreen> {
       if (user == null) return;
 
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .where("PhoneNumber", isEqualTo: user.phoneNumber)
           .limit(1)
           .get();
@@ -61,9 +61,9 @@ class _PendingScreenState extends State<PendingScreen> {
       // Create 'authenticate' collection in Firestore
       if (_licenseImageUrl != null && _selfieImageUrl != null) {
         await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .doc(_customerId)
-            .collection("authenticate")
+            .collection("Authenticate")
             .doc("authentication") // Document name
             .set({
               "LicenseImage": _licenseImageUrl,

@@ -53,7 +53,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
   /// **Listens for real-time Firestore updates**
   void listenForChargingSessions() {
     FirebaseFirestore.instance
-        .collection('attendance')
+        .collection('Attendance')
         .where(
           'CheckInTime',
           isGreaterThan: Timestamp.fromDate(
@@ -297,7 +297,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
   /// **2️⃣ Charging Station Overview Tab**
   Widget _buildChargingStationOverview() {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('station').snapshots(),
+      stream: FirebaseFirestore.instance.collection('Station').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -445,7 +445,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
   /// **1️⃣ Most Used Chargers (Bar Chart)**
   Widget _buildMostUsedChargersChart() {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('attendance').snapshots(),
+      stream: FirebaseFirestore.instance.collection('Attendance').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -505,7 +505,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
   /// **3️⃣ Charger Usage Details (SliverList)**
   Widget _buildChargerUsageSliver() {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('attendance').snapshots(),
+      stream: FirebaseFirestore.instance.collection('Attendance').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const SliverToBoxAdapter(
@@ -594,7 +594,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
   /// **1️⃣ Top 5 Most Visited Charging Stations (Bar Chart)**
   Widget _buildTopStationsChart() {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('attendance').snapshots(),
+      stream: FirebaseFirestore.instance.collection('Attendance').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -655,7 +655,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage>
   Widget _buildRecentSessionsSliver() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
-          .collection('attendance')
+          .collection('Attendance')
           .orderBy("CheckInTime", descending: true)
           .limit(5)
           .snapshots(),

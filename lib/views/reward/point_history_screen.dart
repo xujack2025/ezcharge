@@ -33,7 +33,7 @@ class PointHistoryScreenState extends State<PointHistoryScreen>
         if (userPhone.isEmpty) return;
 
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -59,7 +59,7 @@ class PointHistoryScreenState extends State<PointHistoryScreen>
 
       // Fetch customer's doc
       DocumentSnapshot customerSnapshot = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
           .get();
 
@@ -85,7 +85,7 @@ class PointHistoryScreenState extends State<PointHistoryScreen>
       // ---- Fetch & build expired rewards from "RedeemedRewards" ----
       for (String rewardId in redeemedRewardIds) {
         DocumentSnapshot rewardSnapshot = await FirebaseFirestore.instance
-            .collection("reward")
+            .collection("Rewards")
             .doc(rewardId)
             .get();
 
@@ -105,7 +105,7 @@ class PointHistoryScreenState extends State<PointHistoryScreen>
       // ---- Fetch & build used rewards from "UsedReward" ----
       for (String rewardId in usedRewardIds) {
         DocumentSnapshot rewardSnapshot = await FirebaseFirestore.instance
-            .collection("reward")
+            .collection("Rewards")
             .doc(rewardId)
             .get();
 

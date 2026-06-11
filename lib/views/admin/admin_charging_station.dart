@@ -314,9 +314,9 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: station["imageUrl"] != ""
+                  child: station["ImageUrl"] != ""
                       ? Image.network(
-                          station["imageUrl"],
+                          station["ImageUrl"],
                           width: 70,
                           height: 70,
                           fit: BoxFit.cover,
@@ -346,7 +346,7 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        "📍 ${station["location"]}",
+                        "📍 ${station["Location"]}",
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
@@ -442,10 +442,10 @@ class _AdminChargingStationsPageState extends State<AdminChargingStationsPage> {
         stationName: station["stationName"],
         description: station["description"],
         nearby: station["nearby"],
-        location: station["location"],
+        location: station["Location"],
         latitude: station["latitude"],
         longitude: station["longitude"],
-        imageUrl: station["imageUrl"],
+        imageUrl: station["ImageUrl"],
       ),
     );
   }

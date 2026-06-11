@@ -28,7 +28,7 @@
 
 //   void _listenToChargerStatusChanges() {
 //     FirebaseFirestore.instance
-//         .collection('station')
+//         .collection('Station')
 //         .doc(widget.stationID)
 //         .collection('Charger')
 //         .snapshots() // Real-time listener

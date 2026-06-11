@@ -31,7 +31,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
   Stream<QuerySnapshot> fetchComplaintsByStatus(String status) {
     return _firestore
         .collectionGroup('complaints')
-        .where('status', isEqualTo: status)
+        .where('Status', isEqualTo: status)
         .orderBy(
           'ComplaintDate',
           descending: true,
@@ -46,7 +46,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     try {
       // Fetch all customers
       QuerySnapshot customersSnapshot = await _firestore
-          .collection('customers')
+          .collection('Customers')
           .get();
 
       for (var customerDoc in customersSnapshot.docs) {
@@ -68,8 +68,8 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
   Future<List<QueryDocumentSnapshot>> fetchAllStaff() async {
     try {
       QuerySnapshot staffSnapshot = await _firestore
-          .collection('staff')
-          .where('status', isEqualTo: 'Available') // Filter by 'status' field
+          .collection('Staff')
+          .where('Status', isEqualTo: 'Available') // Filter by 'status' field
           .get();
       return staffSnapshot.docs;
     } catch (e) {
@@ -99,7 +99,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     try {
       // Fetch logged-in admin details
       var adminQuery = await _firestore
-          .collection("admins")
+          .collection("Admins")
           .where("PhoneNumber", isEqualTo: user.phoneNumber)
           .limit(1)
           .get();
@@ -115,20 +115,20 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
 
       // Update complaint with assigned staff
       await _firestore
-          .collection('customers')
+          .collection('Customers')
           .doc(customerId)
           .collection('complaints')
           .doc(complaintId)
           .update({
-            'status': 'In Progress',
+            'Status': 'In Progress',
             'AdminID': adminID,
             'AssignedStaffID': staffId,
             'updatedAt': FieldValue.serverTimestamp(),
           });
 
       // Update staff status to "Busy"
-      await _firestore.collection('staff').doc(staffId).update({
-        'status': 'Busy',
+      await _firestore.collection('Staff').doc(staffId).update({
+        'Status': 'Busy',
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -150,7 +150,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
     try {
       // Get complaint details to find assigned staff
       DocumentSnapshot complaintSnapshot = await _firestore
-          .collection('customers')
+          .collection('Customers')
           .doc(customerId)
           .collection('complaints')
           .doc(complaintId)
@@ -167,19 +167,19 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
 
       // Mark complaint as resolved
       await _firestore
-          .collection('customers')
+          .collection('Customers')
           .doc(customerId)
           .collection('complaints')
           .doc(complaintId)
           .update({
-            'status': 'Resolved',
+            'Status': 'Resolved',
             'resolvedAt': FieldValue.serverTimestamp(),
           });
 
       // Update staff status back to "Available"
       if (staffId != null) {
-        await _firestore.collection('staff').doc(staffId).update({
-          'status': 'Available',
+        await _firestore.collection('Staff').doc(staffId).update({
+          'Status': 'Available',
         });
       }
 
@@ -280,7 +280,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        _buildStatusBadge(data['status']),
+                        _buildStatusBadge(data['Status']),
                       ],
                     ),
                     const Divider(height: 20),
@@ -326,7 +326,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        if (data['status'] == 'Pending')
+                        if (data['Status'] == 'Pending')
                           FutureBuilder<List<QueryDocumentSnapshot>>(
                             future: fetchAllStaff(),
                             builder: (context, staffSnapshot) {
@@ -378,7 +378,7 @@ class _AdminComplaintPageState extends State<AdminComplaintPage>
                               );
                             },
                           ),
-                        if (data['status'] == 'In Progress')
+                        if (data['Status'] == 'In Progress')
                           ElevatedButton(
                             onPressed: () =>
                                 resolveComplaint(customerId, complaint.id),

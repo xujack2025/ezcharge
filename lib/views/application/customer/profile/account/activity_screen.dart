@@ -65,7 +65,7 @@ class _ActivityScreenState extends State<ActivityScreen>
       if (user == null) return;
 
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .where("PhoneNumber", isEqualTo: user.phoneNumber)
           .limit(1)
           .get();
@@ -88,7 +88,7 @@ class _ActivityScreenState extends State<ActivityScreen>
 
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("reservation")
+          .collection("Reservation")
           .doc(_customerId)
           .get();
 
@@ -111,7 +111,7 @@ class _ActivityScreenState extends State<ActivityScreen>
 
     try {
       QuerySnapshot snap = await FirebaseFirestore.instance
-          .collection("attendance")
+          .collection("Attendance")
           .where("CustomerID", isEqualTo: _customerId)
           .get();
 
@@ -128,7 +128,7 @@ class _ActivityScreenState extends State<ActivityScreen>
         // Fetch StationName from the station collection.
         String stationName = "";
         DocumentSnapshot stationDoc = await FirebaseFirestore.instance
-            .collection("station")
+            .collection("Station")
             .doc(stationId)
             .get();
         if (stationDoc.exists) {
@@ -139,7 +139,7 @@ class _ActivityScreenState extends State<ActivityScreen>
         String chargerName = "";
         if (chargerId.isNotEmpty) {
           DocumentSnapshot chargerDoc = await FirebaseFirestore.instance
-              .collection("station")
+              .collection("Station")
               .doc(stationId)
               .collection("Charger")
               .doc(chargerId)
@@ -169,7 +169,7 @@ class _ActivityScreenState extends State<ActivityScreen>
 
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .get();
 
@@ -190,7 +190,7 @@ class _ActivityScreenState extends State<ActivityScreen>
 
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .collection("Charger")
           .doc(_chargerId)
@@ -202,7 +202,7 @@ class _ActivityScreenState extends State<ActivityScreen>
           _chargerType = doc["ChargerType"];
           _chargerVoltage = doc["ChargerVoltage"].toString();
           _currentType = doc["CurrentType"];
-          _pricepervoltage = doc["PriceperVoltage"].toString();
+          _pricepervoltage = doc["PricePerVoltage"].toString();
         });
       }
     } catch (e) {
@@ -214,7 +214,7 @@ class _ActivityScreenState extends State<ActivityScreen>
   Future<void> _cancelReservation() async {
     try {
       await FirebaseFirestore.instance
-          .collection("reservation")
+          .collection("Reservation")
           .doc(_customerId)
           .delete();
 

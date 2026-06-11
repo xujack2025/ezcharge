@@ -14,7 +14,7 @@ class StationService implements StationReservationServiceContract {
   /// CRUD Operations for Charging Stations and Bays
   /// Retreive all stations with real-time updates
   Stream<List<ChargingStation>> getChargingStations() {
-    return _db.collection('station').snapshots().map((snapshot) {
+    return _db.collection('Station').snapshots().map((snapshot) {
       return snapshot.docs
           .map((doc) {
             try {
@@ -32,7 +32,7 @@ class StationService implements StationReservationServiceContract {
   /// Add new station to Firestore
   Future<void> addChargingStation(ChargingStation station) async {
     try {
-      await _db.collection('station').add(station.toMap());
+      await _db.collection('Station').add(station.toMap());
       AppLogger.info('Charging station added successfully: ${station.toMap()}');
     } catch (e) {
       AppLogger.error('Error adding charging station: $e');
@@ -43,7 +43,7 @@ class StationService implements StationReservationServiceContract {
   Future<void> updateChargingStation(ChargingStation station) async {
     try {
       await _db
-          .collection('station')
+          .collection('Station')
           .doc(station.stationID)
           .update(station.toMap());
       AppLogger.info(
@@ -57,7 +57,7 @@ class StationService implements StationReservationServiceContract {
   /// Delete station from Firestore
   Future<void> deleteChargingStation(ChargingStation station) async {
     try {
-      await _db.collection('station').doc(station.stationID).delete();
+      await _db.collection('Station').doc(station.stationID).delete();
       AppLogger.info(
         'Charging station deleted successfully: ${station.toMap()}',
       );
@@ -69,9 +69,9 @@ class StationService implements StationReservationServiceContract {
   /// Soft delete station by setting isDeleted flag and status
   Future<void> softDeleteChargingStation(String stationID) async {
     try {
-      await _db.collection('station').doc(stationID).update({
+      await _db.collection('Station').doc(stationID).update({
         'isDeleted': true,
-        'status': StationStatus.deleted.name,
+        'Status': StationStatus.deleted.name,
         'deletedAt': FieldValue.serverTimestamp(),
       });
       AppLogger.info('Station soft-deleted successfully: $stationID');
@@ -84,7 +84,7 @@ class StationService implements StationReservationServiceContract {
   /// Retrieve bays for a station with real-time updates
   Stream<List<ChargingBay>> getChargingBays(String stationID) {
     return _db
-        .collection('station')
+        .collection('Station')
         .doc(stationID)
         .collection('Charger')
         .snapshots()
@@ -109,7 +109,7 @@ class StationService implements StationReservationServiceContract {
   Future<void> addChargingBay(String stationID, ChargingBay bay) async {
     try {
       await _db
-          .collection('station')
+          .collection('Station')
           .doc(stationID)
           .collection('Charger')
           .doc(bay.chargerID)
@@ -129,7 +129,7 @@ class StationService implements StationReservationServiceContract {
   Future<void> updateChargingBay(String stationID, ChargingBay bay) async {
     try {
       await _db
-          .collection('station')
+          .collection('Station')
           .doc(stationID)
           .collection('Charger')
           .doc(bay.chargerID)
@@ -146,7 +146,7 @@ class StationService implements StationReservationServiceContract {
   Future<void> deleteChargingBay(String stationID, String chargerID) async {
     try {
       await _db
-          .collection('station')
+          .collection('Station')
           .doc(stationID)
           .collection('Charger')
           .doc(chargerID)
@@ -165,13 +165,13 @@ class StationService implements StationReservationServiceContract {
   Future<void> softDeleteChargingBay(String stationID, String chargerID) async {
     try {
       await _db
-          .collection('station')
+          .collection('Station')
           .doc(stationID)
           .collection('Charger')
           .doc(chargerID)
           .update({
             'isDeleted': true,
-            'status': BayStatus.outofservice.name,
+            'Status': BayStatus.outofservice.name,
             'deletedAt': FieldValue.serverTimestamp(),
           });
       AppLogger.info(
@@ -187,7 +187,7 @@ class StationService implements StationReservationServiceContract {
   /// Check reservation status for customers
   @override
   Future<String> getReservationStatus(String customerId) async {
-    final doc = await _db.collection("reservation").doc(customerId).get();
+    final doc = await _db.collection("Reservation").doc(customerId).get();
     return doc.exists ? (doc["Status"] ?? "") : "";
   }
 }

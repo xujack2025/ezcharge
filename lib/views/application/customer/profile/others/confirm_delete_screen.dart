@@ -148,7 +148,7 @@ class ConfirmDeleteScreen extends StatelessWidget {
 
         // Find the user in Firestore
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -158,7 +158,7 @@ class ConfirmDeleteScreen extends StatelessWidget {
 
           // 🔹 Delete user from Firestore
           await FirebaseFirestore.instance
-              .collection("customers")
+              .collection("Customers")
               .doc(userDoc.id)
               .delete();
         }

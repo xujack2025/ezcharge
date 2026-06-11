@@ -42,7 +42,7 @@ class _RequestPaymentSuccessScreenState
         if (userPhone.isNotEmpty) {
           // Find the customer's document
           QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-              .collection("customers")
+              .collection("Customers")
               .where("PhoneNumber", isEqualTo: userPhone)
               .limit(1)
               .get();
@@ -67,7 +67,7 @@ class _RequestPaymentSuccessScreenState
     try {
       // 🔍 Query the latest request by this customer
       QuerySnapshot query = await FirebaseFirestore.instance
-          .collection("emergency_requests")
+          .collection("EmergencyRequests")
           .where("CustomerID", isEqualTo: _accountId)
           .limit(1)
           .get();
@@ -77,7 +77,7 @@ class _RequestPaymentSuccessScreenState
       if (query.docs.isNotEmpty) {
         final data = query.docs.first.data() as Map<String, dynamic>;
         setState(() {
-          _requestID = data["requestID"] ?? query.docs.first.id;
+          _requestID = data["RequestID"] ?? query.docs.first.id;
         });
       }
 
@@ -97,8 +97,8 @@ class _RequestPaymentSuccessScreenState
       // Query 'attendance' for docs with this ReservationID,
       // order by CheckOutTime descending, then limit to 1
       QuerySnapshot snap = await FirebaseFirestore.instance
-          .collection("emergency_requests")
-          .where("requestID", isEqualTo: _requestID)
+          .collection("EmergencyRequests")
+          .where("RequestID", isEqualTo: _requestID)
           .limit(1)
           .get();
 
@@ -121,7 +121,7 @@ class _RequestPaymentSuccessScreenState
       final String paymentID = "PAY${DateTime.now().millisecondsSinceEpoch}";
       // Use custom doc ID equal to paymentID
       await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
           .collection("PaymentHistory")
           .doc(paymentID)

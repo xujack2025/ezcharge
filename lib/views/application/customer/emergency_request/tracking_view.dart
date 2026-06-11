@@ -64,7 +64,7 @@ class TrackingViewState extends State<TrackingView> {
     _requestSubscription?.cancel();
 
     _requestSubscription = FirebaseFirestore.instance
-        .collection('emergency_requests')
+        .collection('EmergencyRequests')
         .doc(widget.requestID)
         .snapshots()
         .listen((snapshot) {
@@ -80,7 +80,7 @@ class TrackingViewState extends State<TrackingView> {
           }
 
           String status = requestData.containsKey('status')
-              ? requestData['status']
+              ? requestData['Status']
               : "Unknown";
 
           debugPrint("🔄 Firestore Update Detected: Status = $status");
@@ -173,7 +173,7 @@ class TrackingViewState extends State<TrackingView> {
     try {
       // Fetch emergency request details from Firestore
       DocumentSnapshot requestDoc = await FirebaseFirestore.instance
-          .collection("emergency_requests")
+          .collection("EmergencyRequests")
           .doc(widget.requestID)
           .get();
 
@@ -225,7 +225,7 @@ class TrackingViewState extends State<TrackingView> {
       final driverData = snapshot.data() as Map<String, dynamic>?;
 
       if (driverData != null && driverData.containsKey('location')) {
-        final GeoPoint location = driverData['location'];
+        final GeoPoint location = driverData['Location'];
 
         setState(() {
           driverLocation = LatLng(location.latitude, location.longitude);
@@ -254,7 +254,7 @@ class TrackingViewState extends State<TrackingView> {
 
       if (requestData != null && requestData.containsKey('location')) {
         final GeoPoint location =
-            requestData['location']; // Use GeoPoint directly
+            requestData['Location']; // Use GeoPoint directly
 
         setState(() {
           customerLocation = LatLng(location.latitude, location.longitude);

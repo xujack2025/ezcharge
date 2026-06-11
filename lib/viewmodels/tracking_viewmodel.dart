@@ -15,7 +15,7 @@ class TrackingViewModel extends ChangeNotifier {
 
   /// Stream to Track Driver's Live Location
   Stream<DocumentSnapshot> trackDriverLocation(String driverID) {
-    return _firestore.collection('drivers').doc(driverID).snapshots();
+    return _firestore.collection('Drivers').doc(driverID).snapshots();
   }
 
   /// Extracts Driver Location from Firestore (Handles GeoPoint)
@@ -25,7 +25,7 @@ class TrackingViewModel extends ChangeNotifier {
           snapshot.data() as Map<String, dynamic>;
 
       if (driverData.containsKey('location')) {
-        final location = driverData['location'];
+        final location = driverData['Location'];
         if (location is GeoPoint) {
           return LatLng(location.latitude, location.longitude);
         }
@@ -37,7 +37,7 @@ class TrackingViewModel extends ChangeNotifier {
   /// Stream to Get Tracking Info (Customer Request)
   Stream<DocumentSnapshot> getTrackingInfo(String requestID) {
     return _firestore
-        .collection('emergency_requests')
+        .collection('EmergencyRequests')
         .doc(requestID)
         .snapshots();
   }
@@ -51,12 +51,12 @@ class TrackingViewModel extends ChangeNotifier {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data["status"] == "OK") {
-          double lat = data["results"][0]["geometry"]["location"]["lat"];
-          double lng = data["results"][0]["geometry"]["location"]["lng"];
+        if (data["Status"] == "OK") {
+          double lat = data["results"][0]["geometry"]["Location"]["lat"];
+          double lng = data["results"][0]["geometry"]["Location"]["lng"];
           return LatLng(lat, lng);
         } else {
-          debugPrint("❌ Geocoding API Error: ${data["status"]}");
+          debugPrint("❌ Geocoding API Error: ${data["Status"]}");
         }
       }
     } catch (e) {

@@ -26,7 +26,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
     if (user == null) return;
 
     var customerQuery = await _firestore
-        .collection("customers")
+        .collection("Customers")
         .where("PhoneNumber", isEqualTo: user.phoneNumber)
         .limit(1)
         .get();
@@ -98,7 +98,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    await _firestore.collection("reviews").doc(reviewId).update(
+                    await _firestore.collection("Reviews").doc(reviewId).update(
                       {
                         "ReviewText": reviewController.text,
                         "Rating": newRating.toInt(),
@@ -123,7 +123,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
 
   // ❌ Function to Delete Review
   void _deleteReview(String reviewId) async {
-    await _firestore.collection("reviews").doc(reviewId).delete();
+    await _firestore.collection("Reviews").doc(reviewId).delete();
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text("Review deleted!")));
@@ -150,7 +150,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore
-            .collection("reviews")
+            .collection("Reviews")
             .where("CustomerID", isEqualTo: _customerID)
             .orderBy("ReviewDate", descending: true)
             .snapshots(),

@@ -34,7 +34,7 @@ class ReloadPINScreenState extends State<ReloadPINScreen> {
         if (userPhone.isEmpty) return;
 
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -103,14 +103,14 @@ class ReloadPINScreenState extends State<ReloadPINScreen> {
 
       //Update Wallet Balance
       DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
           .get();
       double currentBalance = (userSnapshot["WalletBalance"] ?? 0.0).toDouble();
       double newBalance = currentBalance + widget.topUpAmount;
 
       await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
           .update({"WalletBalance": newBalance});
 

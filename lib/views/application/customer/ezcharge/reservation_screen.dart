@@ -38,7 +38,7 @@ class ReservationScreenState extends State<ReservationScreen> {
         if (userPhone.isEmpty) return;
 
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -61,7 +61,7 @@ class ReservationScreenState extends State<ReservationScreen> {
   Future<void> _fetchChargers() async {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(widget.stationId)
           .collection("Charger")
           .get();
@@ -74,8 +74,8 @@ class ReservationScreenState extends State<ReservationScreen> {
             "type": data["ChargerType"] ?? "Unknown Type",
             "power":
                 "${data["ChargerVoltage"] ?? "0"}kW ${data["CurrentType"] ?? ""}",
-            "price": "RM ${data["PriceperVoltage"] ?? "0.00"}/kW",
-            "status": data["Status"] ?? "Unknown",
+            "price": "RM ${data["PricePerVoltage"] ?? "0.00"}/kW",
+            "Status": data["Status"] ?? "Unknown",
             "docId": doc.id, // Store Firestore document ID
           };
         }).toList();
@@ -148,7 +148,7 @@ class ReservationScreenState extends State<ReservationScreen> {
     try {
       //Query Firestore for the same charger and start time
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("reservation")
+          .collection("Reservation")
           .where("ChargerID", isEqualTo: chargerId)
           .get(); // Fetch all reservations for this charger
 
@@ -194,7 +194,7 @@ class ReservationScreenState extends State<ReservationScreen> {
       String reservationId = "RSV${DateTime.now().millisecondsSinceEpoch}";
       // Add Reservation Record to Firestore with the new StartTime.
       await FirebaseFirestore.instance
-          .collection("reservation")
+          .collection("Reservation")
           .doc(_accountId)
           .set({
             "ReservationID": reservationId,
@@ -353,7 +353,7 @@ class ReservationScreenState extends State<ReservationScreen> {
 
   /// 🔹 Build Charger Card UI
   Widget _buildChargerCard(Map<String, dynamic> charger) {
-    bool isAvailable = charger["status"] == "Available";
+    bool isAvailable = charger["Status"] == "Available";
     return GestureDetector(
       onTap: isAvailable
           ? () {
@@ -392,7 +392,7 @@ class ReservationScreenState extends State<ReservationScreen> {
             Text(charger["power"]),
             const SizedBox(width: 10),
             Text(
-              charger["status"],
+              charger["Status"],
               style: TextStyle(
                 color: isAvailable ? Colors.green : Colors.orange,
               ),

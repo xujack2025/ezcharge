@@ -27,14 +27,14 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
 
   // Fetch all customers' authentication requests
   Stream<List<Map<String, dynamic>>> fetchCustomerAuthData() {
-    return _firestore.collection('customers').snapshots().asyncMap((
+    return _firestore.collection('Customers').snapshots().asyncMap((
       snapshot,
     ) async {
       List<Future<Map<String, dynamic>>> futureList = snapshot.docs
           .map<Future<Map<String, dynamic>>>((doc) async {
             var authDoc = await doc.reference
-                .collection('authenticate')
-                .doc('authentication')
+                .collection('Authenticate')
+                .doc('Authentication')
                 .get();
             final authData = authDoc.data() ?? {}; // Ensure no null errors
 
@@ -54,20 +54,20 @@ class AdminAuthenticatePageState extends State<AdminAuthenticatePage>
   // Approve customer authentication
   Future<void> approveCustomer(String customerId) async {
     await _firestore
-        .collection('customers')
+        .collection('Customers')
         .doc(customerId)
-        .collection('authenticate')
-        .doc('authentication')
+        .collection('Authenticate')
+        .doc('Authentication')
         .update({"Status": "Pass"});
   }
 
   // Reject customer authentication
   Future<void> rejectCustomer(String customerId) async {
     await _firestore
-        .collection('customers')
+        .collection('Customers')
         .doc(customerId)
-        .collection('authenticate')
-        .doc('authentication')
+        .collection('Authenticate')
+        .doc('Authentication')
         .update({"Status": "Failed"});
   }
 

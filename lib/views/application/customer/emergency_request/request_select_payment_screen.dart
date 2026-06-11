@@ -45,7 +45,7 @@ class _RequestSelectPaymentScreenState
         String userPhone = user.phoneNumber ?? "";
         if (userPhone.isNotEmpty) {
           QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-              .collection("customers")
+              .collection("Customers")
               .where("PhoneNumber", isEqualTo: userPhone)
               .limit(1)
               .get();
@@ -69,7 +69,7 @@ class _RequestSelectPaymentScreenState
     if (_accountId.isEmpty) return;
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
           .collection("PaymentMethod")
           .limit(1)
@@ -206,7 +206,7 @@ class _RequestSelectPaymentScreenState
                                     try {
                                       // 2) Update wallet balance
                                       await FirebaseFirestore.instance
-                                          .collection("customers")
+                                          .collection("Customers")
                                           .doc(_accountId)
                                           .update({
                                             "WalletBalance": newBalance,
@@ -216,7 +216,7 @@ class _RequestSelectPaymentScreenState
                                       if (widget.rewardID.isNotEmpty) {
                                         // Mark reward as used
                                         await FirebaseFirestore.instance
-                                            .collection("customers")
+                                            .collection("Customers")
                                             .doc(_accountId)
                                             .update({
                                               "UsedReward":
@@ -228,7 +228,7 @@ class _RequestSelectPaymentScreenState
                                         // Deduct reward points from user's PointBalance
                                         if (widget.rewardPoints > 0) {
                                           await FirebaseFirestore.instance
-                                              .collection("customers")
+                                              .collection("Customers")
                                               .doc(_accountId)
                                               .update({
                                                 "PointBalance": newPointBalance,
@@ -252,12 +252,12 @@ class _RequestSelectPaymentScreenState
 
                                       // Update emergency_requests status to "Completed"
                                       await FirebaseFirestore.instance
-                                          .collection("emergency_requests")
+                                          .collection("EmergencyRequests")
                                           .where(
                                             "CustomerID",
                                             isEqualTo: _accountId,
                                           )
-                                          .where("status", isEqualTo: "Payment")
+                                          .where("Status", isEqualTo: "Payment")
                                           .limit(1)
                                           .get()
                                           .then((snapshot) async {
@@ -267,7 +267,7 @@ class _RequestSelectPaymentScreenState
                                                   .first
                                                   .reference
                                                   .update({
-                                                    "status": "Completed",
+                                                    "Status": "Completed",
                                                   });
                                               debugPrint(
                                                 "Emergency request status set to Completed ✅",
@@ -318,7 +318,7 @@ class _RequestSelectPaymentScreenState
                                     if (widget.rewardID.isNotEmpty) {
                                       // Mark reward as used
                                       await FirebaseFirestore.instance
-                                          .collection("customers")
+                                          .collection("Customers")
                                           .doc(_accountId)
                                           .update({
                                             "UsedReward": FieldValue.arrayUnion(
@@ -329,7 +329,7 @@ class _RequestSelectPaymentScreenState
                                       // Deduct reward points
                                       if (widget.rewardPoints > 0) {
                                         await FirebaseFirestore.instance
-                                            .collection("customers")
+                                            .collection("Customers")
                                             .doc(_accountId)
                                             .update({
                                               "PointBalance": newPointBalance,
@@ -345,19 +345,19 @@ class _RequestSelectPaymentScreenState
 
                                     // Update emergency_requests status to "Completed"
                                     await FirebaseFirestore.instance
-                                        .collection("emergency_requests")
+                                        .collection("EmergencyRequests")
                                         .where(
                                           "CustomerID",
                                           isEqualTo: _accountId,
                                         )
-                                        .where("status", isEqualTo: "Payment")
+                                        .where("Status", isEqualTo: "Payment")
                                         .limit(1)
                                         .get()
                                         .then((snapshot) async {
                                           if (snapshot.docs.isNotEmpty) {
                                             await snapshot.docs.first.reference
                                                 .update({
-                                                  "status": "Completed",
+                                                  "Status": "Completed",
                                                 });
                                             debugPrint(
                                               "Emergency request status set to Completed ✅",

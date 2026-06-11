@@ -37,12 +37,12 @@ class HomeService implements HomeServiceContract {
 
   @override
   Future<List<HomeStation>> fetchStations() async {
-    final stationSnapshot = await _firestore.collection("station").get();
+    final stationSnapshot = await _firestore.collection("Station").get();
     final stations = <HomeStation>[];
 
     for (final stationDoc in stationSnapshot.docs) {
       final chargerSnapshot = await _firestore
-          .collection("station")
+          .collection("Station")
           .doc(stationDoc.id)
           .collection("Charger")
           .get();
@@ -77,9 +77,9 @@ class HomeService implements HomeServiceContract {
     }
 
     final bookmarkSnapshot = await _firestore
-        .collection("customers")
+        .collection("Customers")
         .doc(customerId)
-        .collection("bookmark")
+        .collection("Bookmark")
         .where("StationID", isEqualTo: stationId)
         .limit(1)
         .get();
@@ -103,9 +103,9 @@ class HomeService implements HomeServiceContract {
     final bookmarkId = "BKK$formattedDate";
 
     await _firestore
-        .collection("customers")
+        .collection("Customers")
         .doc(customerId)
-        .collection("bookmark")
+        .collection("Bookmark")
         .doc(bookmarkId)
         .set({
           "BookmarkID": bookmarkId,
@@ -122,9 +122,9 @@ class HomeService implements HomeServiceContract {
     required String bookmarkId,
   }) async {
     await _firestore
-        .collection("customers")
+        .collection("Customers")
         .doc(customerId)
-        .collection("bookmark")
+        .collection("Bookmark")
         .doc(bookmarkId)
         .delete();
   }

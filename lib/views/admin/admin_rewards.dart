@@ -10,10 +10,10 @@ class AdminRewardsScreen extends StatefulWidget {
 
 class AdminRewardsScreenState extends State<AdminRewardsScreen> {
   final CollectionReference rewardsCollection = FirebaseFirestore.instance
-      .collection('reward');
+      .collection('Rewards');
 
   final CollectionReference usersCollection = FirebaseFirestore.instance
-      .collection('customers');
+      .collection('Customers');
 
   List<String> selectedUsers = [];
 

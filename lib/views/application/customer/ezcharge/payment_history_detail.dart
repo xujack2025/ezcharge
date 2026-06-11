@@ -47,7 +47,7 @@ class _PaymentHistoryDetailScreenState
 
     try {
       final querySnap = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(widget.accountId)
           .collection("PaymentHistory")
           .where("Payment ID", isEqualTo: widget.paymentDocId)

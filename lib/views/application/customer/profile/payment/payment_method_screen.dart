@@ -32,7 +32,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
         if (userPhone.isEmpty) return;
 
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -60,7 +60,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
 
         // 🔹 Search Firestore for matching phone number
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -87,7 +87,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
 
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
           .collection("PaymentMethod")
           .limit(1)

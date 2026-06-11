@@ -27,7 +27,7 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
     if (user == null) return;
 
     var customerQuery = await _firestore
-        .collection("customers")
+        .collection("Customers")
         .where("PhoneNumber", isEqualTo: user.phoneNumber)
         .limit(1)
         .get();
@@ -60,7 +60,7 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore
-            .collection("customers")
+            .collection("Customers")
             .doc(_customerID)
             .collection("complaints")
             .orderBy("ComplaintDate", descending: true)
@@ -101,7 +101,7 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
                       borderRadius: BorderRadius.circular(12),
                       gradient: LinearGradient(
                         colors: [
-                          _getStatusBackgroundColor(complaint["status"]),
+                          _getStatusBackgroundColor(complaint["Status"]),
                           Colors.white,
                         ],
                         begin: Alignment.topLeft,
@@ -111,9 +111,9 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
                     child: ListTile(
                       contentPadding: const EdgeInsets.all(12),
                       leading: CircleAvatar(
-                        backgroundColor: _getStatusColor(complaint["status"]),
+                        backgroundColor: _getStatusColor(complaint["Status"]),
                         child: Icon(
-                          _getStatusIcon(complaint["status"]),
+                          _getStatusIcon(complaint["Status"]),
                           color: Colors.white,
                         ),
                       ),
@@ -129,10 +129,10 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
                         children: [
                           const SizedBox(height: 4),
                           Text(
-                            "Status: ${complaint["status"] ?? "Pending"}",
+                            "Status: ${complaint["Status"] ?? "Pending"}",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: _getStatusColor(complaint["status"]),
+                              color: _getStatusColor(complaint["Status"]),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -268,7 +268,7 @@ class ComplaintDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              "Status: ${complaint["status"] ?? "Pending"}",
+              "Status: ${complaint["Status"] ?? "Pending"}",
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

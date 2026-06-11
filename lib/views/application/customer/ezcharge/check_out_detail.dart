@@ -123,7 +123,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
         String userPhone = user.phoneNumber ?? "";
         if (userPhone.isNotEmpty) {
           QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-              .collection("customers")
+              .collection("Customers")
               .where("PhoneNumber", isEqualTo: userPhone)
               .limit(1)
               .get();
@@ -149,7 +149,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
 
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("reservation")
+          .collection("Reservation")
           .doc(_accountId)
           .get();
 
@@ -173,7 +173,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
     if (_stationId.isEmpty) return;
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .get();
 
@@ -190,7 +190,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
     if (_stationId.isEmpty || _chargerId.isEmpty) return;
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .collection("Charger")
           .doc(_chargerId)
@@ -199,7 +199,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
       if (doc.exists) {
         _chargerName = doc["ChargerName"] ?? "";
         _chargerType = doc["ChargerType"] ?? "";
-        _pricepervoltage = doc["PriceperVoltage"]?.toString() ?? "0";
+        _pricepervoltage = doc["PricePerVoltage"]?.toString() ?? "0";
         _chargerVoltage = doc["ChargerVoltage"]?.toString() ?? "0";
         _currentType = doc["CurrentType"] ?? "";
       }
@@ -251,7 +251,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
     try {
       final sessionID = "SSN${DateTime.now().millisecondsSinceEpoch}";
       await FirebaseFirestore.instance
-          .collection("attendance")
+          .collection("Attendance")
           .doc(sessionID)
           .set({
             "CheckInTime":
@@ -272,7 +272,7 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
             ),
           });
       await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .collection("Charger")
           .doc(_chargerId)

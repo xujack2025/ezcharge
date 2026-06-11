@@ -13,7 +13,7 @@ class NotificationViewModel extends ChangeNotifier {
   Future<void> fetchNotifications() async {
     try {
       QuerySnapshot snapshot = await _firestore
-          .collection('notification') // Ensure collection name is correct
+          .collection('Notifications') // Ensure collection name is correct
           .orderBy('CreatedTime', descending: true) // Ensure correct field name
           .get();
 
@@ -39,7 +39,7 @@ class NotificationViewModel extends ChangeNotifier {
       String notificationID = "NTF$epochTime";
 
       DocumentReference notificationRef = _firestore
-          .collection('notification')
+          .collection('Notifications')
           .doc(notificationID);
 
       NotificationModel newNotification = NotificationModel(
@@ -64,7 +64,7 @@ class NotificationViewModel extends ChangeNotifier {
     String message,
   ) async {
     try {
-      await _firestore.collection('notification').doc(notificationId).update({
+      await _firestore.collection('Notifications').doc(notificationId).update({
         'Title': title,
         'Description': message,
         'UpdatedAt': FieldValue.serverTimestamp(),
@@ -78,7 +78,7 @@ class NotificationViewModel extends ChangeNotifier {
   // Delete a Notification
   Future<void> deleteNotification(String notificationId) async {
     try {
-      await _firestore.collection('notification').doc(notificationId).delete();
+      await _firestore.collection('Notifications').doc(notificationId).delete();
       notifyListeners();
     } catch (e) {
       throw Exception("Error deleting notification: $e");
@@ -88,12 +88,12 @@ class NotificationViewModel extends ChangeNotifier {
   // Send Notification to All Users
   Future<void> sendNotificationToAll(String title, String message) async {
     try {
-      QuerySnapshot usersSnapshot = await _firestore.collection('users').get();
+      QuerySnapshot usersSnapshot = await _firestore.collection('Users').get();
       for (var userDoc in usersSnapshot.docs) {
         await _firestore
-            .collection('users')
+            .collection('Users')
             .doc(userDoc.id)
-            .collection('notification')
+            .collection('Notifications')
             .add({
               'Title': title,
               'Description': message,
@@ -110,7 +110,7 @@ class NotificationViewModel extends ChangeNotifier {
   // Mark Notification as Read
   Future<void> markAsRead(String notificationId) async {
     try {
-      await _firestore.collection('notification').doc(notificationId).update({
+      await _firestore.collection('Notifications').doc(notificationId).update({
         'ReadTime': DateTime.now().toString(),
       });
       notifyListeners();

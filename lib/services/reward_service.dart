@@ -43,7 +43,7 @@ class RewardService implements RewardServiceContract {
     if (phoneNumber == null || phoneNumber.isEmpty) return null;
 
     final querySnapshot = await _firestore
-        .collection('customers')
+        .collection('Customers')
         .where('PhoneNumber', isEqualTo: phoneNumber)
         .limit(1)
         .get();
@@ -56,7 +56,7 @@ class RewardService implements RewardServiceContract {
   @override
   Future<List<RewardModel>> fetchActiveRewards({DateTime? now}) async {
     final currentTime = now ?? DateTime.now();
-    final querySnapshot = await _firestore.collection('reward').get();
+    final querySnapshot = await _firestore.collection('Rewards').get();
 
     return querySnapshot.docs
         .map((doc) => RewardModel.fromFirestore(doc.data(), documentId: doc.id))
@@ -69,7 +69,7 @@ class RewardService implements RewardServiceContract {
     required String customerId,
     required RewardModel reward,
   }) async {
-    final customerRef = _firestore.collection('customers').doc(customerId);
+    final customerRef = _firestore.collection('Customers').doc(customerId);
 
     return _firestore.runTransaction((transaction) async {
       final customerSnapshot = await transaction.get(customerRef);

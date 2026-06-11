@@ -29,7 +29,7 @@ class RequestHistoryScreenState extends State<RequestHistoryScreen> {
     }
 
     QuerySnapshot customerQuery = await FirebaseFirestore.instance
-        .collection('customers')
+        .collection('Customers')
         .where('PhoneNumber', isEqualTo: phoneNumber)
         .limit(1)
         .get();
@@ -56,7 +56,7 @@ class RequestHistoryScreenState extends State<RequestHistoryScreen> {
           ? const Center(child: Text("❌ Error: No Customer ID found."))
           : StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-                  .collection('emergency_requests')
+                  .collection('EmergencyRequests')
                   .where(
                     'CustomerID',
                     isEqualTo: customerID,
@@ -79,7 +79,7 @@ class RequestHistoryScreenState extends State<RequestHistoryScreen> {
                   itemBuilder: (context, index) {
                     var request =
                         requests[index].data() as Map<String, dynamic>;
-                    String status = request['status'] ?? "Unknown";
+                    String status = request['Status'] ?? "Unknown";
 
                     return Card(
                       margin: const EdgeInsets.symmetric(
@@ -87,18 +87,18 @@ class RequestHistoryScreenState extends State<RequestHistoryScreen> {
                         horizontal: 12,
                       ), // More padding
                       child: ExpansionTile(
-                        key: PageStorageKey('${request['requestID']}'),
+                        key: PageStorageKey('${request['RequestID']}'),
                         initiallyExpanded: true,
                         // Force expand to check if details are there
                         title: Text("Status: $status"),
                         subtitle: Text(
-                          "Location: ${request['address'] ?? 'Unknown'}",
+                          "Location: ${request['Address'] ?? 'Unknown'}",
                         ),
-                        trailing: Text(request['preferredTime'] ?? "No Time"),
+                        trailing: Text(request['PreferredTime'] ?? "No Time"),
                         children: [
                           ListTile(
                             title: Text(
-                              "Booking Reason: ${request['bookingReason'] ?? 'N/A'}",
+                              "Booking Reason: ${request['BookingReason'] ?? 'N/A'}",
                             ),
                           ),
                           if (status == "Completed") ...[
@@ -112,11 +112,11 @@ class RequestHistoryScreenState extends State<RequestHistoryScreen> {
                                 "Total Cost: RM ${(request['totalCost'] as num?)?.toDouble().toStringAsFixed(2) ?? 'N/A'}",
                               ),
                             ),
-                            if (request['imageUrl'] != null)
+                            if (request['ImageUrl'] != null)
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Image.network(
-                                  request['imageUrl']!,
+                                  request['ImageUrl']!,
                                   errorBuilder: (context, error, stackTrace) {
                                     return const Text("❌ Image Not Available");
                                   },
@@ -125,7 +125,7 @@ class RequestHistoryScreenState extends State<RequestHistoryScreen> {
                           ] else ...[
                             ListTile(
                               title: Text(
-                                "Driver Assigned: ${request['driverID'] ?? 'Not Assigned'}",
+                                "Driver Assigned: ${request['DriverID'] ?? 'Not Assigned'}",
                               ),
                             ),
                           ],

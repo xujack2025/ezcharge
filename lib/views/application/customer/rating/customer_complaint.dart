@@ -48,7 +48,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
   Future<void> _fetchChargingBays() async {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(widget.stationId) // Fetch chargers for the current station
           .collection("Charger")
           .get();
@@ -131,7 +131,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
 
       // Retrieve Customer ID
       var customerQuery = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .where("PhoneNumber", isEqualTo: user.phoneNumber)
           .limit(1)
           .get();
@@ -148,7 +148,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
 
       // Generate Complaint ID
       QuerySnapshot complaintSnapshot = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(customerID)
           .collection("complaints")
           .orderBy("ComplaintID", descending: true)
@@ -181,7 +181,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
 
       // Save Complaint to Firestore
       await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(customerID)
           .collection("complaints")
           .doc(complaintDocID)
@@ -198,7 +198,7 @@ class _CustomerComplaintPageState extends State<CustomerComplaintPage> {
             'resolvedAt': null,
             'AdminID': null,
             'AssignedStaffID': null,
-            'status': "Pending",
+            'Status': "Pending",
             'updatedAt': FieldValue.serverTimestamp(),
           });
 

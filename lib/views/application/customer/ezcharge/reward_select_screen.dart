@@ -39,7 +39,7 @@ class _RewardSelectScreenState extends State<RewardSelectScreen> {
 
         //Get the customer document by phone number
         final customerSnap = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -66,7 +66,7 @@ class _RewardSelectScreenState extends State<RewardSelectScreen> {
             if (usedRewardIds.contains(rewardId)) continue;
 
             final DocumentSnapshot rewardDoc = await FirebaseFirestore.instance
-                .collection("reward")
+                .collection("Rewards")
                 .doc(rewardId)
                 .get();
 

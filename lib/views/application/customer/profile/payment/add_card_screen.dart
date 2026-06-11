@@ -31,7 +31,7 @@ class AddCardScreenState extends State<AddCardScreen> {
         if (userPhone.isEmpty) return;
 
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -65,7 +65,7 @@ class AddCardScreenState extends State<AddCardScreen> {
     try {
       // Reference to the customer's payment method collection
       CollectionReference paymentRef = FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
           .collection("PaymentMethod");
 

@@ -22,7 +22,7 @@ class AdminEmergencyRequestsPageState
     // Fetch all requests if "All" is selected
     if (selectedStatus == "All") {
       return FirebaseFirestore.instance
-          .collection('emergency_requests')
+          .collection('EmergencyRequests')
           .snapshots()
           .map((snapshot) {
             debugPrint(
@@ -32,8 +32,8 @@ class AdminEmergencyRequestsPageState
           });
     } else {
       return FirebaseFirestore.instance
-          .collection('emergency_requests')
-          .where('status', isEqualTo: selectedStatus)
+          .collection('EmergencyRequests')
+          .where('Status', isEqualTo: selectedStatus)
           .snapshots()
           .map((snapshot) {
             debugPrint(
@@ -143,14 +143,14 @@ class AdminEmergencyRequestsPageState
                           contentPadding: const EdgeInsets.all(12),
                           leading: const Icon(Icons.location_on, color: Colors.blue),
                           title: Text(
-                            "Location: ${request["address"]}",
+                            "Location: ${request["Address"]}",
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Reason: ${request["bookingReason"]}",
+                                "Reason: ${request["BookingReason"]}",
                                 style: const TextStyle(color: Colors.black87),
                               ),
                               const SizedBox(height: 5),
@@ -163,7 +163,7 @@ class AdminEmergencyRequestsPageState
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    request["preferredTime"] ?? "Unknown Time",
+                                    request["PreferredTime"] ?? "Unknown Time",
                                     style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
@@ -175,10 +175,10 @@ class AdminEmergencyRequestsPageState
                           ),
                           trailing: Chip(
                             label: Text(
-                              request["status"],
+                              request["Status"],
                               style: const TextStyle(color: Colors.white),
                             ),
-                            backgroundColor: _getStatusColor(request["status"]),
+                            backgroundColor: _getStatusColor(request["Status"]),
                           ),
                           onTap: () {
                             if (selectedStatus == "Pending" ||
@@ -247,7 +247,7 @@ class AdminEmergencyRequestsPageState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _statusProgress(request["status"]),
+              _statusProgress(request["Status"]),
               const SizedBox(height: 10),
               ElevatedButton.icon(
                 onPressed: () => Navigator.pop(context),

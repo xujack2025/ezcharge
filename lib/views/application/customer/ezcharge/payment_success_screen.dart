@@ -45,7 +45,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
         if (userPhone.isNotEmpty) {
           // Find the customer's document
           QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-              .collection("customers")
+              .collection("Customers")
               .where("PhoneNumber", isEqualTo: userPhone)
               .limit(1)
               .get();
@@ -70,7 +70,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
     try {
       //Fetch reservation document for the user
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("reservation")
+          .collection("Reservation")
           .doc(_accountId)
           .get();
 
@@ -91,7 +91,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
 
     try {
       QuerySnapshot snap = await FirebaseFirestore.instance
-          .collection("attendance")
+          .collection("Attendance")
           .where("ReservationID", isEqualTo: _reservationID)
           .limit(1)
           .get();
@@ -117,7 +117,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
     if (_stationId.isEmpty) return;
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .get();
 
@@ -134,7 +134,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
     if (_stationId.isEmpty || _chargerId.isEmpty) return;
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .collection("Charger")
           .doc(_chargerId)
@@ -156,7 +156,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
       final String paymentID = "PAY${DateTime.now().millisecondsSinceEpoch}";
       // Use custom doc ID equal to paymentID
       await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
           .collection("PaymentHistory")
           .doc(paymentID)

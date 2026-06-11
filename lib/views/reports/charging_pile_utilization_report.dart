@@ -40,7 +40,7 @@ class _ChargingPileUtilizationReportState
 
       // Fetch admin details from Firestore using the phone number
       final adminQuery = await FirebaseFirestore.instance
-          .collection('admins') // Ensure correct collection name
+          .collection('Admins') // Ensure correct collection name
           .where(
             'PhoneNumber',
             isEqualTo: phoneNumber,
@@ -102,7 +102,7 @@ class _ChargingPileUtilizationReportState
   Future<List<Map<String, dynamic>>> _fetchChargingPileData() async {
     DateTime adjustedEndDate = selectedDateRange!.end.add(const Duration(days: 1));
     final snapshot = await FirebaseFirestore.instance
-        .collection('attendance')
+        .collection('Attendance')
         .where(
           "CheckInTime",
           isGreaterThanOrEqualTo: Timestamp.fromDate(

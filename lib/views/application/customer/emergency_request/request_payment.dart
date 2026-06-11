@@ -41,7 +41,7 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
         String userPhone = user.phoneNumber ?? "";
         if (userPhone.isNotEmpty) {
           await FirebaseFirestore.instance
-              .collection("customers")
+              .collection("Customers")
               .where("PhoneNumber", isEqualTo: userPhone)
               .limit(1)
               .get();

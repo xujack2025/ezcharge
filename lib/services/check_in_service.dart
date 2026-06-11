@@ -25,7 +25,7 @@ class CheckInService implements CheckInServiceContract {
   @override
   Future<String?> getCustomerIdByPhoneNumber(String phoneNumber) async {
     final querySnapshot = await _firestore
-        .collection("customers")
+        .collection("Customers")
         .where("PhoneNumber", isEqualTo: phoneNumber)
         .limit(1)
         .get();
@@ -41,7 +41,7 @@ class CheckInService implements CheckInServiceContract {
   @override
   Future<String> getReservationStatus(String customerId) async {
     final doc = await _firestore
-        .collection("reservation")
+        .collection("Reservation")
         .doc(customerId)
         .get();
     if (!doc.exists) {

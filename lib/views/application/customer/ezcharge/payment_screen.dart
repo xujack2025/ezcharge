@@ -53,7 +53,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         String userPhone = user.phoneNumber ?? "";
         if (userPhone.isNotEmpty) {
           QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-              .collection("customers")
+              .collection("Customers")
               .where("PhoneNumber", isEqualTo: userPhone)
               .limit(1)
               .get();
@@ -79,7 +79,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("reservation")
+          .collection("Reservation")
           .doc(_accountId)
           .get();
 
@@ -104,7 +104,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     if (_stationId.isEmpty) return;
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .get();
 
@@ -123,7 +123,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     if (_stationId.isEmpty || _chargerId.isEmpty) return;
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .collection("Charger")
           .doc(_chargerId)

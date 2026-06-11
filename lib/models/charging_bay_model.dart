@@ -38,7 +38,7 @@ class ChargingBay {
         (e) => e.name == data['CurrentType'],
         orElse: () => CurrentType.undefined,
       ),
-      pricePerVoltage: (data['PriceperVoltage'] as num?)?.toDouble() ?? 0.0,
+      pricePerVoltage: (data['PricePerVoltage'] as num?)?.toDouble() ?? 0.0,
       status: BayStatus.values.firstWhere(
         (e) => e.name == data['Status'],
         orElse: () => BayStatus.outofservice,
@@ -57,7 +57,7 @@ class ChargingBay {
       'ChargerType': chargerType.name,
       'ChargerVoltage': chargerVoltage,
       'CurrentType': currentType.name,
-      'PriceperVoltage': pricePerVoltage,
+      'PricePerVoltage': pricePerVoltage,
       'Status': status.name,
     };
   }

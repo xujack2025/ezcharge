@@ -40,7 +40,7 @@ class _ReviewPageState extends State<ReviewPage> {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       var customerQuery = await _firestore
-          .collection("customers")
+          .collection("Customers")
           .where("PhoneNumber", isEqualTo: user.phoneNumber)
           .limit(1)
           .get();
@@ -86,7 +86,7 @@ class _ReviewPageState extends State<ReviewPage> {
     try {
       // Retrieve customer ID
       var customerQuery = await _firestore
-          .collection("customers")
+          .collection("Customers")
           .where("PhoneNumber", isEqualTo: user.phoneNumber)
           .limit(1)
           .get();
@@ -108,7 +108,7 @@ class _ReviewPageState extends State<ReviewPage> {
       String customerID = customerQuery.docs.first["CustomerID"];
 
       // Generate Custom Review ID
-      CollectionReference reviewsRef = _firestore.collection("reviews");
+      CollectionReference reviewsRef = _firestore.collection("Reviews");
       QuerySnapshot lastReviewSnapshot = await reviewsRef
           .orderBy("ReviewID", descending: true)
           .limit(1)

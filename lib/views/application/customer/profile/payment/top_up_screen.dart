@@ -37,7 +37,7 @@ class TopUpScreenState extends State<TopUpScreen> {
         if (userPhone.isEmpty) return;
 
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -67,7 +67,7 @@ class TopUpScreenState extends State<TopUpScreen> {
 
         // 🔹 Search Firestore for matching phone number
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -109,7 +109,7 @@ class TopUpScreenState extends State<TopUpScreen> {
 
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
           .collection("PaymentMethod")
           .limit(1)
@@ -372,7 +372,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                                 _walletBalance + enteredAmount;
                             Future.delayed(const Duration(seconds: 3), () {
                               FirebaseFirestore.instance
-                                  .collection("customers")
+                                  .collection("Customers")
                                   .doc(_accountId)
                                   .update({"WalletBalance": newWalletBalance})
                                   .then((value) {

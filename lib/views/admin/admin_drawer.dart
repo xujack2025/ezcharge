@@ -51,7 +51,7 @@ class AdminDrawer extends StatelessWidget {
                 const Text("Manage Notifications"),
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
-                      .collection('notifications')
+                      .collection('Notifications')
                       .where('isRead', isEqualTo: false)
                       .snapshots(),
                   builder: (context, snapshot) {

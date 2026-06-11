@@ -60,7 +60,7 @@ class _StationScreenState extends State<StationScreen> {
 
   Future<void> _fetchReviews() async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection("reviews")
+        .collection("Reviews")
         .where(
           "StationID",
           isEqualTo: widget.stationId,
@@ -77,7 +77,7 @@ class _StationScreenState extends State<StationScreen> {
 
   void fetchBusyTimes(String stationId) {
     FirebaseFirestore.instance
-        .collection('attendance')
+        .collection('Attendance')
         .where('StationID', isEqualTo: stationId)
         .snapshots()
         .listen((snapshot) {
@@ -134,7 +134,7 @@ class _StationScreenState extends State<StationScreen> {
         if (userPhone.isEmpty) return;
 
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -159,9 +159,9 @@ class _StationScreenState extends State<StationScreen> {
 
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
-          .collection("authenticate")
+          .collection("Authenticate")
           .doc("authentication")
           .get();
 
@@ -180,7 +180,7 @@ class _StationScreenState extends State<StationScreen> {
 
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("reservation")
+          .collection("Reservation")
           .doc(_accountId)
           .get();
 
@@ -199,7 +199,7 @@ class _StationScreenState extends State<StationScreen> {
     try {
       // Fetch Station Data
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(widget.stationId)
           .get();
 
@@ -211,7 +211,7 @@ class _StationScreenState extends State<StationScreen> {
 
       // Fetch Chargers from Firestore
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(widget.stationId)
           .collection("Charger")
           .get();
@@ -229,15 +229,15 @@ class _StationScreenState extends State<StationScreen> {
           "type": data["ChargerType"] ?? "Unknown Type",
           "power":
               "${data["ChargerVoltage"] ?? "0"}kW ${data["CurrentType"] ?? ""}",
-          "price": "RM ${data["PriceperVoltage"] ?? "0.00"}/kW",
-          "status": data["Status"] ?? "Unknown",
+          "price": "RM ${data["PricePerVoltage"] ?? "0.00"}/kW",
+          "Status": data["Status"] ?? "Unknown",
         };
       }).toList();
 
       // If the Capacity has changed, update Firestore
       if (stationData?["Capacity"] != availableChargers) {
         await FirebaseFirestore.instance
-            .collection("station")
+            .collection("Station")
             .doc(widget.stationId)
             .update({"Capacity": availableChargers});
       }
@@ -644,7 +644,7 @@ class _StationScreenState extends State<StationScreen> {
 
   //Charger Card UI (Matching Image)
   Widget _buildChargerCard(Map<String, dynamic> charger) {
-    bool isAvailable = charger["status"] == "Available";
+    bool isAvailable = charger["Status"] == "Available";
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Container(
@@ -667,7 +667,7 @@ class _StationScreenState extends State<StationScreen> {
                 ),
                 Text(charger["type"]),
                 Text(
-                  charger["status"],
+                  charger["Status"],
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: isAvailable ? Colors.green : Colors.orange,

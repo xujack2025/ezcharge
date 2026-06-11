@@ -37,7 +37,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
 
         //Query Firestore for customer document
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -84,7 +84,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
     }
     try {
       await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_customerId)
           .update({
             "FirstName": _firstNameController.text,

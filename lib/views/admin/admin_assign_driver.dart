@@ -77,10 +77,10 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
   Future<void> _updateDriverLocation(String driverID, Position position) async {
     try {
       await FirebaseFirestore.instance
-          .collection('drivers')
+          .collection('Drivers')
           .doc(driverID)
           .update({
-            'location': GeoPoint(position.latitude, position.longitude),
+            'Location': GeoPoint(position.latitude, position.longitude),
             'lastUpdated': FieldValue.serverTimestamp(),
           });
       debugPrint(
@@ -93,7 +93,7 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
 
   void _listenToRequestStatus() {
     FirebaseFirestore.instance
-        .collection('emergency_requests')
+        .collection('EmergencyRequests')
         .doc(widget.requestID)
         .snapshots()
         .listen((snapshot) {
@@ -109,16 +109,16 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
           }
 
           String status = requestData.containsKey('status')
-              ? requestData['status']
+              ? requestData['Status']
               : "Unknown";
-          String? driverID = requestData['driverID'];
+          String? driverID = requestData['DriverID'];
 
           debugPrint("🔄 Firestore Update Detected: Status = $status");
 
           setState(() {
             isDriverAssigned =
                 requestData.containsKey('driverID') &&
-                requestData['driverID'] != null;
+                requestData['DriverID'] != null;
             isDriverArrived = (status == "Arrived" || status == "Charging");
             isCharging = status == "Charging";
           });
@@ -146,14 +146,14 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
   Future<void> _fetchAvailableDrivers() async {
     try {
       QuerySnapshot driverSnapshot = await FirebaseFirestore.instance
-          .collection('drivers')
-          .where('status', isEqualTo: 'Available')
+          .collection('Drivers')
+          .where('Status', isEqualTo: 'Available')
           .get();
 
       setState(() {
         availableDrivers = driverSnapshot.docs.map((doc) {
           return {
-            "driverID": doc.id,
+            "DriverID": doc.id,
             "name": "${doc["FirstName"]} ${doc["LastName"]}",
             "phone": doc["PhoneNumber"],
           };
@@ -170,15 +170,15 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
     if (selectedDriverID == null) return;
 
     await FirebaseFirestore.instance
-        .collection('emergency_requests')
+        .collection('EmergencyRequests')
         .doc(widget.requestID)
-        .update({'driverID': selectedDriverID, 'status': 'Upcoming'});
+        .update({'DriverID': selectedDriverID, 'Status': 'Upcoming'});
 
     // Update driver status to "Busy"
     await FirebaseFirestore.instance
-        .collection('drivers')
+        .collection('Drivers')
         .doc(selectedDriverID)
-        .update({'status': 'Busy', 'requestID': widget.requestID});
+        .update({'Status': 'Busy', 'RequestID': widget.requestID});
 
     if (!mounted) return;
     setState(() {
@@ -199,10 +199,10 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
     DateTime clientNow = DateTime.now();
 
     await FirebaseFirestore.instance
-        .collection('emergency_requests')
+        .collection('EmergencyRequests')
         .doc(widget.requestID)
         .update({
-          'status': 'Charging',
+          'Status': 'Charging',
           'chargingStartTime': FieldValue.serverTimestamp(), // For accuracy
           'chargingClientStartTime': clientNow, // For immediate local use
           // Ensure Firestore stores this timestamp
@@ -222,7 +222,7 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
 
     // Fetch latest Firestore data to get the chargingStartTime
     DocumentSnapshot requestSnapshot = await FirebaseFirestore.instance
-        .collection('emergency_requests')
+        .collection('EmergencyRequests')
         .doc(widget.requestID)
         .get();
 
@@ -266,10 +266,10 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
 
     try {
       await FirebaseFirestore.instance
-          .collection('emergency_requests')
+          .collection('EmergencyRequests')
           .doc(widget.requestID)
           .update({
-            'status': 'Payment',
+            'Status': 'Payment',
             'chargingEndTime': endTime,
             'chargingTime': chargingTime,
             // 🔹 Store exact seconds
@@ -304,7 +304,7 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
   Future<void> _confirmDriverArrival() async {
     try {
       DocumentSnapshot requestSnapshot = await FirebaseFirestore.instance
-          .collection('emergency_requests')
+          .collection('EmergencyRequests')
           .doc(widget.requestID)
           .get();
 
@@ -323,7 +323,7 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
         return;
       }
 
-      String? driverID = requestData['driverID'] as String?;
+      String? driverID = requestData['DriverID'] as String?;
 
       if (driverID == null || driverID.isEmpty) {
         debugPrint("❌ No driver assigned yet.");
@@ -331,17 +331,17 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
       }
 
       if (!requestData.containsKey('location') ||
-          requestData['location'] == null) {
+          requestData['Location'] == null) {
         debugPrint("❌ Customer location not available in emergency request.");
         return;
       }
 
       // Fetch Customer GeoPoint Directly (No Need for Address Conversion)
-      GeoPoint customerGeoPoint = requestData['location'] as GeoPoint;
+      GeoPoint customerGeoPoint = requestData['Location'] as GeoPoint;
 
       // Fetch driver location from Firestore
       DocumentSnapshot driverSnapshot = await FirebaseFirestore.instance
-          .collection('drivers')
+          .collection('Drivers')
           .doc(driverID)
           .get();
 
@@ -355,7 +355,7 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
       }
 
       GeoPoint driverLocation =
-          driverData['location'] as GeoPoint; // Driver is stored as GeoPoint
+          driverData['Location'] as GeoPoint; // Driver is stored as GeoPoint
 
       // Calculate distance (meters)
       double distance = Geolocator.distanceBetween(
@@ -372,9 +372,9 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
       // Only allow confirmation if within 100 meters
       if (distance <= 100) {
         await FirebaseFirestore.instance
-            .collection('emergency_requests')
+            .collection('EmergencyRequests')
             .doc(widget.requestID)
-            .update({'status': 'Arrived'});
+            .update({'Status': 'Arrived'});
 
         if (!mounted) return;
         setState(() {
@@ -407,11 +407,11 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
       debugPrint("🔄 Updating driver $driverID status to 'Available'...");
 
       await FirebaseFirestore.instance
-          .collection('drivers')
+          .collection('Drivers')
           .doc(driverID)
           .update({
-            'status': 'Available', // Set driver as Available
-            'requestID': FieldValue.delete(), // Remove requestID field
+            'Status': 'Available', // Set driver as Available
+            'RequestID': FieldValue.delete(), // Remove requestID field
           });
 
       debugPrint("Driver $driverID status updated successfully!");
@@ -457,7 +457,7 @@ class AdminAssignDriverPageState extends State<AdminAssignDriverPage> {
                             title: Text(
                               "${driver["name"]} (${driver["phone"]})",
                             ),
-                            value: driver["driverID"],
+                            value: driver["DriverID"],
                           );
                         },
                       ),

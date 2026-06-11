@@ -70,7 +70,7 @@ class EmergencyRequestService implements EmergencyRequestServiceContract {
   @override
   Future<String?> getCustomerIdByPhoneNumber(String phoneNumber) async {
     final querySnapshot = await _firestore
-        .collection("customers")
+        .collection("Customers")
         .where("PhoneNumber", isEqualTo: phoneNumber)
         .limit(1)
         .get();
@@ -86,9 +86,9 @@ class EmergencyRequestService implements EmergencyRequestServiceContract {
   @override
   Stream<ActiveEmergencyRequest> watchActiveRequest(String customerId) {
     return _firestore
-        .collection("emergency_requests")
+        .collection("EmergencyRequests")
         .where("CustomerID", isEqualTo: customerId)
-        .where("status", whereIn: _activeStatuses)
+        .where("Status", whereIn: _activeStatuses)
         .limit(1)
         .snapshots()
         .map((snapshot) {
@@ -106,7 +106,7 @@ class EmergencyRequestService implements EmergencyRequestServiceContract {
   @override
   Stream<List<EmergencyRequest>> watchRequests(String customerId) {
     return _firestore
-        .collection("emergency_requests")
+        .collection("EmergencyRequests")
         .where("CustomerID", isEqualTo: customerId)
         .snapshots()
         .map(
@@ -119,15 +119,15 @@ class EmergencyRequestService implements EmergencyRequestServiceContract {
   @override
   Future<void> createRequest(EmergencyRequest request) async {
     await _firestore
-        .collection("emergency_requests")
+        .collection("EmergencyRequests")
         .doc(request.requestID)
         .set(request.toMap());
   }
 
   @override
   Future<void> updateRequestStatus(String requestID, String status) async {
-    await _firestore.collection("emergency_requests").doc(requestID).update({
-      "status": status,
+    await _firestore.collection("EmergencyRequests").doc(requestID).update({
+      "Status": status,
     });
   }
 
@@ -148,7 +148,7 @@ class EmergencyRequestService implements EmergencyRequestServiceContract {
   @override
   Future<String?> getDriverId(String requestId) async {
     final requestSnapshot = await _firestore
-        .collection("emergency_requests")
+        .collection("EmergencyRequests")
         .doc(requestId)
         .get();
 
@@ -157,16 +157,16 @@ class EmergencyRequestService implements EmergencyRequestServiceContract {
     }
 
     final data = requestSnapshot.data();
-    return data?["driverID"]?.toString();
+    return data?["DriverID"]?.toString();
   }
 
   @override
   Stream<String?> watchDriverId(String requestId) {
     return _firestore
-        .collection("emergency_requests")
+        .collection("EmergencyRequests")
         .doc(requestId)
         .snapshots()
-        .map((snapshot) => snapshot.data()?["driverID"]?.toString());
+        .map((snapshot) => snapshot.data()?["DriverID"]?.toString());
   }
 
   @override
@@ -180,10 +180,10 @@ class EmergencyRequestService implements EmergencyRequestServiceContract {
     const perKWhCharge = 1.5;
     final totalCost = baseFee + (kWhUsed * perKWhCharge);
 
-    await _firestore.collection("emergency_requests").doc(requestID).update({
-      "kWhUsed": kWhUsed,
-      "estimatedCost": totalCost,
-      "status": "Payment",
+    await _firestore.collection("EmergencyRequests").doc(requestID).update({
+      "KWhUsed": kWhUsed,
+      "EstimatedCost": totalCost,
+      "Status": "Payment",
     });
   }
 

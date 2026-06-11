@@ -37,7 +37,7 @@ class AdminProfilePageState extends State<AdminProfilePage> {
 
         // 1️⃣ Attempt to fetch admin data using UID first
         DocumentSnapshot adminDoc = await FirebaseFirestore.instance
-            .collection("admins")
+            .collection("Admins")
             .doc(uid)
             .get();
 
@@ -50,7 +50,7 @@ class AdminProfilePageState extends State<AdminProfilePage> {
         // 2️⃣ If UID search fails, check if we have a phone number and query by phone number
         if (userPhone != null && userPhone.isNotEmpty) {
           QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-              .collection("admins")
+              .collection("Admins")
               .where("PhoneNumber", isEqualTo: userPhone)
               .limit(1)
               .get();

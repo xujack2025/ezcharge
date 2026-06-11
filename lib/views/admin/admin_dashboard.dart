@@ -221,9 +221,9 @@ class AdminHomeContent extends StatelessWidget {
         ),
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
-              .collection('emergency_requests')
+              .collection('EmergencyRequests')
               .where(
-                'status',
+                'Status',
                 isEqualTo: "Pending",
               ) // Show only unassigned requests
               .snapshots(),
@@ -244,8 +244,8 @@ class AdminHomeContent extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(vertical: 5),
                   elevation: 3,
                   child: ListTile(
-                    title: Text("Location: ${request["address"]}"),
-                    subtitle: Text("Reason: ${request["bookingReason"]}"),
+                    title: Text("Location: ${request["Address"]}"),
+                    subtitle: Text("Reason: ${request["BookingReason"]}"),
                     trailing: const Icon(
                       Icons.arrow_forward_ios,
                       size: 16,
@@ -277,7 +277,7 @@ class AdminHomeContent extends StatelessWidget {
     switch (type) {
       case 'customers':
         return firestore
-            .collection('customers')
+            .collection('Customers')
             .snapshots()
             .map((snapshot) => snapshot.docs.length);
       case 'complaints':
@@ -287,11 +287,11 @@ class AdminHomeContent extends StatelessWidget {
             .map((snapshot) => snapshot.docs.length);
       case 'stations':
         return firestore
-            .collection('station')
+            .collection('Station')
             .snapshots()
             .map((snapshot) => snapshot.docs.length);
       case 'bays':
-        return firestore.collection('station').snapshots().map((snapshot) {
+        return firestore.collection('Station').snapshots().map((snapshot) {
           int totalBays = 0;
           for (var station in snapshot.docs) {
             totalBays += (station.data()['Capacity'] as num? ?? 0).toInt();
@@ -308,7 +308,7 @@ class AdminHomeContent extends StatelessWidget {
         DateTime endOfDay = startOfDay.add(const Duration(days: 1));
 
         return firestore
-            .collection('attendance')
+            .collection('Attendance')
             .where(
               'CheckInTime',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
@@ -319,7 +319,7 @@ class AdminHomeContent extends StatelessWidget {
 
       case 'total_chargings':
         return firestore
-            .collection('attendance')
+            .collection('Attendance')
             .snapshots()
             .map((snapshot) => snapshot.docs.length);
 

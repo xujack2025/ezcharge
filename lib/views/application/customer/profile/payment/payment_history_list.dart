@@ -32,7 +32,7 @@ class PaymentHistoryListScreenState extends State<PaymentHistoryListScreen> {
         final userPhone = user.phoneNumber ?? "";
         if (userPhone.isNotEmpty) {
           final querySnapshot = await FirebaseFirestore.instance
-              .collection("customers")
+              .collection("Customers")
               .where("PhoneNumber", isEqualTo: userPhone)
               .limit(1)
               .get();
@@ -92,7 +92,7 @@ class PaymentHistoryListScreenState extends State<PaymentHistoryListScreen> {
   Widget _buildPaymentHistoryStream() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
           .collection("PaymentHistory")
           .orderBy("Paid Time", descending: true)

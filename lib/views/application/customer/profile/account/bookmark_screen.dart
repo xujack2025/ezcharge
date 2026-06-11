@@ -31,7 +31,7 @@ class BookmarkScreenState extends State<BookmarkScreen> {
         if (userPhone.isEmpty) return;
 
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -57,9 +57,9 @@ class BookmarkScreenState extends State<BookmarkScreen> {
 
     try {
       QuerySnapshot bookmarkSnapshot = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
-          .collection("bookmark")
+          .collection("Bookmark")
           .get();
 
       List<Map<String, dynamic>> bookmarks = [];
@@ -68,7 +68,7 @@ class BookmarkScreenState extends State<BookmarkScreen> {
         String stationId = bookmarkDoc["StationID"];
 
         DocumentSnapshot stationSnapshot = await FirebaseFirestore.instance
-            .collection("station")
+            .collection("Station")
             .doc(stationId)
             .get();
 
@@ -95,9 +95,9 @@ class BookmarkScreenState extends State<BookmarkScreen> {
   Future<void> _removeBookmark(String bookmarkId) async {
     try {
       await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
-          .collection("bookmark")
+          .collection("Bookmark")
           .doc(bookmarkId)
           .delete();
 

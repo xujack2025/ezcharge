@@ -40,7 +40,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       String? userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
-            .collection("CTM250001")
+            .collection("Customers")
             .doc(userId)
             .get();
 
@@ -83,7 +83,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
       // Save the review inside the customer's Firestore document
       await FirebaseFirestore.instance
-          .collection("CTM250001") // Go to 'customers' collection
+          .collection("Customers") // Go to 'customers' collection
           .doc(_customerId) // Use the current user's CustomerID
           .collection(
             "Rating",

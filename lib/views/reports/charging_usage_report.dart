@@ -41,7 +41,7 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
 
       // Fetch admin details from Firestore using the phone number
       final adminQuery = await FirebaseFirestore.instance
-          .collection('admins') // Ensure correct collection name
+          .collection('Admins') // Ensure correct collection name
           .where(
             'PhoneNumber',
             isEqualTo: phoneNumber,
@@ -72,7 +72,7 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
   Future<void> _fetchStationDetails(String stationId) async {
     try {
       final stationSnapshot = await FirebaseFirestore.instance
-          .collection('station') // Ensure correct collection name
+          .collection('Station') // Ensure correct collection name
           .doc(stationId)
           .get();
 
@@ -136,7 +136,7 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
   Future<Map<String, dynamic>> _fetchAnalyticsData() async {
     DateTime adjustedEndDate = selectedDateRange!.end.add(const Duration(days: 1));
     final snapshot = await FirebaseFirestore.instance
-        .collection('attendance')
+        .collection('Attendance')
         .where("StationID", isEqualTo: selectedStationId)
         .where(
           "CheckInTime",
@@ -416,7 +416,7 @@ class _ChargingUsageReportState extends State<ChargingUsageReport> {
                     const SizedBox(height: 10),
                     StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
-                          .collection('station')
+                          .collection('Station')
                           .snapshots(),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) {

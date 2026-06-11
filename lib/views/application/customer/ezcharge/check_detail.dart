@@ -41,7 +41,7 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
         if (userPhone.isEmpty) return;
 
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("customers")
+            .collection("Customers")
             .where("PhoneNumber", isEqualTo: userPhone)
             .limit(1)
             .get();
@@ -69,7 +69,7 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
     try {
       //Fetch reservation document for the user
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("reservation")
+          .collection("Reservation")
           .doc(_accountId)
           .get();
 
@@ -95,7 +95,7 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
 
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .get();
 
@@ -114,7 +114,7 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
 
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .collection("Charger")
           .doc(_chargerId)
@@ -124,7 +124,7 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
         setState(() {
           _chargerName = doc["ChargerName"];
           _chargerType = doc["ChargerType"];
-          _pricepervoltage = doc["PriceperVoltage"].toString();
+          _pricepervoltage = doc["PricePerVoltage"].toString();
         });
       }
     } catch (e) {
@@ -376,12 +376,12 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
     try {
       //Update reservation status to "Active" (or any status you want).
       await FirebaseFirestore.instance
-          .collection("reservation")
+          .collection("Reservation")
           .doc(_accountId)
           .update({"Status": "Active"});
 
       await FirebaseFirestore.instance
-          .collection("station")
+          .collection("Station")
           .doc(_stationId)
           .collection("Charger")
           .doc(_chargerId)

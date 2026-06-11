@@ -64,7 +64,7 @@ class EmergencyRequestViewState extends State<EmergencyRequestView> {
     }
 
     FirebaseFirestore.instance
-        .collection('customers')
+        .collection('Customers')
         .where('PhoneNumber', isEqualTo: phoneNumber)
         .limit(1)
         .snapshots() // 🔹 Listen for real-time changes
@@ -80,10 +80,10 @@ class EmergencyRequestViewState extends State<EmergencyRequestView> {
 
           // Listen for active requests in real-time
           FirebaseFirestore.instance
-              .collection('emergency_requests')
+              .collection('EmergencyRequests')
               .where('CustomerID', isEqualTo: customerID)
               .where(
-                'status',
+                'Status',
                 whereIn: [
                   "Pending",
                   "Upcoming",
@@ -137,7 +137,7 @@ class EmergencyRequestViewState extends State<EmergencyRequestView> {
     if (phone == null) return;
 
     var query = await FirebaseFirestore.instance
-        .collection('customers')
+        .collection('Customers')
         .where('PhoneNumber', isEqualTo: phone)
         .limit(1)
         .get();
@@ -259,8 +259,8 @@ class EmergencyRequestViewState extends State<EmergencyRequestView> {
 
     if (response.statusCode == 200) {
       final details = json.decode(response.body);
-      double lat = details["result"]["geometry"]["location"]["lat"];
-      double lng = details["result"]["geometry"]["location"]["lng"];
+      double lat = details["result"]["geometry"]["Location"]["lat"];
+      double lng = details["result"]["geometry"]["Location"]["lng"];
 
       setState(() {
         _selectedLocation = LatLng(lat, lng);
@@ -326,14 +326,14 @@ class EmergencyRequestViewState extends State<EmergencyRequestView> {
   /// Function to Track Request Status in Real-Time
   void _trackRequestStatus(String requestID) {
     FirebaseFirestore.instance
-        .collection('emergency_requests')
+        .collection('EmergencyRequests')
         .doc(requestID)
         .snapshots()
         .listen((snapshot) {
           if (snapshot.exists) {
             var requestData = snapshot.data() as Map<String, dynamic>;
-            String status = requestData['status'];
-            String? driverID = requestData['driverID'];
+            String status = requestData['Status'];
+            String? driverID = requestData['DriverID'];
 
             debugPrint("🔄 Request Status Updated: $status");
 

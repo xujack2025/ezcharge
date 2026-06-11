@@ -95,7 +95,7 @@ class ChargingStationViewModel extends ChangeNotifier {
   }
 
   Stream<List<Map<String, dynamic>>> fetchChargingStationsStream() {
-    return _firestore.collection('station').snapshots().map((snapshot) {
+    return _firestore.collection('Station').snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data();
         return {
@@ -103,13 +103,13 @@ class ChargingStationViewModel extends ChangeNotifier {
           "stationName": data["StationName"] ?? '',
           "description": data["Description"] ?? '',
           "nearby": data["Nearby"] ?? '',
-          "location": data["Location"] ?? '',
+          "Location": data["Location"] ?? '',
           "latitude": data["Latitude"] ?? '',
           "longitude": data["Longitude"] ?? '',
           "capacity": data["Capacity"] ?? 0,
           "occupied_bays": data["OccupiedBays"] ?? 0,
           "capacity_status": data["CapacityStatus"] ?? "Optimal",
-          "imageUrl": data["ImageUrl"] ?? '',
+          "ImageUrl": data["ImageUrl"] ?? '',
         };
       }).toList();
     });
@@ -118,7 +118,7 @@ class ChargingStationViewModel extends ChangeNotifier {
   // Real-time Fetch Charging Bays (Uses Stream)
   Stream<List<ChargingBay>> fetchChargingBaysStream(String stationID) {
     return _firestore
-        .collection('station')
+        .collection('Station')
         .doc(stationID)
         .collection('Charger')
         .snapshots()
@@ -147,7 +147,7 @@ class ChargingStationViewModel extends ChangeNotifier {
         imageUrl = await uploadImage(imageFile, newStationID) ?? '';
       }
 
-      await _firestore.collection('station').doc(newStationID).set({
+      await _firestore.collection('Station').doc(newStationID).set({
         "StationID": newStationID,
         "StationName": stationName,
         "Description": description,
@@ -169,7 +169,7 @@ class ChargingStationViewModel extends ChangeNotifier {
     try {
       // Query Firestore to get the latest station ID
       QuerySnapshot snapshot = await _firestore
-          .collection('station')
+          .collection('Station')
           .orderBy('StationID', descending: true)
           .limit(1)
           .get();
@@ -221,7 +221,7 @@ class ChargingStationViewModel extends ChangeNotifier {
         updatedData["ImageUrl"] = imageUrl;
       }
 
-      await _firestore.collection('station').doc(stationID).update(updatedData);
+      await _firestore.collection('Station').doc(stationID).update(updatedData);
     } catch (e) {
       debugPrint("Error updating charging station: $e");
     }
@@ -230,7 +230,7 @@ class ChargingStationViewModel extends ChangeNotifier {
   // Delete Charging Station
   Future<void> deleteChargingStation(String stationID) async {
     try {
-      await _firestore.collection('station').doc(stationID).delete();
+      await _firestore.collection('Station').doc(stationID).delete();
     } catch (e) {
       debugPrint("Error deleting charging station: $e");
     }
@@ -240,7 +240,7 @@ class ChargingStationViewModel extends ChangeNotifier {
   /*Future<List<ChargingBay>> fetchChargingBays(String stationID) async {
     try {
       QuerySnapshot snapshot = await _firestore
-          .collection('station')
+          .collection('Station')
           .doc(stationID)
           .collection('Charger')
           .get();
@@ -260,7 +260,7 @@ class ChargingStationViewModel extends ChangeNotifier {
   Future<void> addChargingBay(String stationID, ChargingBay bay) async {
     try {
       await _firestore
-          .collection('station')
+          .collection('Station')
           .doc(stationID)
           .collection('Charger')
           .doc(bay.chargerID)
@@ -279,7 +279,7 @@ class ChargingStationViewModel extends ChangeNotifier {
   Future<void> updateChargingBay(String stationID, ChargingBay bay) async {
     try {
       await _firestore
-          .collection('station')
+          .collection('Station')
           .doc(stationID)
           .collection('Charger')
           .doc(bay.chargerID)
@@ -293,7 +293,7 @@ class ChargingStationViewModel extends ChangeNotifier {
   Future<void> deleteChargingBay(String stationID, String chargerID) async {
     try {
       await _firestore
-          .collection('station')
+          .collection('Station')
           .doc(stationID)
           .collection('Charger')
           .doc(chargerID)
@@ -321,7 +321,7 @@ class ChargingStationViewModel extends ChangeNotifier {
   Future<String?> getStationImage(String stationID) async {
     try {
       DocumentSnapshot doc = await _firestore
-          .collection('station')
+          .collection('Station')
           .doc(stationID)
           .get();
       if (doc.exists && doc['ImageUrl'] != null) {
@@ -360,7 +360,7 @@ class ChargingStationViewModel extends ChangeNotifier {
   Future<void> updateCapacity(String stationID) async {
     try {
       QuerySnapshot chargerSnapshot = await _firestore
-          .collection('station')
+          .collection('Station')
           .doc(stationID)
           .collection('Charger')
           .get();
@@ -386,7 +386,7 @@ class ChargingStationViewModel extends ChangeNotifier {
       }
 
       // Update Firestore Document
-      await _firestore.collection('station').doc(stationID).update({
+      await _firestore.collection('Station').doc(stationID).update({
         "Capacity": totalBays,
         "OccupiedBays": occupiedBays,
         "CapacityStatus": capacityStatus,

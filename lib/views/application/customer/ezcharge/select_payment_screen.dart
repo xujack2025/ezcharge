@@ -43,7 +43,7 @@ class _SelectPaymentScreenState extends State<SelectPaymentScreen> {
         String userPhone = user.phoneNumber ?? "";
         if (userPhone.isNotEmpty) {
           QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-              .collection("customers")
+              .collection("Customers")
               .where("PhoneNumber", isEqualTo: userPhone)
               .limit(1)
               .get();
@@ -67,7 +67,7 @@ class _SelectPaymentScreenState extends State<SelectPaymentScreen> {
     if (_accountId.isEmpty) return;
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("customers")
+          .collection("Customers")
           .doc(_accountId)
           .collection("PaymentMethod")
           .limit(1)
@@ -204,7 +204,7 @@ class _SelectPaymentScreenState extends State<SelectPaymentScreen> {
                                     try {
                                       // 2) Update wallet balance
                                       await FirebaseFirestore.instance
-                                          .collection("customers")
+                                          .collection("Customers")
                                           .doc(_accountId)
                                           .update({
                                             "WalletBalance": newBalance,
@@ -214,7 +214,7 @@ class _SelectPaymentScreenState extends State<SelectPaymentScreen> {
                                       if (widget.rewardID.isNotEmpty) {
                                         // Mark reward as used
                                         await FirebaseFirestore.instance
-                                            .collection("customers")
+                                            .collection("Customers")
                                             .doc(_accountId)
                                             .update({
                                               "UsedReward":
@@ -226,7 +226,7 @@ class _SelectPaymentScreenState extends State<SelectPaymentScreen> {
                                         // Deduct reward points from user's PointBalance
                                         if (widget.rewardPoints > 0) {
                                           await FirebaseFirestore.instance
-                                              .collection("customers")
+                                              .collection("Customers")
                                               .doc(_accountId)
                                               .update({
                                                 "PointBalance": newPointBalance,
@@ -290,7 +290,7 @@ class _SelectPaymentScreenState extends State<SelectPaymentScreen> {
                                     if (widget.rewardID.isNotEmpty) {
                                       // Mark reward as used
                                       await FirebaseFirestore.instance
-                                          .collection("customers")
+                                          .collection("Customers")
                                           .doc(_accountId)
                                           .update({
                                             "UsedReward": FieldValue.arrayUnion(
@@ -301,7 +301,7 @@ class _SelectPaymentScreenState extends State<SelectPaymentScreen> {
                                       // Deduct reward points
                                       if (widget.rewardPoints > 0) {
                                         await FirebaseFirestore.instance
-                                            .collection("customers")
+                                            .collection("Customers")
                                             .doc(_accountId)
                                             .update({
                                               "PointBalance": newPointBalance,

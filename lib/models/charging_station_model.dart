@@ -42,7 +42,7 @@ class ChargingStation {
 
   factory ChargingStation.fromFirestore(DocumentSnapshot doc) {
     final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    final List<dynamic> chargerData = data['charger'] ?? [];
+    final List<dynamic> chargerData = data['Charger'] ?? [];
     final List<ChargingBay> parsedBays = chargerData.map((bayMap) {
       return ChargingBay.fromFirestore(bayMap);
     }).toList();
@@ -73,7 +73,7 @@ class ChargingStation {
       'Capacity': capacity,
       'ImageUrl': imageUrl,
       'OccupiedBays': occupiedBays,
-      'charger': chargingBays.map((bay) => bay.toMap()).toList(),
+      'Charger': chargingBays.map((bay) => bay.toMap()).toList(),
     };
   }
 }
