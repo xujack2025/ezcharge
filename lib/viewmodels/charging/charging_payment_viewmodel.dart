@@ -17,6 +17,7 @@ class ChargingPaymentViewModel extends ChangeNotifier {
   ChargingPaymentSummaryDetails? _summaryDetails;
   ChargingPaymentProfile? _profile;
   ChargingPaymentHistoryDetails? _historyDetails;
+  ChargingPaymentHistoryDetail? _historyDetail;
   ChargingPaymentMethod? _selectedMethod;
   bool _isLoading = false;
   bool _isProcessing = false;
@@ -26,6 +27,7 @@ class ChargingPaymentViewModel extends ChangeNotifier {
   ChargingPaymentSummaryDetails? get summaryDetails => _summaryDetails;
   ChargingPaymentProfile? get profile => _profile;
   ChargingPaymentHistoryDetails? get historyDetails => _historyDetails;
+  ChargingPaymentHistoryDetail? get historyDetail => _historyDetail;
   ChargingPaymentMethod? get selectedMethod => _selectedMethod;
   bool get isLoading => _isLoading;
   bool get isProcessing => _isProcessing;
@@ -102,6 +104,30 @@ class ChargingPaymentViewModel extends ChangeNotifier {
     } catch (e) {
       AppLogger.error('Error loading payment history details: $e');
       _historyDetails = null;
+      _errorMessage = 'Failed to load payment receipt details.';
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> loadPaymentHistoryDetail({
+    required String accountId,
+    required String paymentId,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      _historyDetail = await _paymentService.fetchPaymentHistoryDetail(
+        accountId: accountId,
+        paymentId: paymentId,
+      );
+      if (_historyDetail == null) {
+        _errorMessage = 'Failed to load payment receipt details.';
+      }
+    } catch (e) {
+      AppLogger.error('Error loading payment history detail: $e');
+      _historyDetail = null;
       _errorMessage = 'Failed to load payment receipt details.';
     } finally {
       _setLoading(false);

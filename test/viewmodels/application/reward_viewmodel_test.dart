@@ -28,6 +28,11 @@ class FakeRewardService implements RewardServiceContract {
   }
 
   @override
+  Future<List<RewardModel>> fetchUsableRedeemedRewards({DateTime? now}) async {
+    return rewards;
+  }
+
+  @override
   Future<RewardRedeemResult> redeemReward({
     required String customerId,
     required RewardModel reward,

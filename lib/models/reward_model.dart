@@ -45,9 +45,11 @@ class CustomerRewardState {
     required this.customerId,
     required this.pointBalance,
     required this.redeemedRewardIds,
+    this.usedRewardIds = const [],
   });
 
   final String customerId;
   final int pointBalance;
   final List<String> redeemedRewardIds;
+  final List<String> usedRewardIds;
 }

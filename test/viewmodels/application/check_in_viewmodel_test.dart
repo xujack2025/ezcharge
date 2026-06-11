@@ -1,3 +1,4 @@
+import 'package:ezcharge/models/charging_checkout_model.dart';
 import 'package:ezcharge/services/check_in_service.dart';
 import 'package:ezcharge/viewmodels/application/check_in_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,11 +8,14 @@ class FakeCheckInService implements CheckInServiceContract {
     this.phoneNumber = "+60123456789",
     this.customerId = "CUS1",
     this.reservationStatus = "Upcoming",
+    this.details,
   });
 
   final String? phoneNumber;
   final String? customerId;
   final String reservationStatus;
+  final ChargingCheckInDetails? details;
+  ChargingCheckInDetails? checkedInDetails;
 
   @override
   String? getCurrentUserPhoneNumber() {
@@ -26,6 +30,16 @@ class FakeCheckInService implements CheckInServiceContract {
   @override
   Future<String> getReservationStatus(String customerId) async {
     return reservationStatus;
+  }
+
+  @override
+  Future<ChargingCheckInDetails?> fetchCheckInDetails() async {
+    return details;
+  }
+
+  @override
+  Future<void> checkIn(ChargingCheckInDetails details) async {
+    checkedInDetails = details;
   }
 }
 
@@ -80,6 +94,56 @@ void main() {
         CheckInScanResult.unavailable,
       );
       expect(upcomingViewModel.resolveScan(""), CheckInScanResult.empty);
+    });
+
+    test(
+      'loads check-in details and submits when reservation is ready',
+      () async {
+        final details = ChargingCheckInDetails(
+          customerId: "CUS1",
+          chargerId: "CHG1",
+          stationId: "ST1",
+          reservationStatus: "Upcoming",
+          stationName: "EzCharge KL",
+          chargerName: "Bay 1",
+          chargerType: "DC",
+          pricePerVoltage: 1.2,
+          startTime: DateTime.now().subtract(const Duration(minutes: 5)),
+        );
+        final service = FakeCheckInService(details: details);
+        final viewModel = CheckInViewModel(checkInService: service);
+
+        await viewModel.loadCheckInDetails();
+        final result = await viewModel.submitCheckIn();
+
+        expect(viewModel.checkInDetails, details);
+        expect(result, CheckInSubmitResult.success);
+        expect(service.checkedInDetails, details);
+        expect(viewModel.reservationStatus, "Active");
+      },
+    );
+
+    test('blocks check-in before reserved start time', () async {
+      final details = ChargingCheckInDetails(
+        customerId: "CUS1",
+        chargerId: "CHG1",
+        stationId: "ST1",
+        reservationStatus: "Upcoming",
+        stationName: "EzCharge KL",
+        chargerName: "Bay 1",
+        chargerType: "DC",
+        pricePerVoltage: 1.2,
+        startTime: DateTime.now().add(const Duration(minutes: 5)),
+      );
+      final service = FakeCheckInService(details: details);
+      final viewModel = CheckInViewModel(checkInService: service);
+
+      await viewModel.loadCheckInDetails();
+      final result = await viewModel.submitCheckIn();
+
+      expect(result, CheckInSubmitResult.notReady);
+      expect(service.checkedInDetails, isNull);
+      expect(viewModel.errorMessage, "Now isn't your check-in time!");
     });
   });
 }

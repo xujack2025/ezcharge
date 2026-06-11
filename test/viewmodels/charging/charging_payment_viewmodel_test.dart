@@ -22,6 +22,17 @@ void main() {
     chargerType: 'DC',
   );
 
+  final historyDetail = ChargingPaymentHistoryDetail(
+    totalCost: 20,
+    stationName: 'EzCharge KL',
+    chargerName: 'Bay 1',
+    chargerType: 'DC',
+    duration: '00:30:00',
+    paymentMethod: 'Credit Card',
+    paymentId: 'PAY001',
+    paidTime: DateTime(2026),
+  );
+
   setUp(() {
     service = _FakeChargingPaymentService();
     viewModel = ChargingPaymentViewModel(paymentService: service);
@@ -111,12 +122,27 @@ void main() {
     expect(service.receivedPaymentMethod, 'Credit Card');
     expect(service.receivedTotalAmount, 20);
   });
+
+  test('loadPaymentHistoryDetail exposes receipt state', () async {
+    service.historyDetail = historyDetail;
+
+    await viewModel.loadPaymentHistoryDetail(
+      accountId: 'CUS001',
+      paymentId: 'PAY001',
+    );
+
+    expect(viewModel.historyDetail, historyDetail);
+    expect(service.receivedAccountId, 'CUS001');
+    expect(service.receivedPaymentId, 'PAY001');
+    expect(viewModel.errorMessage, isNull);
+  });
 }
 
 class _FakeChargingPaymentService implements ChargingPaymentServiceContract {
   ChargingPaymentSummaryDetails? summaryDetails;
   ChargingPaymentProfile? profile;
   ChargingPaymentHistoryDetails? historyDetails;
+  ChargingPaymentHistoryDetail? historyDetail;
   ChargingPaymentProcessResult processResult =
       const ChargingPaymentProcessResult(
         status: ChargingPaymentProcessStatus.success,
@@ -128,6 +154,8 @@ class _FakeChargingPaymentService implements ChargingPaymentServiceContract {
   ChargingPaymentMethod? receivedMethod;
   String? receivedRewardId;
   String? receivedPaymentMethod;
+  String? receivedAccountId;
+  String? receivedPaymentId;
   double? receivedTotalAmount;
 
   @override
@@ -156,6 +184,16 @@ class _FakeChargingPaymentService implements ChargingPaymentServiceContract {
   @override
   Future<ChargingPaymentHistoryDetails?> fetchPaymentHistoryDetails() async {
     return historyDetails;
+  }
+
+  @override
+  Future<ChargingPaymentHistoryDetail?> fetchPaymentHistoryDetail({
+    required String accountId,
+    required String paymentId,
+  }) async {
+    receivedAccountId = accountId;
+    receivedPaymentId = paymentId;
+    return historyDetail;
   }
 
   @override

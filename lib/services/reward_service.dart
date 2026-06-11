@@ -23,6 +23,8 @@ abstract class RewardServiceContract {
 
   Future<List<RewardModel>> fetchActiveRewards({DateTime? now});
 
+  Future<List<RewardModel>> fetchUsableRedeemedRewards({DateTime? now});
+
   Future<RewardRedeemResult> redeemReward({
     required String customerId,
     required RewardModel reward,
@@ -62,6 +64,34 @@ class RewardService implements RewardServiceContract {
         .map((doc) => RewardModel.fromFirestore(doc.data(), documentId: doc.id))
         .where((reward) => reward.isActiveAt(currentTime))
         .toList();
+  }
+
+  @override
+  Future<List<RewardModel>> fetchUsableRedeemedRewards({DateTime? now}) async {
+    final customerState = await fetchCurrentCustomerRewardState();
+    if (customerState == null) return [];
+
+    final currentTime = now ?? DateTime.now();
+    final rewards = <RewardModel>[];
+    for (final rewardId in customerState.redeemedRewardIds) {
+      if (customerState.usedRewardIds.contains(rewardId)) continue;
+
+      final rewardDoc = await _firestore
+          .collection('Rewards')
+          .doc(rewardId)
+          .get();
+      if (!rewardDoc.exists) continue;
+
+      final reward = RewardModel.fromFirestore(
+        rewardDoc.data() ?? {},
+        documentId: rewardDoc.id,
+      );
+      if (reward.isActiveAt(currentTime)) {
+        rewards.add(reward);
+      }
+    }
+
+    return rewards;
   }
 
   @override
@@ -120,6 +150,7 @@ class RewardService implements RewardServiceContract {
       customerId: (data['CustomerID'] ?? snapshot.id).toString(),
       pointBalance: _parseInt(data['PointBalance']),
       redeemedRewardIds: _parseStringList(data['RedeemedRewards']),
+      usedRewardIds: _parseStringList(data['UsedReward']),
     );
   }
 

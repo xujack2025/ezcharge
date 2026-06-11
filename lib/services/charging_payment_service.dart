@@ -18,6 +18,11 @@ abstract class ChargingPaymentServiceContract {
 
   Future<ChargingPaymentHistoryDetails?> fetchPaymentHistoryDetails();
 
+  Future<ChargingPaymentHistoryDetail?> fetchPaymentHistoryDetail({
+    required String accountId,
+    required String paymentId,
+  });
+
   Future<String> createPaymentHistoryRecord({
     required ChargingPaymentHistoryDetails details,
     required String paymentMethod,
@@ -227,6 +232,34 @@ class ChargingPaymentService implements ChargingPaymentServiceContract {
   }
 
   @override
+  Future<ChargingPaymentHistoryDetail?> fetchPaymentHistoryDetail({
+    required String accountId,
+    required String paymentId,
+  }) async {
+    final querySnap = await _firestore
+        .collection('Customers')
+        .doc(accountId)
+        .collection('PaymentHistory')
+        .where('Payment ID', isEqualTo: paymentId)
+        .limit(1)
+        .get();
+
+    if (querySnap.docs.isEmpty) return null;
+
+    final data = querySnap.docs.first.data();
+    return ChargingPaymentHistoryDetail(
+      totalCost: _parseDouble(data['TotalCost']),
+      stationName: data['StationName']?.toString() ?? '',
+      chargerName: data['ChargerName']?.toString() ?? '',
+      chargerType: data['ChargerType']?.toString() ?? '',
+      duration: data['Duration']?.toString() ?? '',
+      paymentMethod: data['PaymentMethod']?.toString() ?? '',
+      paymentId: data['Payment ID']?.toString() ?? '',
+      paidTime: _parseNullableDateTime(data['Paid Time']),
+    );
+  }
+
+  @override
   Future<String> createPaymentHistoryRecord({
     required ChargingPaymentHistoryDetails details,
     required String paymentMethod,
@@ -285,5 +318,11 @@ class ChargingPaymentService implements ChargingPaymentServiceContract {
     if (value is int) return value;
     if (value is num) return value.toInt();
     return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static DateTime? _parseNullableDateTime(Object? value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    return null;
   }
 }

@@ -231,7 +231,9 @@ class _ChargingPaymentMethodScreenState
         onTap: () => viewModel.selectPaymentMethod(ChargingPaymentMethod.card),
         child: Row(
           children: [
-            Radio<ChargingPaymentMethod>(value: ChargingPaymentMethod.card),
+            const Radio<ChargingPaymentMethod>(
+              value: ChargingPaymentMethod.card,
+            ),
             const Icon(Icons.credit_card, size: 30),
             const SizedBox(width: 8),
             Text(maskedCard, style: const TextStyle(fontSize: 16)),
@@ -252,7 +254,9 @@ class _ChargingPaymentMethodScreenState
             viewModel.selectPaymentMethod(ChargingPaymentMethod.wallet),
         child: Row(
           children: [
-            Radio<ChargingPaymentMethod>(value: ChargingPaymentMethod.wallet),
+            const Radio<ChargingPaymentMethod>(
+              value: ChargingPaymentMethod.wallet,
+            ),
             const Icon(Icons.account_balance_wallet_outlined, size: 30),
             const SizedBox(width: 8),
             Expanded(

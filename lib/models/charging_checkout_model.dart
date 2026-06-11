@@ -30,6 +30,33 @@ class ChargingCheckoutDetails {
   bool get canCheckOut => reservationStatus == 'Ended';
 }
 
+class ChargingCheckInDetails {
+  const ChargingCheckInDetails({
+    required this.customerId,
+    required this.chargerId,
+    required this.stationId,
+    required this.reservationStatus,
+    required this.stationName,
+    required this.chargerName,
+    required this.chargerType,
+    required this.pricePerVoltage,
+    required this.startTime,
+  });
+
+  final String customerId;
+  final String chargerId;
+  final String stationId;
+  final String reservationStatus;
+  final String stationName;
+  final String chargerName;
+  final String chargerType;
+  final double pricePerVoltage;
+  final DateTime startTime;
+
+  bool get canCheckIn =>
+      reservationStatus == 'Upcoming' && DateTime.now().isAfter(startTime);
+}
+
 class ChargingPaymentSummaryDetails {
   const ChargingPaymentSummaryDetails({
     required this.customerId,
@@ -80,6 +107,28 @@ class ChargingPaymentHistoryDetails {
   final String stationName;
   final String chargerName;
   final String chargerType;
+}
+
+class ChargingPaymentHistoryDetail {
+  const ChargingPaymentHistoryDetail({
+    required this.totalCost,
+    required this.stationName,
+    required this.chargerName,
+    required this.chargerType,
+    required this.duration,
+    required this.paymentMethod,
+    required this.paymentId,
+    required this.paidTime,
+  });
+
+  final double totalCost;
+  final String stationName;
+  final String chargerName;
+  final String chargerType;
+  final String duration;
+  final String paymentMethod;
+  final String paymentId;
+  final DateTime? paidTime;
 }
 
 enum ChargingPaymentMethod { card, wallet }
