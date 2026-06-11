@@ -26,9 +26,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  AuthViewModel get _authViewModel => context.read<AuthViewModel>();
-  HomeViewModel get _homeViewModel => context.read<HomeViewModel>();
-
   final Completer<GoogleMapController> _controller = Completer();
 
   // Search Controller
@@ -38,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       _loadCurrentLocation();
       _loadHomeData();
     });
@@ -50,8 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadHomeData() async {
-    await _authViewModel.syncUserStatus();
-    await _homeViewModel.loadStations(customerId: _authViewModel.customerId);
+    final authViewModel = context.read<AuthViewModel>();
+    final homeViewModel = context.read<HomeViewModel>();
+
+    await authViewModel.syncUserStatus();
+    if (!mounted) return;
+
+    await homeViewModel.loadStations(customerId: authViewModel.customerId);
   }
 
   void _showAuthReminder(BuildContext context) {
@@ -92,10 +95,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadCurrentLocation() async {
-    final location = await _homeViewModel.loadCurrentLocation();
+    final homeViewModel = context.read<HomeViewModel>();
+    final location = await homeViewModel.loadCurrentLocation();
     if (!mounted || location == null) return;
 
     final GoogleMapController controller = await _controller.future;
+    if (!mounted) return;
     controller.animateCamera(CameraUpdate.newLatLngZoom(location, 14));
   }
 
@@ -212,7 +217,8 @@ class _HomeScreenState extends State<HomeScreen> {
     AuthViewModel authVM,
   ) async {
     final message = ScaffoldMessenger.of(context);
-    final added = await _homeViewModel.toggleBookmark(
+    final homeViewModel = context.read<HomeViewModel>();
+    final added = await homeViewModel.toggleBookmark(
       customerId: authVM.customerId,
       station: station,
     );

@@ -39,6 +39,7 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<EmergencyRequestViewModel>().loadBookAChargeHome();
     });
   }
@@ -53,6 +54,8 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
     final message = ScaffoldMessenger.of(context);
     final requestViewModel = context.read<EmergencyRequestViewModel>();
     final driverId = await requestViewModel.getAssignedDriverId(requestID);
+
+    if (!mounted) return;
 
     if (driverId != null) {
       _openTrackingView(driverId, requestID);
@@ -71,6 +74,8 @@ class BookAChargeScreenState extends State<BookAChargeScreen>
       );
       return;
     }
+
+    if (!mounted) return;
 
     message.showSnackBar(
       const SnackBar(content: Text("Waiting for driver assignment...")),
