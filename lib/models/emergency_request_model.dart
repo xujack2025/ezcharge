@@ -13,6 +13,8 @@ class EmergencyRequest {
   int eta;
   double kWhUsed;
   String? chatID;
+  String chargingFormattedTime;
+  double? totalCost;
 
   EmergencyRequest({
     required this.requestID,
@@ -27,6 +29,8 @@ class EmergencyRequest {
     this.eta = 0,
     this.kWhUsed = 0,
     this.chatID,
+    this.chargingFormattedTime = '',
+    this.totalCost,
   });
 
   factory EmergencyRequest.fromMap(Map<String, dynamic> map) {
@@ -45,6 +49,8 @@ class EmergencyRequest {
       eta: (map['Eta'] as num?)?.toInt() ?? 0,
       kWhUsed: (map['KWhUsed'] as num?)?.toDouble() ?? 0.0,
       chatID: map['ChatID'] ?? '',
+      chargingFormattedTime: map['chargingFormattedTime'] ?? '',
+      totalCost: (map['totalCost'] as num?)?.toDouble(),
     );
   }
 
@@ -62,6 +68,8 @@ class EmergencyRequest {
       'Eta': eta,
       'KWhUsed': kWhUsed,
       'ChatID': chatID,
+      'chargingFormattedTime': chargingFormattedTime,
+      'totalCost': totalCost,
     };
   }
 }

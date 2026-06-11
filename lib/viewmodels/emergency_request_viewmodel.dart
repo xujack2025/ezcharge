@@ -23,6 +23,7 @@ class EmergencyRequestViewModel extends ChangeNotifier {
   bool activeRequestExists = false;
   String? imageUrl;
   String? requestID;
+  String? customerId;
   String? errorMessage;
   Stream<String?>? _driverAssignmentStream;
   StreamSubscription<ActiveEmergencyRequest>? _activeRequestSubscription;
@@ -32,6 +33,33 @@ class EmergencyRequestViewModel extends ChangeNotifier {
   /// Get Emergency Requests as a Stream (Real-time Updates)
   Stream<List<EmergencyRequest>> getRequests(String customerID) {
     return _emergencyRequestService.watchRequests(customerID);
+  }
+
+  Future<void> loadCurrentCustomerId() async {
+    _setLoading(true);
+    errorMessage = null;
+
+    try {
+      final phoneNumber = _emergencyRequestService.getCurrentUserPhoneNumber();
+      if (phoneNumber == null || phoneNumber.isEmpty) {
+        customerId = null;
+        errorMessage = "No customer profile was found.";
+        return;
+      }
+
+      customerId = await _emergencyRequestService.getCustomerIdByPhoneNumber(
+        phoneNumber,
+      );
+      if (customerId == null || customerId!.isEmpty) {
+        errorMessage = "No customer profile was found.";
+      }
+    } catch (e) {
+      AppLogger.error("Error loading emergency request customer: $e");
+      customerId = null;
+      errorMessage = "Failed to load request history.";
+    } finally {
+      _setLoading(false);
+    }
   }
 
   /// Create Emergency Request

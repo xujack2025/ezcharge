@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../charging/charging_reward_selection_screen.dart';
@@ -22,36 +20,9 @@ class RequestPaymentScreen extends StatefulWidget {
 }
 
 class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
-  bool isLoading = false;
   double _rewardDiscount = 0.0;
   String _selectedRewardID = "";
   int _rewardPoints = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _getCustomerID();
-  }
-
-  Future<void> _getCustomerID() async {
-    setState(() => isLoading = true);
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isNotEmpty) {
-          await FirebaseFirestore.instance
-              .collection("Customers")
-              .where("PhoneNumber", isEqualTo: userPhone)
-              .limit(1)
-              .get();
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-    }
-    setState(() => isLoading = false);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,150 +32,138 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Payment",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Payment",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+
+              // **Charging Details**
+              _infoRow("Total Duration:", widget.duration),
+              _infoRow(
+                "Charging Cost:",
+                "RM ${widget.chargingCost.toStringAsFixed(2)}",
+              ),
+
+              const SizedBox(height: 16),
+
+              // **Reward Discount Selection**
+              const Text(
+                "Reward Discount",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+
+              InkWell(
+                onTap: () async {
+                  final result = await Navigator.push<Map<String, dynamic>>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ChargingRewardSelectionScreen(),
                     ),
-                    const SizedBox(height: 16),
-
-                    // **Charging Details**
-                    _infoRow("Total Duration:", widget.duration),
-                    _infoRow(
-                      "Charging Cost:",
-                      "RM ${widget.chargingCost.toStringAsFixed(2)}",
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // **Reward Discount Selection**
-                    const Text(
-                      "Reward Discount",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    InkWell(
-                      onTap: () async {
-                        final result =
-                            await Navigator.push<Map<String, dynamic>>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const ChargingRewardSelectionScreen(),
-                              ),
-                            );
-                        if (result != null) {
-                          setState(() {
-                            _rewardDiscount = result["discount"];
-                            _selectedRewardID = result["rewardID"];
-                            _rewardPoints = result["points"];
-                          });
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text("Select Reward"),
-                            Text(
-                              _rewardDiscount == 0
-                                  ? "-"
-                                  : "-RM${_rewardDiscount.toStringAsFixed(2)}",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: _rewardDiscount == 0
-                                    ? Colors.black
-                                    : Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                  );
+                  if (result != null) {
+                    setState(() {
+                      _rewardDiscount = result["discount"];
+                      _selectedRewardID = result["rewardID"];
+                      _rewardPoints = result["points"];
+                    });
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Select Reward"),
+                      Text(
+                        _rewardDiscount == 0
+                            ? "-"
+                            : "-RM${_rewardDiscount.toStringAsFixed(2)}",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: _rewardDiscount == 0
+                              ? Colors.black
+                              : Colors.red,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-
-                    const SizedBox(height: 16),
-                    _infoRow(
-                      "Subtotal:",
-                      "RM ${widget.chargingCost.toStringAsFixed(2)}",
-                    ),
-                    _infoRow(
-                      "Reward Discount:",
-                      _rewardDiscount == 0
-                          ? "-"
-                          : "-RM${_rewardDiscount.toStringAsFixed(2)}",
-                    ),
-
-                    const Divider(height: 32),
-
-                    // **Final Total**
-                    _infoRow(
-                      "Total Amount:",
-                      "RM ${(totalAmount < 0 ? 0.0 : totalAmount).toStringAsFixed(2)}",
-                      isBold: true,
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // **Continue to Payment**
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RequestSelectPaymentScreen(
-                                totalAmount: totalAmount < 0
-                                    ? 0.0
-                                    : totalAmount,
-                                rewardID: _selectedRewardID,
-                                rewardPoints: _rewardPoints,
-                              ),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          "CONTINUE",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
+
+              const SizedBox(height: 16),
+              _infoRow(
+                "Subtotal:",
+                "RM ${widget.chargingCost.toStringAsFixed(2)}",
+              ),
+              _infoRow(
+                "Reward Discount:",
+                _rewardDiscount == 0
+                    ? "-"
+                    : "-RM${_rewardDiscount.toStringAsFixed(2)}",
+              ),
+
+              const Divider(height: 32),
+
+              // **Final Total**
+              _infoRow(
+                "Total Amount:",
+                "RM ${(totalAmount < 0 ? 0.0 : totalAmount).toStringAsFixed(2)}",
+                isBold: true,
+              ),
+
+              const SizedBox(height: 24),
+
+              // **Continue to Payment**
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RequestSelectPaymentScreen(
+                          totalAmount: totalAmount < 0 ? 0.0 : totalAmount,
+                          rewardID: _selectedRewardID,
+                          rewardPoints: _rewardPoints,
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    "CONTINUE",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
