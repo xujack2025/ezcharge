@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
-class FilterScreen extends StatefulWidget {
-  const FilterScreen({super.key});
+class ChargingStationFilterScreen extends StatefulWidget {
+  const ChargingStationFilterScreen({super.key});
 
   @override
-  FilterScreenState createState() => FilterScreenState();
+  ChargingStationFilterScreenState createState() =>
+      ChargingStationFilterScreenState();
 }
 
-class FilterScreenState extends State<FilterScreen> {
+class ChargingStationFilterScreenState
+    extends State<ChargingStationFilterScreen> {
   String _selectedPower = ''; // AC / DC
   final List<String> _selectedNearby = []; // Nearby filters
 

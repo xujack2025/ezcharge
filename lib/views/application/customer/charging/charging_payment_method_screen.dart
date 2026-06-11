@@ -3,14 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../profile/payment/top_up_screen.dart';
-import 'payment_success_screen.dart';
+import 'charging_payment_success_screen.dart';
 
-class SelectPaymentScreen extends StatefulWidget {
+class ChargingPaymentMethodScreen extends StatefulWidget {
   final double totalAmount;
   final String rewardID;
   final int rewardPoints;
 
-  const SelectPaymentScreen({
+  const ChargingPaymentMethodScreen({
     super.key,
     required this.totalAmount,
     required this.rewardID,
@@ -18,10 +18,12 @@ class SelectPaymentScreen extends StatefulWidget {
   });
 
   @override
-  State<SelectPaymentScreen> createState() => _SelectPaymentScreenState();
+  State<ChargingPaymentMethodScreen> createState() =>
+      _ChargingPaymentMethodScreenState();
 }
 
-class _SelectPaymentScreenState extends State<SelectPaymentScreen> {
+class _ChargingPaymentMethodScreenState
+    extends State<ChargingPaymentMethodScreen> {
   bool isLoading = false;
   String _accountId = "";
   double _walletBalance = 0.0;
@@ -246,12 +248,12 @@ class _SelectPaymentScreenState extends State<SelectPaymentScreen> {
                                         ),
                                       );
 
-                                      // 4) Navigate to PaymentSuccessScreen with wallet payment method
+                                      // 4) Navigate to ChargingPaymentSuccessScreen with wallet payment method
                                       Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              PaymentSuccessScreen(
+                                              ChargingPaymentSuccessScreen(
                                                 paymentMethod:
                                                     "EZCHARGE Wallet",
                                                 totalAmount: widget.totalAmount,
@@ -315,12 +317,12 @@ class _SelectPaymentScreenState extends State<SelectPaymentScreen> {
                                       ),
                                     );
 
-                                    // Navigate to PaymentSuccessScreen with card payment method
+                                    // Navigate to ChargingPaymentSuccessScreen with card payment method
                                     Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            PaymentSuccessScreen(
+                                            ChargingPaymentSuccessScreen(
                                               paymentMethod: "Credit Card",
                                               totalAmount: widget.totalAmount,
                                             ),

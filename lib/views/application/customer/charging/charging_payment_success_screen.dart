@@ -2,23 +2,25 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'payment_history_detail.dart';
+import 'charging_payment_history_detail_screen.dart';
 
-class PaymentSuccessScreen extends StatefulWidget {
+class ChargingPaymentSuccessScreen extends StatefulWidget {
   final String paymentMethod;
   final double totalAmount;
 
-  const PaymentSuccessScreen({
+  const ChargingPaymentSuccessScreen({
     super.key,
     required this.paymentMethod,
     required this.totalAmount,
   });
 
   @override
-  State<PaymentSuccessScreen> createState() => _PaymentSuccessScreenState();
+  State<ChargingPaymentSuccessScreen> createState() =>
+      _ChargingPaymentSuccessScreenState();
 }
 
-class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
+class _ChargingPaymentSuccessScreenState
+    extends State<ChargingPaymentSuccessScreen> {
   bool isLoading = false;
   String _accountId = "";
   String _duration = "";
@@ -235,7 +237,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    PaymentHistoryDetailScreen(
+                                    ChargingPaymentHistoryDetailScreen(
                                       accountId: _accountId,
                                       paymentDocId: paymentID,
                                     ),

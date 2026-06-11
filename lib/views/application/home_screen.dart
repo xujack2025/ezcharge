@@ -11,9 +11,9 @@ import '../../models/home_station_model.dart';
 import '../../viewmodels/application/application_viewmodel.dart';
 import '../../viewmodels/application/home_viewmodel.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
-import 'customer/ezcharge/filter_screen.dart';
-import 'customer/ezcharge/reservation_screen.dart';
-import 'customer/ezcharge/station_screen.dart';
+import 'customer/charging/charging_reservation_screen.dart';
+import 'customer/charging/charging_station_detail_screen.dart';
+import 'customer/charging/charging_station_filter_screen.dart';
 import 'widgets/home_station_markers.dart';
 import 'widgets/home_station_sheet.dart';
 import 'widgets/home_top_nav_bar.dart';
@@ -171,10 +171,12 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: Colors.blue,
               child: const Icon(Icons.filter_list, color: Colors.white),
               onPressed: () async {
-                // Navigate to FilterScreen and wait for result
+                // Navigate to ChargingStationFilterScreen and wait for result
                 final result = await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const FilterScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const ChargingStationFilterScreen(),
+                  ),
                 );
 
                 // If user returns filter data, apply it
@@ -238,7 +240,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ReservationScreen(stationId: station.stationId),
+        builder: (context) =>
+            ChargingReservationScreen(stationId: station.stationId),
       ),
     );
   }
@@ -247,7 +250,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => StationScreen(stationId: station.stationId),
+        builder: (context) =>
+            ChargingStationDetailScreen(stationId: station.stationId),
       ),
     );
   }

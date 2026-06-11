@@ -1,15 +1,15 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../viewmodels/charging/charging_session_viewmodel.dart';
 import '../profile/account/activity_screen.dart';
 import '../service/chatbot_screen.dart';
-import 'stop_charging.dart';
+import 'charging_stop_screen.dart';
 
 // A shared timer service that holds the timer state independently.
-class TimerService {
+class ChargingSessionTimerService {
   static DateTime? startTime;
   static Timer? timer;
   static int elapsedSeconds = 0;
@@ -40,166 +40,78 @@ class TimerService {
       (elapsedSeconds % 60).toString().padLeft(2, '0');
 }
 
-class TimerScreen extends StatefulWidget {
-  const TimerScreen({super.key});
+class ChargingSessionTimerScreen extends StatelessWidget {
+  const ChargingSessionTimerScreen({super.key});
 
   @override
-  State<TimerScreen> createState() => _TimerScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ChargingSessionViewModel()..load(),
+      child: const _ChargingSessionTimerContent(),
+    );
+  }
 }
 
-class _TimerScreenState extends State<TimerScreen> {
+class _ChargingSessionTimerContent extends StatefulWidget {
+  const _ChargingSessionTimerContent();
+
+  @override
+  State<_ChargingSessionTimerContent> createState() =>
+      _ChargingSessionTimerContentState();
+}
+
+class _ChargingSessionTimerContentState
+    extends State<_ChargingSessionTimerContent> {
   // A separate UI timer to trigger setState so that the displayed time updates.
   Timer? _uiTimer;
-  String _accountId = "";
-  String _chargerId = "";
-  String _stationId = "";
-  String _chargerName = "";
-  String _chargerType = "";
-  String _stationName = "";
 
   @override
   void initState() {
     super.initState();
     // Start the shared timer if it hasn't been started.
-    TimerService.startTimer(_handleTimeLimitReached);
+    ChargingSessionTimerService.startTimer(_handleTimeLimitReached);
     // Set up a UI update timer.
     _uiTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {});
     });
-    _getCustomerID();
   }
 
   @override
   void dispose() {
     _uiTimer?.cancel();
-    // Do NOT stop the shared TimerService here so that the timer continues.
+    // Do NOT stop the shared ChargingSessionTimerService here so that the timer continues.
     super.dispose();
   }
 
   Future<void> _handleTimeLimitReached() async {
-    try {
-      await FirebaseFirestore.instance
-          .collection("Reservation")
-          .doc(_accountId)
-          .update({"Status": "Ended"});
-
-      final stopTime = DateTime.now();
-      final totalDuration = stopTime.difference(
-        TimerService.startTime ?? stopTime,
-      );
-
-      TimerService.stopTimer();
-      TimerService.startTime = null;
-      TimerService.elapsedSeconds = 0;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              StopChargingScreen(totalDuration: totalDuration),
-        ),
-      );
-    } catch (e) {
-      debugPrint("Error updating reservation status: $e");
+    final viewModel = context.read<ChargingSessionViewModel>();
+    final result = await viewModel.endSession();
+    if (!mounted || result != ChargingSessionEndResult.success) {
+      return;
     }
-  }
 
-  Future<void> _getCustomerID() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
+    final stopTime = DateTime.now();
+    final totalDuration = stopTime.difference(
+      ChargingSessionTimerService.startTime ?? stopTime,
+    );
 
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
+    ChargingSessionTimerService.stopTimer();
+    ChargingSessionTimerService.startTime = null;
+    ChargingSessionTimerService.elapsedSeconds = 0;
 
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-
-          setState(() {
-            _accountId = userDoc["CustomerID"];
-          });
-
-          //Fetch Reservation after getting CustomerID
-          _fetchReservationRecord();
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-    }
-  }
-
-  //Fetch the Latest Reservation for the User
-  Future<void> _fetchReservationRecord() async {
-    if (_accountId.isEmpty) return; // Ensure _accountId is available
-
-    try {
-      //Fetch reservation document for the user
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("Reservation")
-          .doc(_accountId)
-          .get();
-
-      if (doc.exists) {
-        setState(() {
-          _chargerId = doc["ChargerID"];
-          _stationId = doc["StationID"];
-        });
-        _fetchStation();
-        _fetchCharger();
-      }
-    } catch (e) {
-      debugPrint("Error fetching reservation record: $e");
-    }
-  }
-
-  Future<void> _fetchStation() async {
-    if (_stationId.isEmpty) return;
-
-    try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("Station")
-          .doc(_stationId)
-          .get();
-
-      if (doc.exists) {
-        setState(() {
-          _stationName = doc["StationName"];
-        });
-      }
-    } catch (e) {
-      debugPrint("Error fetching station: $e");
-    }
-  }
-
-  Future<void> _fetchCharger() async {
-    if (_stationId.isEmpty || _chargerId.isEmpty) return;
-
-    try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("Station")
-          .doc(_stationId)
-          .collection("Charger")
-          .doc(_chargerId)
-          .get();
-
-      if (doc.exists) {
-        setState(() {
-          _chargerName = doc["ChargerName"];
-          _chargerType = doc["ChargerType"];
-        });
-      }
-    } catch (e) {
-      debugPrint("Error fetching charger: $e");
-    }
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChargingStopScreen(totalDuration: totalDuration),
+      ),
+    );
   }
 
   // Show the bottom sheet to stop charging.
   Future<void> _showStopChargingSheet() async {
+    final viewModel = context.read<ChargingSessionViewModel>();
+    final rootContext = context;
+
     await showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -229,35 +141,33 @@ class _TimerScreenState extends State<TimerScreen> {
                         foregroundColor: Colors.white, // Text color
                       ),
                       onPressed: () async {
-                        try {
-                          await FirebaseFirestore.instance
-                              .collection("Reservation")
-                              .doc(_accountId)
-                              .update({"Status": "Ended"});
-
-                          TimerService.stopTimer();
-
-                          final stopTime = DateTime.now();
-                          final totalDuration = stopTime.difference(
-                            TimerService.startTime ?? stopTime,
-                          );
-
-                          TimerService.startTime = null;
-                          TimerService.elapsedSeconds = 0;
-
-                          Navigator.pop(context);
-
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => StopChargingScreen(
-                                totalDuration: totalDuration,
-                              ),
-                            ),
-                          );
-                        } catch (e) {
-                          debugPrint("Error updating reservation status: $e");
+                        final result = await viewModel.endSession();
+                        if (!context.mounted ||
+                            !rootContext.mounted ||
+                            result != ChargingSessionEndResult.success) {
+                          return;
                         }
+
+                        ChargingSessionTimerService.stopTimer();
+
+                        final stopTime = DateTime.now();
+                        final totalDuration = stopTime.difference(
+                          ChargingSessionTimerService.startTime ?? stopTime,
+                        );
+
+                        ChargingSessionTimerService.startTime = null;
+                        ChargingSessionTimerService.elapsedSeconds = 0;
+
+                        Navigator.pop(context);
+
+                        Navigator.pushReplacement(
+                          rootContext,
+                          MaterialPageRoute(
+                            builder: (context) => ChargingStopScreen(
+                              totalDuration: totalDuration,
+                            ),
+                          ),
+                        );
                       },
                       child: const Text("STOP CHARGING"),
                     ),
@@ -282,6 +192,8 @@ class _TimerScreenState extends State<TimerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<ChargingSessionViewModel>();
+
     return Scaffold(
       // Dark blue background
       backgroundColor: Colors.blue[900],
@@ -367,7 +279,7 @@ class _TimerScreenState extends State<TimerScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _stationName,
+                    viewModel.stationName,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 18,
@@ -375,18 +287,21 @@ class _TimerScreenState extends State<TimerScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(_chargerName, style: const TextStyle(fontSize: 16)),
+                  Text(
+                    viewModel.chargerName,
+                    style: const TextStyle(fontSize: 16),
+                  ),
                   const SizedBox(height: 20),
                   // Timer Display
                   Text(
-                    "${TimerService.hoursStr} : ${TimerService.minutesStr} : ${TimerService.secondsStr}",
+                    "${ChargingSessionTimerService.hoursStr} : ${ChargingSessionTimerService.minutesStr} : ${ChargingSessionTimerService.secondsStr}",
                     style: const TextStyle(
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text("Connector: $_chargerType"),
+                  Text("Connector: ${viewModel.chargerType}"),
                 ],
               ),
             ),

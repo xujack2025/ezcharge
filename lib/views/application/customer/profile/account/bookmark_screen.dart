@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../ezcharge/station_screen.dart';
+import '../../charging/charging_station_detail_screen.dart';
 
 class BookmarkScreen extends StatefulWidget {
   const BookmarkScreen({super.key});
@@ -161,12 +161,12 @@ class BookmarkScreenState extends State<BookmarkScreen> {
   Widget _buildStationCard(Map<String, dynamic> station) {
     return GestureDetector(
       onTap: () {
-        //Redirect to StationScreen with StationID
+        //Redirect to ChargingStationDetailScreen with StationID
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>
-                StationScreen(stationId: station["StationID"]),
+                ChargingStationDetailScreen(stationId: station["StationID"]),
           ),
         );
       },

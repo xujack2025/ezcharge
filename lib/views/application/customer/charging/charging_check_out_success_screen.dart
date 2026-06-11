@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import 'payment_screen.dart';
+import 'charging_payment_summary_screen.dart';
 
-class CheckOutSuccessScreen extends StatelessWidget {
+class ChargingCheckOutSuccessScreen extends StatelessWidget {
   final double chargingCost;
   final double penaltyCost;
   final String duration;
 
-  const CheckOutSuccessScreen({
+  const ChargingCheckOutSuccessScreen({
     super.key,
     required this.chargingCost,
     required this.penaltyCost,
@@ -46,11 +46,11 @@ class CheckOutSuccessScreen extends StatelessWidget {
               SizedBox(
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigate to PaymentScreen, passing both costs
+                    // Navigate to ChargingPaymentSummaryScreen, passing both costs
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PaymentScreen(
+                        builder: (context) => ChargingPaymentSummaryScreen(
                           chargingCost: chargingCost, // double
                           penaltyCost: penaltyCost, // double or int
                           duration: duration,

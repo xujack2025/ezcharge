@@ -3,14 +3,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class RewardSelectScreen extends StatefulWidget {
-  const RewardSelectScreen({super.key});
+class ChargingRewardSelectionScreen extends StatefulWidget {
+  const ChargingRewardSelectionScreen({super.key});
 
   @override
-  State<RewardSelectScreen> createState() => _RewardSelectScreenState();
+  State<ChargingRewardSelectionScreen> createState() =>
+      _ChargingRewardSelectionScreenState();
 }
 
-class _RewardSelectScreenState extends State<RewardSelectScreen> {
+class _ChargingRewardSelectionScreenState
+    extends State<ChargingRewardSelectionScreen> {
   bool isLoading = false;
   List<Map<String, dynamic>> _rewards = [];
   int? _selectedIndex; // Track which reward is selected
@@ -126,7 +128,7 @@ class _RewardSelectScreenState extends State<RewardSelectScreen> {
                   final int points = selectedReward["Points"] ?? 0;
                   final double discount = points / 10; // e.g. 300 pts => RM30
 
-                  // Return the discount and rewardID to PaymentScreen
+                  // Return the discount and rewardID to ChargingPaymentSummaryScreen
                   Navigator.pop(context, {
                     "rewardID": rewardId,
                     "discount": discount,

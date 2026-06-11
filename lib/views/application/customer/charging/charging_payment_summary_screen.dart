@@ -2,15 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'reward_select_screen.dart';
-import 'select_payment_screen.dart';
+import 'charging_payment_method_screen.dart';
+import 'charging_reward_selection_screen.dart';
 
-class PaymentScreen extends StatefulWidget {
+class ChargingPaymentSummaryScreen extends StatefulWidget {
   final double chargingCost;
   final double penaltyCost;
   final String duration;
 
-  const PaymentScreen({
+  const ChargingPaymentSummaryScreen({
     super.key,
     required this.chargingCost,
     required this.penaltyCost,
@@ -18,10 +18,12 @@ class PaymentScreen extends StatefulWidget {
   });
 
   @override
-  State<PaymentScreen> createState() => _PaymentScreenState();
+  State<ChargingPaymentSummaryScreen> createState() =>
+      _ChargingPaymentSummaryScreenState();
 }
 
-class _PaymentScreenState extends State<PaymentScreen> {
+class _ChargingPaymentSummaryScreenState
+    extends State<ChargingPaymentSummaryScreen> {
   // Loading indicator
   bool isLoading = false;
 
@@ -207,7 +209,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             await Navigator.push<Map<String, dynamic>>(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const RewardSelectScreen(),
+                                builder: (_) =>
+                                    const ChargingRewardSelectionScreen(),
                               ),
                             );
                         if (result != null) {
@@ -301,11 +304,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                               ? 0
                               : finalTotal;
 
-                          //Navigate to SelectPaymentScreen with the final total, rewardID, and rewardPoints
+                          //Navigate to ChargingPaymentMethodScreen with the final total, rewardID, and rewardPoints
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => SelectPaymentScreen(
+                              builder: (context) => ChargingPaymentMethodScreen(
                                 totalAmount: safeTotal,
                                 rewardID: _selectedRewardID,
                                 rewardPoints: _rewardPoints,

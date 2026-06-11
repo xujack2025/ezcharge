@@ -7,23 +7,23 @@ import 'package:printing/printing.dart';
 
 import '../profile/payment/payment_history_list.dart';
 
-class PaymentHistoryDetailScreen extends StatefulWidget {
+class ChargingPaymentHistoryDetailScreen extends StatefulWidget {
   final String accountId;
   final String paymentDocId;
 
-  const PaymentHistoryDetailScreen({
+  const ChargingPaymentHistoryDetailScreen({
     super.key,
     required this.accountId,
     required this.paymentDocId,
   });
 
   @override
-  State<PaymentHistoryDetailScreen> createState() =>
-      _PaymentHistoryDetailScreenState();
+  State<ChargingPaymentHistoryDetailScreen> createState() =>
+      _ChargingPaymentHistoryDetailScreenState();
 }
 
-class _PaymentHistoryDetailScreenState
-    extends State<PaymentHistoryDetailScreen> {
+class _ChargingPaymentHistoryDetailScreenState
+    extends State<ChargingPaymentHistoryDetailScreen> {
   bool isLoading = false;
 
   // Fields to display

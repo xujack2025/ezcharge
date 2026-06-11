@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../ezcharge/reward_select_screen.dart';
+import '../charging/charging_reward_selection_screen.dart';
 import 'request_select_payment_screen.dart';
 
 class RequestPaymentScreen extends StatefulWidget {
@@ -102,7 +102,8 @@ class _RequestPaymentScreenState extends State<RequestPaymentScreen> {
                             await Navigator.push<Map<String, dynamic>>(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const RewardSelectScreen(),
+                                builder: (_) =>
+                                    const ChargingRewardSelectionScreen(),
                               ),
                             );
                         if (result != null) {

@@ -10,7 +10,7 @@ import '../../core/constants/text_styles.dart';
 import '../../core/utils/app_logger.dart';
 import '../../viewmodels/application/application_viewmodel.dart';
 import '../../viewmodels/application/check_in_viewmodel.dart';
-import 'customer/ezcharge/check_detail.dart';
+import 'customer/charging/charging_check_in_detail_screen.dart';
 import 'widgets/home_top_nav_bar.dart';
 
 class CheckInScreen extends StatefulWidget {
@@ -77,7 +77,9 @@ class CheckInScreenState extends State<CheckInScreen> {
       case CheckInScanResult.upcoming:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const CheckDetailScreen()),
+          MaterialPageRoute(
+            builder: (context) => const ChargingCheckInDetailScreen(),
+          ),
         );
         return;
       case CheckInScanResult.active:

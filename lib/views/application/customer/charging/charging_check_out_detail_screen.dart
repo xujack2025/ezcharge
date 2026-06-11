@@ -6,18 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../service/chatbot_screen.dart';
-import 'check_out_success_screen.dart';
+import 'charging_check_out_success_screen.dart';
 
-class CheckOutDetailScreen extends StatefulWidget {
+class ChargingCheckOutDetailScreen extends StatefulWidget {
   final Duration totalDuration; // Passed in from Timer/StopCharging screen
 
-  const CheckOutDetailScreen({super.key, required this.totalDuration});
+  const ChargingCheckOutDetailScreen({super.key, required this.totalDuration});
 
   @override
-  State<CheckOutDetailScreen> createState() => _CheckOutDetailScreenState();
+  State<ChargingCheckOutDetailScreen> createState() =>
+      _ChargingCheckOutDetailScreenState();
 }
 
-class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
+class _ChargingCheckOutDetailScreenState
+    extends State<ChargingCheckOutDetailScreen> {
   String _accountId = "";
   String _chargerId = "";
   String _stationId = "";
@@ -423,17 +425,18 @@ class _CheckOutDetailScreenState extends State<CheckOutDetailScreen> {
                                         totalAmount,
                                       );
 
-                                      // After successful checkout, navigate to CheckOutSuccessScreen
+                                      // After successful checkout, navigate to ChargingCheckOutSuccessScreen
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => CheckOutSuccessScreen(
-                                            chargingCost:
-                                                totalAmount, // Ensure totalAmount is defined and valid
-                                            penaltyCost:
-                                                _penalty, // Ensure _penalty has the correct value
-                                            duration: durationString,
-                                          ),
+                                          builder: (context) =>
+                                              ChargingCheckOutSuccessScreen(
+                                                chargingCost:
+                                                    totalAmount, // Ensure totalAmount is defined and valid
+                                                penaltyCost:
+                                                    _penalty, // Ensure _penalty has the correct value
+                                                duration: durationString,
+                                              ),
                                         ),
                                       );
                                     } catch (error) {

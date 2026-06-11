@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../check_in_screen.dart';
-import '../../ezcharge/timer_screen.dart';
+import '../../charging/charging_session_timer_screen.dart';
 
 class ActivityScreen extends StatefulWidget {
   final int initialTabIndex;
@@ -440,10 +440,12 @@ class _ActivityScreenState extends State<ActivityScreen>
           padding: const EdgeInsets.all(12.0),
           child: GestureDetector(
             onTap: () {
-              // Navigate to TimerScreen when tapped.
+              // Navigate to ChargingSessionTimerScreen when tapped.
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const TimerScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const ChargingSessionTimerScreen(),
+                ),
               );
             },
             child: Container(
@@ -504,9 +506,9 @@ class _ActivityScreenState extends State<ActivityScreen>
                         ),
                       ),
                       const Spacer(),
-                      // Display the elapsed time from TimerService.
+                      // Display the elapsed time from ChargingSessionTimerService.
                       Text(
-                        "${TimerService.hoursStr}:${TimerService.minutesStr}:${TimerService.secondsStr}",
+                        "${ChargingSessionTimerService.hoursStr}:${ChargingSessionTimerService.minutesStr}:${ChargingSessionTimerService.secondsStr}",
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

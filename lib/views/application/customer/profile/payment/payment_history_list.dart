@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../../core/utils/app_logger.dart';
-import '../../ezcharge/payment_history_detail.dart';
+import '../../charging/charging_payment_history_detail_screen.dart';
 
 class PaymentHistoryListScreen extends StatefulWidget {
   const PaymentHistoryListScreen({super.key});
@@ -138,7 +138,7 @@ class PaymentHistoryListScreenState extends State<PaymentHistoryListScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => PaymentHistoryDetailScreen(
+                    builder: (_) => ChargingPaymentHistoryDetailScreen(
                       accountId: _accountId,
                       paymentDocId: payID,
                     ),

@@ -3,13 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class ReviewScreen extends StatefulWidget {
+class ChargingReviewScreen extends StatefulWidget {
   final String stationId;
   final String stationName;
   final String stationDescription;
   final String stationImage;
 
-  const ReviewScreen({
+  const ChargingReviewScreen({
     super.key,
     required this.stationId,
     required this.stationName,
@@ -18,10 +18,10 @@ class ReviewScreen extends StatefulWidget {
   });
 
   @override
-  State<ReviewScreen> createState() => _ReviewScreenState();
+  State<ChargingReviewScreen> createState() => _ChargingReviewScreenState();
 }
 
-class _ReviewScreenState extends State<ReviewScreen> {
+class _ChargingReviewScreenState extends State<ChargingReviewScreen> {
   int _rating = 0;
   String _comment = "";
   String? _customerId;

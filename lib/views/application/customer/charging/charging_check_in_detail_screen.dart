@@ -4,16 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../service/chatbot_screen.dart';
-import 'start_charging.dart';
+import 'charging_start_screen.dart';
 
-class CheckDetailScreen extends StatefulWidget {
-  const CheckDetailScreen({super.key});
+class ChargingCheckInDetailScreen extends StatefulWidget {
+  const ChargingCheckInDetailScreen({super.key});
 
   @override
-  CheckDetailScreenState createState() => CheckDetailScreenState();
+  ChargingCheckInDetailScreenState createState() =>
+      ChargingCheckInDetailScreenState();
 }
 
-class CheckDetailScreenState extends State<CheckDetailScreen> {
+class ChargingCheckInDetailScreenState
+    extends State<ChargingCheckInDetailScreen> {
   String _accountId = "";
   String _chargerId = "";
   String _stationId = "";
@@ -392,10 +394,10 @@ class CheckDetailScreenState extends State<CheckDetailScreen> {
         context,
       ).showSnackBar(const SnackBar(content: Text("Check-in successful!")));
 
-      // Navigate to StartChargingScreen.
+      // Navigate to ChargingStartScreen.
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const StartChargingScreen()),
+        MaterialPageRoute(builder: (context) => const ChargingStartScreen()),
       );
     } catch (e) {
       debugPrint("Error during check-in: $e");
