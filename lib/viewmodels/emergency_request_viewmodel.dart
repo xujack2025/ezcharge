@@ -1,20 +1,39 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../core/utils/app_logger.dart';
 import '../models/emergency_request_model.dart';
+import '../models/location_search_model.dart';
 import '../services/emergency_request_service.dart';
+import '../services/location_search_service.dart';
+import '../services/location_service.dart';
+
+enum EmergencyRequestSubmitResult {
+  success,
+  missingCustomer,
+  missingDetails,
+  failed,
+}
 
 class EmergencyRequestViewModel extends ChangeNotifier {
   EmergencyRequestViewModel({
     EmergencyRequestServiceContract? emergencyRequestService,
+    LocationServiceContract? locationService,
+    LocationSearchServiceContract? locationSearchService,
   }) : _emergencyRequestService =
-           emergencyRequestService ?? EmergencyRequestService();
+           emergencyRequestService ?? EmergencyRequestService(),
+       _locationService = locationService ?? LocationService(),
+       _locationSearchService =
+           locationSearchService ?? LocationSearchService();
 
   final EmergencyRequestServiceContract _emergencyRequestService;
+  final LocationServiceContract _locationService;
+  final LocationSearchServiceContract _locationSearchService;
 
   File? selectedImage;
   String? uploadedImageUrl;
@@ -33,6 +52,15 @@ class EmergencyRequestViewModel extends ChangeNotifier {
   /// Get Emergency Requests as a Stream (Real-time Updates)
   Stream<List<EmergencyRequest>> getRequests(String customerID) {
     return _emergencyRequestService.watchRequests(customerID);
+  }
+
+  Future<void> loadRequestFormData() async {
+    _setLoading(true);
+    errorMessage = null;
+
+    await Future.wait([loadCurrentCustomerId(), listenForActiveRequest()]);
+
+    _setLoading(false);
   }
 
   Future<void> loadCurrentCustomerId() async {
@@ -90,6 +118,53 @@ class EmergencyRequestViewModel extends ChangeNotifier {
     }
   }
 
+  Future<EmergencyRequestSubmitResult> submitEmergencyRequest({
+    required String? customerId,
+    required LatLng location,
+    required String address,
+    required String? bookingReason,
+  }) async {
+    if (customerId == null || customerId.isEmpty) {
+      errorMessage = "Customer ID not found. Please try again.";
+      notifyListeners();
+      return EmergencyRequestSubmitResult.missingCustomer;
+    }
+
+    if (bookingReason == null || bookingReason.isEmpty || address.isEmpty) {
+      errorMessage = "Please fill in all details.";
+      notifyListeners();
+      return EmergencyRequestSubmitResult.missingDetails;
+    }
+
+    _setLoading(true);
+    errorMessage = null;
+
+    try {
+      final imageUrl = await uploadImageToFirebase();
+      final requestId = "EMQ${DateTime.now().millisecondsSinceEpoch}";
+      final request = EmergencyRequest(
+        requestID: requestId,
+        customerID: customerId,
+        location: GeoPoint(location.latitude, location.longitude),
+        address: address,
+        bookingReason: bookingReason,
+        preferredTime: scheduledDateTime?.toString() ?? "",
+        status: "Pending",
+        imageUrl: imageUrl ?? "",
+      );
+
+      await _emergencyRequestService.createRequest(request);
+      requestID = requestId;
+      return EmergencyRequestSubmitResult.success;
+    } catch (e) {
+      AppLogger.error("Error submitting emergency request: $e");
+      errorMessage = "Failed to submit request. Try again.";
+      return EmergencyRequestSubmitResult.failed;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   /// Update Request Status (Real-time Changes)
   Future<void> updateRequestStatus(String requestID, String status) async {
     try {
@@ -108,6 +183,58 @@ class EmergencyRequestViewModel extends ChangeNotifier {
       selectedImage = File(pickedFile.path);
       uploadedImageUrl = null; // Reset URL (New Image Needs Upload)
       notifyListeners();
+    }
+  }
+
+  Future<LocationSelection?> loadCurrentLocationSelection() async {
+    try {
+      final location = await _locationService.getCurrentLocation();
+      if (location == null) return null;
+
+      final address = await _locationSearchService.reverseGeocode(location);
+      return LocationSelection(location: location, address: address ?? "");
+    } catch (e) {
+      AppLogger.error("Error loading current emergency request location: $e");
+      errorMessage = "Failed to load current location.";
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<List<LocationSuggestion>> fetchAddressSuggestions(String query) async {
+    try {
+      return _locationSearchService.fetchAddressSuggestions(query);
+    } catch (e) {
+      AppLogger.error("Error loading address suggestions: $e");
+      errorMessage = "Failed to load address suggestions.";
+      notifyListeners();
+      return [];
+    }
+  }
+
+  Future<LocationSelection?> selectAddress({
+    required String placeId,
+    required String description,
+  }) async {
+    try {
+      return _locationSearchService.fetchPlaceDetails(
+        placeId: placeId,
+        description: description,
+      );
+    } catch (e) {
+      AppLogger.error("Error selecting address: $e");
+      errorMessage = "Failed to select address.";
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<String?> addressForLocation(LatLng location) async {
+    try {
+      return _locationSearchService.reverseGeocode(location);
+    } catch (e) {
+      AppLogger.error("Error reverse geocoding emergency location: $e");
+      return null;
     }
   }
 
