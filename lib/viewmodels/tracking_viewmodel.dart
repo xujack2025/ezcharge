@@ -1,67 +1,51 @@
-import 'dart:convert';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
 
-import '../secrets.dart';
+import '../core/utils/app_logger.dart';
+import '../models/tracking_model.dart';
+import '../services/tracking_service.dart';
 
 class TrackingViewModel extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  LatLng? driverLocation;
-  LatLng? customerLocation;
-  int estimatedTime = 0;
+  TrackingViewModel({TrackingServiceContract? trackingService})
+    : _trackingService = trackingService ?? TrackingService();
 
-  /// Stream to Track Driver's Live Location
-  Stream<DocumentSnapshot> trackDriverLocation(String driverID) {
-    return _firestore.collection('Drivers').doc(driverID).snapshots();
+  final TrackingServiceContract _trackingService;
+
+  Stream<DriverTrackingInfo?> watchDriver(String driverId) {
+    return _trackingService.watchDriver(driverId);
   }
 
-  /// Extracts Driver Location from Firestore (Handles GeoPoint)
-  LatLng? parseDriverLocation(DocumentSnapshot snapshot) {
-    if (snapshot.exists && snapshot.data() != null) {
-      final Map<String, dynamic> driverData =
-          snapshot.data() as Map<String, dynamic>;
-
-      if (driverData.containsKey('location')) {
-        final location = driverData['Location'];
-        if (location is GeoPoint) {
-          return LatLng(location.latitude, location.longitude);
-        }
-      }
-    }
-    return null;
+  Stream<RequestTrackingInfo?> watchRequest(String requestId) {
+    return _trackingService.watchRequest(requestId);
   }
 
-  /// Stream to Get Tracking Info (Customer Request)
-  Stream<DocumentSnapshot> getTrackingInfo(String requestID) {
-    return _firestore
-        .collection('EmergencyRequests')
-        .doc(requestID)
-        .snapshots();
-  }
-
-  /// Convert Address to LatLng Using Google Geocoding API
-  Future<LatLng?> convertAddressToLatLng(String address) async {
-    final String url =
-        "https://maps.googleapis.com/maps/api/geocode/json?address=${Uri.encodeComponent(address)}&key=${Secrets.googleMapsApiKey}";
-
+  Future<int?> calculateEta({
+    required LatLng driverLocation,
+    required LatLng customerLocation,
+  }) async {
     try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data["Status"] == "OK") {
-          double lat = data["results"][0]["geometry"]["Location"]["lat"];
-          double lng = data["results"][0]["geometry"]["Location"]["lng"];
-          return LatLng(lat, lng);
-        } else {
-          debugPrint("❌ Geocoding API Error: ${data["Status"]}");
-        }
-      }
+      return await _trackingService.fetchEtaMinutes(
+        driverLocation: driverLocation,
+        customerLocation: customerLocation,
+      );
     } catch (e) {
-      debugPrint("❌ Error fetching LatLng: $e");
+      AppLogger.error('Error fetching tracking ETA: $e');
+      return null;
     }
-    return null;
+  }
+
+  Future<List<LatLng>> loadRoutePoints({
+    required LatLng driverLocation,
+    required LatLng customerLocation,
+  }) async {
+    try {
+      return await _trackingService.fetchRoutePoints(
+        driverLocation: driverLocation,
+        customerLocation: customerLocation,
+      );
+    } catch (e) {
+      AppLogger.error('Error fetching tracking route: $e');
+      return [];
+    }
   }
 }
