@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/charging_reservation_charger_model.dart';
+import 'auth_service.dart';
 
 abstract class ChargingReservationServiceContract {
   Future<String?> getCurrentCustomerId();
@@ -22,31 +22,18 @@ abstract class ChargingReservationServiceContract {
 }
 
 class ChargingReservationService implements ChargingReservationServiceContract {
-  ChargingReservationService({FirebaseAuth? auth, FirebaseFirestore? firestore})
-    : _auth = auth ?? FirebaseAuth.instance,
-      _firestore = firestore ?? FirebaseFirestore.instance;
+  ChargingReservationService({
+    AuthServiceContract? authService,
+    FirebaseFirestore? firestore,
+  }) : _authService = authService ?? AuthService(),
+       _firestore = firestore ?? FirebaseFirestore.instance;
 
-  final FirebaseAuth _auth;
+  final AuthServiceContract _authService;
   final FirebaseFirestore _firestore;
 
   @override
   Future<String?> getCurrentCustomerId() async {
-    final phoneNumber = _auth.currentUser?.phoneNumber;
-    if (phoneNumber == null || phoneNumber.isEmpty) {
-      return null;
-    }
-
-    final snapshot = await _firestore
-        .collection("Customers")
-        .where("PhoneNumber", isEqualTo: phoneNumber)
-        .limit(1)
-        .get();
-
-    if (snapshot.docs.isEmpty) {
-      return null;
-    }
-
-    return snapshot.docs.first.data()["CustomerID"]?.toString();
+    return _authService.getCurrentCustomerId();
   }
 
   @override

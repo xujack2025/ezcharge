@@ -1,8 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
 import '../core/utils/app_logger.dart';
 import '../models/customer_model.dart';
+import 'auth_service.dart';
 
 class CustomerProfileData {
   const CustomerProfileData({
@@ -19,37 +17,28 @@ abstract class ProfileServiceContract {
 }
 
 class ProfileService implements ProfileServiceContract {
-  ProfileService({FirebaseAuth? auth, FirebaseFirestore? firestore})
-    : _auth = auth ?? FirebaseAuth.instance,
-      _firestore = firestore ?? FirebaseFirestore.instance;
+  ProfileService({
+    AuthServiceContract? authService,
+  }) : _authService = authService ?? AuthService();
 
-  final FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
+  final AuthServiceContract _authService;
 
   @override
   Future<CustomerProfileData?> fetchCurrentCustomerProfile() async {
-    final phoneNumber = _auth.currentUser?.phoneNumber;
+    final phoneNumber = _authService.getCurrentUserPhoneNumber();
     if (phoneNumber == null || phoneNumber.isEmpty) {
       AppLogger.info('Cannot load profile without a signed-in phone number.');
       return null;
     }
 
     try {
-      final customerSnapshot = await _firestore
-          .collection('Customers')
-          .where('PhoneNumber', isEqualTo: phoneNumber)
-          .limit(1)
-          .get();
-
-      if (customerSnapshot.docs.isEmpty) {
+      final customer = await _authService.getCustomerByPhoneNumber(phoneNumber);
+      if (customer == null) {
         AppLogger.info('No customer profile found for phone: $phoneNumber');
         return null;
       }
 
-      final customer = CustomerModel.fromFirestore(
-        customerSnapshot.docs.first.data(),
-      );
-      final authStatus = await _fetchAuthenticationStatus(customer.id);
+      final authStatus = await _authService.getAuthStatus(customer.id);
 
       return CustomerProfileData(
         customer: customer,
@@ -59,20 +48,5 @@ class ProfileService implements ProfileServiceContract {
       AppLogger.error('Error loading customer profile: $e');
       rethrow;
     }
-  }
-
-  Future<String> _fetchAuthenticationStatus(String customerId) async {
-    if (customerId.isEmpty) return '';
-
-    final doc = await _firestore
-        .collection('Customers')
-        .doc(customerId)
-        .collection('Authenticate')
-        .doc('authentication')
-        .get();
-
-    if (!doc.exists) return '';
-    final data = doc.data();
-    return data?['Status']?.toString() ?? '';
   }
 }

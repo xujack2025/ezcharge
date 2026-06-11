@@ -1,5 +1,5 @@
 import 'package:ezcharge/models/emergency_payment_model.dart';
-import 'package:ezcharge/services/emergency_payment_service.dart';
+import 'package:ezcharge/services/payment_service.dart';
 import 'package:ezcharge/viewmodels/emergency_payment_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
 

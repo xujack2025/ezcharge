@@ -1,5 +1,5 @@
 import 'package:ezcharge/models/charging_checkout_model.dart';
-import 'package:ezcharge/services/charging_payment_service.dart';
+import 'package:ezcharge/services/payment_service.dart';
 import 'package:ezcharge/viewmodels/charging/charging_payment_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
 

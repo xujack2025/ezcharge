@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/charging_checkout_model.dart';
+import 'auth_service.dart';
 
 abstract class CheckInServiceContract {
   String? getCurrentUserPhoneNumber();
@@ -16,32 +16,24 @@ abstract class CheckInServiceContract {
 }
 
 class CheckInService implements CheckInServiceContract {
-  CheckInService({FirebaseAuth? auth, FirebaseFirestore? firestore})
-    : _auth = auth ?? FirebaseAuth.instance,
-      _firestore = firestore ?? FirebaseFirestore.instance;
+  CheckInService({
+    AuthServiceContract? authService,
+    FirebaseFirestore? firestore,
+  }) : _authService = authService ?? AuthService(),
+       _firestore = firestore ?? FirebaseFirestore.instance;
 
-  final FirebaseAuth _auth;
+  final AuthServiceContract _authService;
   final FirebaseFirestore _firestore;
 
   @override
   String? getCurrentUserPhoneNumber() {
-    return _auth.currentUser?.phoneNumber;
+    return _authService.getCurrentUserPhoneNumber();
   }
 
   @override
   Future<String?> getCustomerIdByPhoneNumber(String phoneNumber) async {
-    final querySnapshot = await _firestore
-        .collection("Customers")
-        .where("PhoneNumber", isEqualTo: phoneNumber)
-        .limit(1)
-        .get();
-
-    if (querySnapshot.docs.isEmpty) {
-      return null;
-    }
-
-    final data = querySnapshot.docs.first.data();
-    return data["CustomerID"]?.toString();
+    final customer = await _authService.getCustomerByPhoneNumber(phoneNumber);
+    return customer?.id;
   }
 
   @override

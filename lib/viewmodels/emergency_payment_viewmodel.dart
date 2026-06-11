@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../core/utils/app_logger.dart';
 import '../models/emergency_payment_model.dart';
-import '../services/emergency_payment_service.dart';
+import '../services/payment_service.dart';
 
 enum EmergencyPaymentResult { success, insufficientBalance, noCustomer, failed }
 

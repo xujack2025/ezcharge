@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/charging_checkout_model.dart';
+import 'auth_service.dart';
 
 abstract class ChargingCheckoutServiceContract {
   Future<ChargingCheckoutDetails?> fetchCheckoutDetails();
@@ -16,16 +16,18 @@ abstract class ChargingCheckoutServiceContract {
 }
 
 class ChargingCheckoutService implements ChargingCheckoutServiceContract {
-  ChargingCheckoutService({FirebaseAuth? auth, FirebaseFirestore? firestore})
-    : _auth = auth ?? FirebaseAuth.instance,
-      _firestore = firestore ?? FirebaseFirestore.instance;
+  ChargingCheckoutService({
+    AuthServiceContract? authService,
+    FirebaseFirestore? firestore,
+  }) : _authService = authService ?? AuthService(),
+       _firestore = firestore ?? FirebaseFirestore.instance;
 
-  final FirebaseAuth _auth;
+  final AuthServiceContract _authService;
   final FirebaseFirestore _firestore;
 
   @override
   Future<ChargingCheckoutDetails?> fetchCheckoutDetails() async {
-    final customerId = await _fetchCurrentCustomerId();
+    final customerId = await _authService.getCurrentCustomerId();
     if (customerId == null || customerId.isEmpty) return null;
 
     final reservationDoc = await _firestore
@@ -103,21 +105,6 @@ class ChargingCheckoutService implements ChargingCheckoutServiceContract {
         .collection('Charger')
         .doc(details.chargerId)
         .update({'Status': 'Available'});
-  }
-
-  Future<String?> _fetchCurrentCustomerId() async {
-    final phoneNumber = _auth.currentUser?.phoneNumber;
-    if (phoneNumber == null || phoneNumber.isEmpty) return null;
-
-    final querySnapshot = await _firestore
-        .collection('Customers')
-        .where('PhoneNumber', isEqualTo: phoneNumber)
-        .limit(1)
-        .get();
-    if (querySnapshot.docs.isEmpty) return null;
-
-    return querySnapshot.docs.first.data()['CustomerID']?.toString() ??
-        querySnapshot.docs.first.id;
   }
 
   static DateTime _parseDateTime(Object? value) {

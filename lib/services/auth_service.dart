@@ -29,6 +29,8 @@ abstract class AuthServiceContract {
 
   String? getCurrentUserPhoneNumber();
 
+  Future<String?> getCurrentCustomerId();
+
   Future<void> signout();
 }
 
@@ -189,6 +191,32 @@ class AuthService implements AuthServiceContract {
   @override
   String? getCurrentUserPhoneNumber() {
     return _auth.currentUser?.phoneNumber;
+  }
+
+  @override
+  Future<String?> getCurrentCustomerId() async {
+    final phoneNumber = getCurrentUserPhoneNumber();
+    if (phoneNumber == null || phoneNumber.isEmpty) {
+      return null;
+    }
+
+    try {
+      final querySnapshot = await _firestore
+          .collection('Customers')
+          .where('PhoneNumber', isEqualTo: phoneNumber)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        return null;
+      }
+
+      final data = querySnapshot.docs.first.data();
+      return data['CustomerID']?.toString() ?? querySnapshot.docs.first.id;
+    } catch (e) {
+      AppLogger.error("Error fetching current customer ID: $e");
+      return null;
+    }
   }
 
   @override

@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import '../models/emergency_request_model.dart';
+import 'auth_service.dart';
 
 class ActiveEmergencyRequest {
   const ActiveEmergencyRequest({required this.exists, this.requestId});
@@ -43,14 +43,14 @@ abstract class EmergencyRequestServiceContract {
 
 class EmergencyRequestService implements EmergencyRequestServiceContract {
   EmergencyRequestService({
-    FirebaseAuth? auth,
+    AuthServiceContract? authService,
     FirebaseFirestore? firestore,
     FirebaseStorage? storage,
-  }) : _auth = auth ?? FirebaseAuth.instance,
+  }) : _authService = authService ?? AuthService(),
        _firestore = firestore ?? FirebaseFirestore.instance,
        _storage = storage ?? FirebaseStorage.instance;
 
-  final FirebaseAuth _auth;
+  final AuthServiceContract _authService;
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
 
@@ -64,23 +64,13 @@ class EmergencyRequestService implements EmergencyRequestServiceContract {
 
   @override
   String? getCurrentUserPhoneNumber() {
-    return _auth.currentUser?.phoneNumber;
+    return _authService.getCurrentUserPhoneNumber();
   }
 
   @override
   Future<String?> getCustomerIdByPhoneNumber(String phoneNumber) async {
-    final querySnapshot = await _firestore
-        .collection("Customers")
-        .where("PhoneNumber", isEqualTo: phoneNumber)
-        .limit(1)
-        .get();
-
-    if (querySnapshot.docs.isEmpty) {
-      return null;
-    }
-
-    final data = querySnapshot.docs.first.data();
-    return data["CustomerID"]?.toString();
+    final customer = await _authService.getCustomerByPhoneNumber(phoneNumber);
+    return customer?.id;
   }
 
   @override

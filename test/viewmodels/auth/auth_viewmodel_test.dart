@@ -101,6 +101,11 @@ class FakeAuthService implements AuthServiceContract {
   }
 
   @override
+  Future<String?> getCurrentCustomerId() async {
+    return customer?.id;
+  }
+
+  @override
   Future<void> signout() {
     throw UnimplementedError();
   }

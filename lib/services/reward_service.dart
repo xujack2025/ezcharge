@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../core/utils/app_logger.dart';
 import '../models/reward_model.dart';
+import 'auth_service.dart';
 
 enum RewardRedeemStatus { success, alreadyRedeemed, customerNotFound }
 
@@ -32,27 +32,24 @@ abstract class RewardServiceContract {
 }
 
 class RewardService implements RewardServiceContract {
-  RewardService({FirebaseFirestore? firestore, FirebaseAuth? auth})
-    : _firestore = firestore ?? FirebaseFirestore.instance,
-      _auth = auth ?? FirebaseAuth.instance;
+  RewardService({
+    FirebaseFirestore? firestore,
+    AuthServiceContract? authService,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _authService = authService ?? AuthService();
 
   final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  final AuthServiceContract _authService;
 
   @override
   Future<CustomerRewardState?> fetchCurrentCustomerRewardState() async {
-    final phoneNumber = _auth.currentUser?.phoneNumber;
-    if (phoneNumber == null || phoneNumber.isEmpty) return null;
+    final customerId = await _authService.getCurrentCustomerId();
+    if (customerId == null || customerId.isEmpty) return null;
 
-    final querySnapshot = await _firestore
-        .collection('Customers')
-        .where('PhoneNumber', isEqualTo: phoneNumber)
-        .limit(1)
-        .get();
+    final doc = await _firestore.collection('Customers').doc(customerId).get();
+    if (!doc.exists) return null;
 
-    if (querySnapshot.docs.isEmpty) return null;
-
-    return _customerRewardStateFromSnapshot(querySnapshot.docs.first);
+    return _customerRewardStateFromSnapshot(doc);
   }
 
   @override
@@ -143,9 +140,9 @@ class RewardService implements RewardServiceContract {
   }
 
   CustomerRewardState _customerRewardStateFromSnapshot(
-    QueryDocumentSnapshot<Map<String, dynamic>> snapshot,
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
   ) {
-    final data = snapshot.data();
+    final data = snapshot.data() ?? {};
     return CustomerRewardState(
       customerId: (data['CustomerID'] ?? snapshot.id).toString(),
       pointBalance: _parseInt(data['PointBalance']),

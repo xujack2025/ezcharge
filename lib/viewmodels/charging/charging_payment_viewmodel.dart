@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../core/utils/app_logger.dart';
 import '../../models/charging_checkout_model.dart';
-import '../../services/charging_payment_service.dart';
+import '../../services/payment_service.dart';
 
 enum ChargingPaymentResult { success, insufficientBalance, noCustomer, failed }
 

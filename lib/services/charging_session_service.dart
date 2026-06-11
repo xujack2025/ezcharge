@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/charging_session_model.dart';
+import 'auth_service.dart';
 
 abstract class ChargingSessionServiceContract {
   Future<ChargingSessionInfo?> fetchCurrentSession();
@@ -10,33 +10,19 @@ abstract class ChargingSessionServiceContract {
 }
 
 class ChargingSessionService implements ChargingSessionServiceContract {
-  ChargingSessionService({FirebaseAuth? auth, FirebaseFirestore? firestore})
-    : _auth = auth ?? FirebaseAuth.instance,
-      _firestore = firestore ?? FirebaseFirestore.instance;
+  ChargingSessionService({
+    AuthServiceContract? authService,
+    FirebaseFirestore? firestore,
+  }) : _authService = authService ?? AuthService(),
+       _firestore = firestore ?? FirebaseFirestore.instance;
 
-  final FirebaseAuth _auth;
+  final AuthServiceContract _authService;
   final FirebaseFirestore _firestore;
 
   @override
   Future<ChargingSessionInfo?> fetchCurrentSession() async {
-    final phoneNumber = _auth.currentUser?.phoneNumber;
-    if (phoneNumber == null || phoneNumber.isEmpty) {
-      return null;
-    }
-
-    final customerSnapshot = await _firestore
-        .collection("Customers")
-        .where("PhoneNumber", isEqualTo: phoneNumber)
-        .limit(1)
-        .get();
-
-    if (customerSnapshot.docs.isEmpty) {
-      return null;
-    }
-
-    final customerId =
-        customerSnapshot.docs.first.data()["CustomerID"]?.toString() ?? "";
-    if (customerId.isEmpty) {
+    final customerId = await _authService.getCurrentCustomerId();
+    if (customerId == null || customerId.isEmpty) {
       return null;
     }
 
