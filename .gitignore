@@ -47,3 +47,12 @@ app.*.map.json
 # Environment & configuration
 .env
 key.json
+
+# Node & dependencies
+node_modules/
+package.json
+package-lock.json
+
+# Firestore migration tools
+list_fields.js
+migrate_to_pascal.js
