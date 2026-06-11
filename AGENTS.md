@@ -35,6 +35,14 @@ The app already has the beginnings of the target structure:
 
 ## Architecture Rules
 
+### UI & Styling Rules (Strict)
+* **Scope-based Reusability**: 
+  * If a widget is shared across **multiple features**, it belongs in `lib/core/widgets/`.
+  * If a widget is only reused within a **single feature**, keep it inside that feature's directory (e.g., `lib/views/auth/widgets/`). Do not pollute `core/`.
+* **Design Tokens & Constants**: 
+  * NEVER hardcode raw colors (e.g., `Colors.blue`) or inline fonts. Use global themes/styles.
+  * Repeated general strings (e.g., "Loading...", "Confirm") go to `core/constants/`. Feature-specific labels stay in the feature level.
+
 ### Views
 * **Should:** Build widgets, layouts, dialogs, sheets, and form controls; use Provider's `context.watch<T>()`, `context.read<T>()`, etc.; own ephemeral widget-only objects (e.g., `TextEditingController`, `FocusNode`); trigger intent methods on viewmodels; handle navigation after a viewmodel returns a success/failure result.
 * **Should Not:** Query Firestore/Auth/Storage directly; build Firestore document maps inline for business operations; contain fee calculations, authentication lookup, or reservation rules; pass `BuildContext` into a viewmodel unless there is no practical migration path yet.
@@ -69,12 +77,16 @@ The app already has the beginnings of the target structure:
   3. Once complete, commit changes and hand the temporary branch over to `@reviewer`.
 
 ### @reviewer
-**The architecture, quality, and test reviewer (Combined with Tester role).** Reviews for regressions, ensures the change aligns with MVVM + Provider, and verifies module testability.
+**The architecture, quality, business-logic, and test reviewer (Combined with Tester role).** Reviews for regressions, ensures the change aligns with MVVM + Provider, verifies module testability, and acts as the project's Reality Checker.
 * **Responsibilities:**
   * **Code Review:** Check for direct Firebase usage in views, external clients leaking into viewmodels, `BuildContext` violations, missing disposal logic, or accidental Firestore field renames. Reject immediately if live DB/network clients are instantiated without services.
   * **Testing & Verification:** Verify that dependencies are properly mocked; **ensure `flutter test` is executed on the branch** to verify loading/success/error flows and mapping serialization without crashing on missing Firebase initialization.
-* **Review Stance:** Findings first, ordered by severity with file and line references. Approve incremental progress when code is clean, behavior is fully tested with mocks, and remaining legacy debt is explicitly documented.
-
+  * **🧩 Human & Domain Sanity Audit (Generic Logic Review):** Actively audit the developer's implementations for "common-sense" and logical gaps. Specifically inspect:
+    - **Intuitive Workflow Completeness:** Ensure flows are designed around user goals, not technical limitations. (e.g., If a goal logically requires a dependency—like eating soup requires a spoon, or entering a system requires a valid identity—the system must automatically facilitate or resolve that dependency rather than outputting a raw obstruction or error).
+    - **Graceful Failure Fallbacks:** Check that error handling acts as a "soft net" instead of a harsh dead-end. Code must anticipate obvious alternative paths when an initial action cannot proceed.
+    - **Zero Leakage of Raw Exceptions:** Review that backend/database specific technical errors are always caught, mapped, and translated into meaningful context before reaching the user interface.
+  * **Inspect widget placement:** Ensure local widgets aren't leaked into `core/`, and global widgets aren't duplicated across features.
+* **Review Stance:** Findings first, ordered by severity with file and line references. If an implementation follows syntax rules but violates basic operational common sense, intuitive workflows, or real-world logic, **REJECT** the code immediately and make the developer fix the logical gap. Approve incremental progress only when code is clean, behavior is fully tested with mocks, and remaining legacy debt is explicitly documented.
 ---
 
 ## Automated Workflow Pipeline (The Relay Race)
