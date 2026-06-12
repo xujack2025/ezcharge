@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
 import '../../core/routes/app_routes.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
-import '../reports/admin_report.dart';
+import 'reports/admin_report.dart';
 import 'admin_authenticate.dart';
 import 'admin_emergency_requests.dart';
 import 'admin_notification.dart';
