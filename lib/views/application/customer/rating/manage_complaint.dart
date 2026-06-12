@@ -1,94 +1,70 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-class ManageComplaintsPage extends StatefulWidget {
+import '../../../../../../models/customer_rating_model.dart';
+import '../../../../../../viewmodels/application/manage_complaints_viewmodel.dart';
+
+class ManageComplaintsPage extends StatelessWidget {
   const ManageComplaintsPage({super.key});
 
   @override
-  State<ManageComplaintsPage> createState() => _ManageComplaintsPageState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ManageComplaintsViewModel(),
+      child: const _ManageComplaintsContent(),
+    );
+  }
 }
 
-class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  String? _customerID; // Store fetched CustomerID
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchCustomerID(); // Fetch CustomerID once
-  }
-
-  // 🔹 **Fetch CustomerID Once**
-  Future<void> _fetchCustomerID() async {
-    final User? user = _auth.currentUser;
-    if (user == null) return;
-
-    var customerQuery = await _firestore
-        .collection("Customers")
-        .where("PhoneNumber", isEqualTo: user.phoneNumber)
-        .limit(1)
-        .get();
-
-    if (customerQuery.docs.isNotEmpty) {
-      setState(() {
-        _customerID = customerQuery.docs.first["CustomerID"];
-      });
-    }
-  }
+class _ManageComplaintsContent extends StatelessWidget {
+  const _ManageComplaintsContent();
 
   @override
   Widget build(BuildContext context) {
-    if (_customerID == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text("Manage My Complaints"),
-          elevation: 4,
-          backgroundColor: Colors.blueAccent,
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
+    final viewModel = context.watch<ManageComplaintsViewModel>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Manage My Complaints"),
+        title: const Text('Manage My Complaints'),
         elevation: 4,
         backgroundColor: Colors.blueAccent,
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore
-            .collection("Customers")
-            .doc(_customerID)
-            .collection("complaints")
-            .orderBy("ComplaintDate", descending: true)
-            .snapshots(),
+      body: StreamBuilder<List<CustomerComplaint>>(
+        stream: viewModel.watchComplaints(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                viewModel.errorMessage ?? 'Unable to load complaints.',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            );
+          }
+
+          final complaints = snapshot.data ?? const <CustomerComplaint>[];
+          if (complaints.isEmpty) {
             return const Center(
               child: Text(
-                "No complaints found.",
+                'No complaints found.',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
             );
           }
 
-          var complaints = snapshot.data!.docs;
-
           return ListView.builder(
             itemCount: complaints.length,
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             itemBuilder: (context, index) {
-              var complaint = complaints[index].data() as Map<String, dynamic>;
-              String complaintId = complaints[index].id;
-
+              final complaint = complaints[index];
               return Hero(
-                tag: complaintId,
+                tag: complaint.documentId,
                 child: Card(
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   shape: RoundedRectangleBorder(
@@ -101,7 +77,7 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
                       borderRadius: BorderRadius.circular(12),
                       gradient: LinearGradient(
                         colors: [
-                          _getStatusBackgroundColor(complaint["Status"]),
+                          _getStatusBackgroundColor(complaint.status),
                           Colors.white,
                         ],
                         begin: Alignment.topLeft,
@@ -111,14 +87,16 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
                     child: ListTile(
                       contentPadding: const EdgeInsets.all(12),
                       leading: CircleAvatar(
-                        backgroundColor: _getStatusColor(complaint["Status"]),
+                        backgroundColor: _getStatusColor(complaint.status),
                         child: Icon(
-                          _getStatusIcon(complaint["Status"]),
+                          _getStatusIcon(complaint.status),
                           color: Colors.white,
                         ),
                       ),
                       title: Text(
-                        complaint["Reason"] ?? "No reason provided",
+                        complaint.reason.isEmpty
+                            ? 'No reason provided'
+                            : complaint.reason,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -129,15 +107,15 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
                         children: [
                           const SizedBox(height: 4),
                           Text(
-                            "Status: ${complaint["Status"] ?? "Pending"}",
+                            'Status: ${complaint.status}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: _getStatusColor(complaint["Status"]),
+                              color: _getStatusColor(complaint.status),
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "Date: ${_formatDate(complaint["ComplaintDate"])}",
+                            'Date: ${_formatDate(complaint.complaintDate)}',
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.black54,
@@ -151,7 +129,13 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
                         color: Colors.black54,
                       ),
                       onTap: () {
-                        _showComplaintDetails(context, complaint, complaintId);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ComplaintDetailScreen(complaint: complaint),
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -164,83 +148,55 @@ class _ManageComplaintsPageState extends State<ManageComplaintsPage> {
     );
   }
 
-  // Get Status Color
-  Color _getStatusColor(String? status) {
-    switch (status?.toLowerCase()) {
-      case "resolved":
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'resolved':
         return Colors.green;
-      case "in progress":
+      case 'in progress':
         return Colors.orange;
       default:
         return Colors.red;
     }
   }
 
-  // Get Status Icon
-  IconData _getStatusIcon(String? status) {
-    switch (status?.toLowerCase()) {
-      case "resolved":
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'resolved':
         return Icons.check_circle;
-      case "in progress":
+      case 'in progress':
         return Icons.sync;
       default:
         return Icons.hourglass_empty;
     }
   }
 
-  // Get Status Background Color
-  Color _getStatusBackgroundColor(String? status) {
-    switch (status?.toLowerCase()) {
-      case "resolved":
+  Color _getStatusBackgroundColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'resolved':
         return Colors.green.shade100;
-      case "in progress":
+      case 'in progress':
         return Colors.blue.shade100;
       default:
         return Colors.yellow.shade100;
     }
   }
 
-  // Format Date
-  String _formatDate(Timestamp? timestamp) {
-    if (timestamp == null) return "No date";
-    DateTime date = timestamp.toDate();
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'No date';
     return DateFormat('yyyy-MM-dd').format(date);
-  }
-
-  // Show Complaint Details with Hero Animation
-  void _showComplaintDetails(
-    BuildContext context,
-    Map<String, dynamic> complaint,
-    String complaintId,
-  ) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ComplaintDetailScreen(
-          complaint: complaint,
-          complaintId: complaintId,
-        ),
-      ),
-    );
   }
 }
 
-// Complaint Detail Screen (New Page)
 class ComplaintDetailScreen extends StatelessWidget {
-  final Map<String, dynamic> complaint;
-  final String complaintId;
+  final CustomerComplaint complaint;
 
-  const ComplaintDetailScreen({
-    super.key,
-    required this.complaint,
-    required this.complaintId,
-  });
+  const ComplaintDetailScreen({super.key, required this.complaint});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Complaint Details"),
+        title: const Text('Complaint Details'),
         backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
@@ -249,11 +205,13 @@ class ComplaintDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Hero(
-              tag: complaintId,
+              tag: complaint.documentId,
               child: Material(
                 color: Colors.transparent,
                 child: Text(
-                  complaint["Reason"] ?? "No reason provided",
+                  complaint.reason.isEmpty
+                      ? 'No reason provided'
+                      : complaint.reason,
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -263,12 +221,12 @@ class ComplaintDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              "Description: ${complaint["Description"] ?? "No description provided"}",
+              'Description: ${complaint.description.isEmpty ? 'No description provided' : complaint.description}',
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 10),
             Text(
-              "Status: ${complaint["Status"] ?? "Pending"}",
+              'Status: ${complaint.status}',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -277,9 +235,16 @@ class ComplaintDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              "Date: ${complaint["ComplaintDate"]?.toDate().toString().split(" ")[0] ?? "No date"}",
+              'Date: ${complaint.complaintDate == null ? 'No date' : DateFormat('yyyy-MM-dd').format(complaint.complaintDate!)}',
               style: const TextStyle(fontSize: 16, color: Colors.black54),
             ),
+            if (complaint.chargerBay.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Text(
+                'Bay: ${complaint.chargerBay}',
+                style: const TextStyle(fontSize: 16, color: Colors.black54),
+              ),
+            ],
           ],
         ),
       ),

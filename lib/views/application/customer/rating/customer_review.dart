@@ -1,10 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../../../viewmodels/application/customer_review_viewmodel.dart';
 import 'manage_reviews.dart';
 
-class ReviewPage extends StatefulWidget {
+class ReviewPage extends StatelessWidget {
   final String stationId;
   final String stationName;
   final String stationDescription;
@@ -19,166 +19,85 @@ class ReviewPage extends StatefulWidget {
   });
 
   @override
-  State<ReviewPage> createState() => _ReviewPageState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => CustomerReviewViewModel()..loadCustomer(),
+      child: _ReviewContent(
+        stationId: stationId,
+        stationName: stationName,
+        stationDescription: stationDescription,
+        stationImage: stationImage,
+      ),
+    );
+  }
 }
 
-class _ReviewPageState extends State<ReviewPage> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final TextEditingController _reviewController = TextEditingController();
-  double _rating = 0;
-  String _username = "Guest";
-  bool _isSubmitting = false;
-  String? _comment;
+class _ReviewContent extends StatefulWidget {
+  const _ReviewContent({
+    required this.stationId,
+    required this.stationName,
+    required this.stationDescription,
+    required this.stationImage,
+  });
+
+  final String stationId;
+  final String stationName;
+  final String stationDescription;
+  final String stationImage;
 
   @override
-  void initState() {
-    super.initState();
-    _fetchUserData();
-  }
+  State<_ReviewContent> createState() => _ReviewContentState();
+}
 
-  void _fetchUserData() async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      var customerQuery = await _firestore
-          .collection("Customers")
-          .where("PhoneNumber", isEqualTo: user.phoneNumber)
-          .limit(1)
-          .get();
+class _ReviewContentState extends State<_ReviewContent> {
+  final TextEditingController _reviewController = TextEditingController();
 
-      if (customerQuery.docs.isNotEmpty) {
-        setState(() {
-          _username = customerQuery.docs.first["FirstName"] ?? "Guest";
-        });
-      }
-    }
+  @override
+  void dispose() {
+    _reviewController.dispose();
+    super.dispose();
   }
 
   Future<void> _submitReview() async {
-    if (_isSubmitting) return;
+    final viewModel = context.read<CustomerReviewViewModel>();
+    final messenger = ScaffoldMessenger.of(context);
+    final result = await viewModel.submitReview(widget.stationId);
+    if (!mounted) return;
 
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("You must be logged in to submit a review."),
-        ),
-      );
-      setState(() {
-        _isSubmitting = false;
-      });
-      return;
-    }
-
-    if (_rating == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a star rating.")),
-      );
-      setState(() {
-        _isSubmitting = false;
-      });
-      return;
-    }
-
-    try {
-      // Retrieve customer ID
-      var customerQuery = await _firestore
-          .collection("Customers")
-          .where("PhoneNumber", isEqualTo: user.phoneNumber)
-          .limit(1)
-          .get();
-
-      if (customerQuery.docs.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "Customer profile not found. Please contact support.",
-            ),
+    switch (result) {
+      case CustomerReviewSubmitResult.success:
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Review submitted successfully!')),
+        );
+        _reviewController.clear();
+        Navigator.pop(context);
+      case CustomerReviewSubmitResult.missingRating:
+      case CustomerReviewSubmitResult.customerNotFound:
+      case CustomerReviewSubmitResult.failed:
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(viewModel.errorMessage ?? 'Unable to submit review.'),
           ),
         );
-        setState(() {
-          _isSubmitting = false;
-        });
-        return;
-      }
-
-      String customerID = customerQuery.docs.first["CustomerID"];
-
-      // Generate Custom Review ID
-      CollectionReference reviewsRef = _firestore.collection("Reviews");
-      QuerySnapshot lastReviewSnapshot = await reviewsRef
-          .orderBy("ReviewID", descending: true)
-          .limit(1)
-          .get();
-
-      String newReviewID;
-      if (lastReviewSnapshot.docs.isEmpty) {
-        newReviewID = "RVW0001"; // First review ID
-      } else {
-        // Extract last ReviewID and increment
-        String lastReviewID = lastReviewSnapshot.docs.first["ReviewID"];
-        RegExp regex = RegExp(r'RVW(\d{4})$');
-
-        if (!regex.hasMatch(lastReviewID)) {
-          newReviewID = "RVW0001"; // Fallback in case of incorrect format
-        } else {
-          int lastNumber = int.parse(regex.firstMatch(lastReviewID)!.group(1)!);
-          newReviewID =
-              "RVW${(lastNumber + 1).toString().padLeft(4, '0')}"; // Increment & format
-        }
-      }
-
-      // Store the Review with the Custom ID
-      await reviewsRef.doc(newReviewID).set({
-        'ReviewID': newReviewID, // Custom review ID
-        'StationID': widget.stationId,
-        'CustomerID': customerID,
-        'CustomerName': _username,
-        'Rating': _rating,
-        'ReviewText': _comment ?? "",
-        'ReviewDate': FieldValue.serverTimestamp(),
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Review submitted successfully!")),
-      );
-
-      setState(() {
-        _isSubmitting = false;
-        _rating = 0;
-        _reviewController.clear();
-        _comment = "";
-      });
-
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error submitting review: $e")));
-      setState(() {
-        _isSubmitting = false;
-      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<CustomerReviewViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
-            // Top App Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    "Review",
+                    'Review',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   GestureDetector(
@@ -196,8 +115,6 @@ class _ReviewPageState extends State<ReviewPage> {
                 ],
               ),
             ),
-
-            // Station Details Card
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Card(
@@ -243,7 +160,7 @@ class _ReviewPageState extends State<ReviewPage> {
                               children: [
                                 Icon(Icons.bolt, color: Colors.green, size: 18),
                                 Text(
-                                  " Available ",
+                                  ' Available ',
                                   style: TextStyle(fontSize: 14),
                                 ),
                                 Icon(
@@ -261,8 +178,6 @@ class _ReviewPageState extends State<ReviewPage> {
                 ),
               ),
             ),
-
-            // Review Input Fields
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -270,15 +185,13 @@ class _ReviewPageState extends State<ReviewPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "Share your experience:",
+                      'Share your experience:',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    // User Info
                     Row(
                       children: [
                         const CircleAvatar(
@@ -288,7 +201,7 @@ class _ReviewPageState extends State<ReviewPage> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          _username,
+                          viewModel.username,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -297,20 +210,21 @@ class _ReviewPageState extends State<ReviewPage> {
                         ),
                       ],
                     ),
+                    if (viewModel.isLoading)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: LinearProgressIndicator(),
+                      ),
                     const SizedBox(height: 10),
-
-                    // Star Rating with Gesture Animation
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(5, (index) {
                         return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _rating = index + 1;
-                            });
-                          },
+                          onTap: () => viewModel.updateRating(index + 1),
                           child: Icon(
-                            index < _rating ? Icons.star : Icons.star_border,
+                            index < viewModel.rating
+                                ? Icons.star
+                                : Icons.star_border,
                             color: Colors.amber,
                             size: 32,
                           ),
@@ -318,37 +232,29 @@ class _ReviewPageState extends State<ReviewPage> {
                       }),
                     ),
                     const SizedBox(height: 10),
-
-                    // Comment Box
                     TextField(
                       maxLines: 4,
                       maxLength: 500,
                       controller: _reviewController,
                       decoration: InputDecoration(
-                        hintText: "Write your experience here (optional)",
+                        hintText: 'Write your experience here (optional)',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         contentPadding: const EdgeInsets.all(12),
                       ),
-                      onChanged: (value) {
-                        setState(() {
-                          _comment = value;
-                        });
-                      },
+                      onChanged: viewModel.updateComment,
                     ),
                   ],
                 ),
               ),
             ),
-
-            // Submit & Manage Buttons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Column(
                 children: [
                   ElevatedButton(
-                    onPressed: _isSubmitting ? null : _submitReview,
+                    onPressed: viewModel.isSubmitting ? null : _submitReview,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       minimumSize: const Size(double.infinity, 50),
@@ -356,17 +262,14 @@ class _ReviewPageState extends State<ReviewPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: _isSubmitting
+                    child: viewModel.isSubmitting
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
-                            "SUBMIT",
+                            'SUBMIT',
                             style: TextStyle(color: Colors.white, fontSize: 16),
                           ),
                   ),
-
                   const SizedBox(height: 10),
-
-                  // Manage My Reviews Button
                   OutlinedButton.icon(
                     onPressed: () {
                       Navigator.push(
@@ -378,7 +281,7 @@ class _ReviewPageState extends State<ReviewPage> {
                     },
                     icon: const Icon(Icons.settings, color: Colors.blue),
                     label: const Text(
-                      "Manage My Reviews",
+                      'Manage My Reviews',
                       style: TextStyle(fontSize: 16),
                     ),
                     style: OutlinedButton.styleFrom(

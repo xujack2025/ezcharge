@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 
@@ -22,7 +19,6 @@ class CheckInScreen extends StatefulWidget {
 
 class CheckInScreenState extends State<CheckInScreen> {
   final MobileScannerController _scannerController = MobileScannerController();
-  File? _selectedImage; // Store the picked image
 
   @override
   void initState() {
@@ -48,27 +44,23 @@ class CheckInScreenState extends State<CheckInScreen> {
 
   //Pick Image from Gallery and Scan for QR Code
   Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-    );
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-      });
+    final selectedImage = await context
+        .read<CheckInViewModel>()
+        .pickImageFromGallery();
+    if (selectedImage == null) return;
 
-      //Scan the selected image for QR Code
-      _scannerController
-          .analyzeImage(_selectedImage!.path)
-          .then((capture) {
-            if (capture != null && capture.barcodes.isNotEmpty) {
-              final String scannedData = capture.barcodes.first.rawValue ?? "";
-              _showScannedData(scannedData);
-            }
-          })
-          .catchError((error) {
-            AppLogger.error("Error scanning image: $error");
-          });
-    }
+    //Scan the selected image for QR Code
+    _scannerController
+        .analyzeImage(selectedImage.path)
+        .then((capture) {
+          if (capture != null && capture.barcodes.isNotEmpty) {
+            final String scannedData = capture.barcodes.first.rawValue ?? "";
+            _showScannedData(scannedData);
+          }
+        })
+        .catchError((error) {
+          AppLogger.error("Error scanning image: $error");
+        });
   }
 
   ///Show Scanned QR Code Data in a Dialog
@@ -111,6 +103,8 @@ class CheckInScreenState extends State<CheckInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedImage = context.watch<CheckInViewModel>().selectedImage;
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -176,16 +170,12 @@ class CheckInScreenState extends State<CheckInScreen> {
           ),
 
           //Display Selected Image (If available)
-          if (_selectedImage != null)
+          if (selectedImage != null)
             Positioned(
               bottom: 250,
               left: 20,
               right: 20,
-              child: Image.file(
-                _selectedImage!,
-                height: 200,
-                fit: BoxFit.cover,
-              ),
+              child: Image.file(selectedImage, height: 200, fit: BoxFit.cover),
             ),
 
           //Upload Button

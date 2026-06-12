@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../models/location_search_model.dart';
+import '../../../../services/image_picker_service.dart';
 import '../../../../viewmodels/emergency_request_viewmodel.dart';
 
 class EmergencyRequestView extends StatefulWidget {
@@ -317,8 +317,9 @@ class EmergencyRequestViewState extends State<EmergencyRequestView> {
                   const SizedBox(height: 10),
                   requestViewModel.selectedImage == null
                       ? ElevatedButton.icon(
-                          onPressed: () =>
-                              requestViewModel.pickImage(ImageSource.gallery),
+                          onPressed: () => requestViewModel.pickImage(
+                            AppImageSource.gallery,
+                          ),
                           icon: const Icon(Icons.image),
                           label: const Text("Upload Image"),
                         )

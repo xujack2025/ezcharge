@@ -20,6 +20,11 @@ class _FakeRewardService implements RewardServiceContract {
   }
 
   @override
+  Future<RewardHistoryState> fetchRewardHistory({DateTime? now}) async {
+    return const RewardHistoryState(expiredRewards: [], usedRewards: []);
+  }
+
+  @override
   Future<RewardRedeemResult> redeemReward({
     required String customerId,
     required RewardModel reward,

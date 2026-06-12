@@ -1,116 +1,49 @@
-import 'dart:convert';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
-import '../../../../secrets.dart';
+import '../../../../models/chatbot_model.dart';
+import '../../../../viewmodels/application/chatbot_viewmodel.dart';
 
-class ChatbotScreen extends StatefulWidget {
+class ChatbotScreen extends StatelessWidget {
   const ChatbotScreen({super.key});
 
   @override
-  ChatbotScreenState createState() => ChatbotScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ChatbotViewModel()..loadCustomerName(),
+      child: const _ChatbotContent(),
+    );
+  }
 }
 
-class ChatbotScreenState extends State<ChatbotScreen> {
-  String _customerName = "";
-  final List<Message> _messages = [];
+class _ChatbotContent extends StatefulWidget {
+  const _ChatbotContent();
+
+  @override
+  State<_ChatbotContent> createState() => _ChatbotContentState();
+}
+
+class _ChatbotContentState extends State<_ChatbotContent> {
   final TextEditingController _textEditingController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    _fetchCustomerData();
+  void dispose() {
+    _textEditingController.dispose();
+    super.dispose();
   }
 
-  Future<void> _fetchCustomerData() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-
-          setState(() {
-            _customerName = "${userDoc["FirstName"]} ${userDoc["LastName"]}";
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-    }
-  }
-
-  void onSendMessage() async {
-    Message message = Message(text: _textEditingController.text, isMe: true);
+  Future<void> _sendMessage() async {
+    final text = _textEditingController.text;
     _textEditingController.clear();
+    final result = await context.read<ChatbotViewModel>().sendMessage(text);
+    if (!mounted || result != ChatbotSendResult.emptyMessage) return;
 
-    setState(() {
-      _messages.insert(0, message);
-    });
-
-    String response = await sendMessageToChatGpt(message.text);
-
-    Message chatGpt = Message(text: response, isMe: false);
-
-    setState(() {
-      _messages.insert(0, chatGpt);
-    });
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Please enter a message.')));
   }
 
-  Future<String> sendMessageToChatGpt(String message) async {
-    Uri uri = Uri.parse("https://api.openai.com/v1/chat/completions");
-
-    Map<String, dynamic> body = {
-      "model": "gpt-3.5-turbo",
-      "messages": [
-        {
-          "role": "system",
-          "content":
-              "You are an EV Charging customer service chatbot for EZCHARGE. "
-              "You help customers with EV charging issues like check-in failures, connector problems, payment issues, or slot availability. "
-              "If the question is unrelated to EV charging, respond with: 'I can't understand your question'.",
-        },
-        {"role": "user", "content": message},
-      ],
-      "max_tokens": 500,
-    };
-
-    try {
-      final response = await http.post(
-        uri,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer ${Secrets.openAiApiKey}",
-        },
-        body: json.encode(body),
-      );
-
-      Map<String, dynamic> parsedResponse = json.decode(response.body);
-
-      // Extract response message
-      String reply = parsedResponse['choices'][0]['message']['content'].trim();
-
-      return reply;
-    } catch (e) {
-      debugPrint("Error fetching chatbot response: $e");
-      return "I can't understand your question";
-    }
-  }
-
-  //Updated chat-bubble design
-  Widget _buildMessage(Message message) {
-    // Decide alignment based on who sent the message
+  Widget _buildMessage(ChatbotMessage message, String customerName) {
     final alignment = message.isMe
         ? MainAxisAlignment.end
         : MainAxisAlignment.start;
@@ -133,13 +66,11 @@ class ChatbotScreenState extends State<ChatbotScreen> {
         mainAxisAlignment: alignment,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Optionally show an avatar on the left side if not the user
           if (!message.isMe) ...[
             const CircleAvatar(
               radius: 16,
               backgroundImage: AssetImage('assets/images/ezcharge_logo.png'),
             ),
-
             const SizedBox(width: 8),
           ],
           Flexible(
@@ -154,22 +85,21 @@ class ChatbotScreenState extends State<ChatbotScreen> {
                     ? CrossAxisAlignment.end
                     : CrossAxisAlignment.start,
                 children: [
-                  // Name label (optional)
                   Text(
-                    message.isMe ? _customerName : 'EZCHARGE Customer Service',
+                    message.isMe
+                        ? (customerName.isEmpty ? 'Guest' : customerName)
+                        : 'EZCHARGE Customer Service',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: textColor.withValues(alpha: 0.8),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  // Actual message text
                   Text(message.text, style: const TextStyle(color: textColor)),
                 ],
               ),
             ),
           ),
-          // Optionally show an avatar on the right side if it's the user
           if (message.isMe) ...[
             const SizedBox(width: 8),
             const CircleAvatar(
@@ -185,8 +115,9 @@ class ChatbotScreenState extends State<ChatbotScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<ChatbotViewModel>();
+
     return Scaffold(
-      // Example of updating the AppBar to match the style from the first picture
       appBar: AppBar(
         backgroundColor: Colors.blue[900],
         title: const Row(
@@ -206,15 +137,19 @@ class ChatbotScreenState extends State<ChatbotScreen> {
           ],
         ),
       ),
-
       body: Column(
         children: <Widget>[
+          if (viewModel.isSending || viewModel.isLoadingCustomer)
+            const LinearProgressIndicator(),
           Expanded(
             child: ListView.builder(
               reverse: true,
-              itemCount: _messages.length,
-              itemBuilder: (BuildContext context, int index) {
-                return _buildMessage(_messages[index]);
+              itemCount: viewModel.messages.length,
+              itemBuilder: (context, index) {
+                return _buildMessage(
+                  viewModel.messages[index],
+                  viewModel.customerName,
+                );
               },
             ),
           ),
@@ -231,11 +166,12 @@ class ChatbotScreenState extends State<ChatbotScreen> {
                       hintText: 'Type a message...',
                       border: InputBorder.none,
                     ),
+                    onSubmitted: (_) => _sendMessage(),
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: onSendMessage,
+                  onPressed: viewModel.isSending ? null : _sendMessage,
                 ),
               ],
             ),
@@ -244,10 +180,4 @@ class ChatbotScreenState extends State<ChatbotScreen> {
       ),
     );
   }
-}
-
-class Message {
-  final String text;
-  final bool isMe;
-  Message({required this.text, required this.isMe});
 }

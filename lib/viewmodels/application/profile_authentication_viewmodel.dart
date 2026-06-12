@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 import '../../core/utils/app_logger.dart';
+import '../../services/image_picker_service.dart';
 import '../../services/profile_account_service.dart';
 
 enum ProfileAuthenticationUploadResult {
@@ -17,21 +18,39 @@ enum ProfileAuthenticationSubmitResult { success, customerNotFound, failed }
 class ProfileAuthenticationViewModel extends ChangeNotifier {
   ProfileAuthenticationViewModel({
     ProfileAccountServiceContract? accountService,
-  }) : _accountService = accountService ?? ProfileAccountService();
+    ImagePickerServiceContract? imagePickerService,
+  }) : _accountService = accountService ?? ProfileAccountService(),
+       _imagePickerService = imagePickerService ?? ImagePickerService();
 
   final ProfileAccountServiceContract _accountService;
+  final ImagePickerServiceContract _imagePickerService;
 
   bool _isLoading = false;
+  File? _selectedImage;
   String? _errorMessage;
 
   bool get isLoading => _isLoading;
+  File? get selectedImage => _selectedImage;
   String? get errorMessage => _errorMessage;
+
+  Future<void> pickImage(AppImageSource source) async {
+    final image = await _imagePickerService.pickImage(source);
+    if (image == null) return;
+    _selectedImage = image;
+    notifyListeners();
+  }
+
+  void clearSelectedImage() {
+    _selectedImage = null;
+    notifyListeners();
+  }
 
   Future<ProfileAuthenticationUploadResult> uploadImage({
     required ProfileAuthenticationImageType type,
-    required File? image,
+    File? image,
   }) async {
-    if (image == null) {
+    final imageToUpload = image ?? _selectedImage;
+    if (imageToUpload == null) {
       _errorMessage = 'Please select an image first.';
       notifyListeners();
       return ProfileAuthenticationUploadResult.noImage;
@@ -41,7 +60,10 @@ class ProfileAuthenticationViewModel extends ChangeNotifier {
     _errorMessage = null;
 
     try {
-      await _accountService.uploadAuthenticationImage(type: type, image: image);
+      await _accountService.uploadAuthenticationImage(
+        type: type,
+        image: imageToUpload,
+      );
       return ProfileAuthenticationUploadResult.success;
     } on ProfileAccountCustomerNotFoundException {
       _errorMessage = 'Customer profile was not found.';

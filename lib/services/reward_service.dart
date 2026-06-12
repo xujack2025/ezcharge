@@ -25,6 +25,8 @@ abstract class RewardServiceContract {
 
   Future<List<RewardModel>> fetchUsableRedeemedRewards({DateTime? now});
 
+  Future<RewardHistoryState> fetchRewardHistory({DateTime? now});
+
   Future<RewardRedeemResult> redeemReward({
     required String customerId,
     required RewardModel reward,
@@ -89,6 +91,37 @@ class RewardService implements RewardServiceContract {
     }
 
     return rewards;
+  }
+
+  @override
+  Future<RewardHistoryState> fetchRewardHistory({DateTime? now}) async {
+    final customerState = await fetchCurrentCustomerRewardState();
+    if (customerState == null) {
+      return const RewardHistoryState(expiredRewards: [], usedRewards: []);
+    }
+
+    final currentTime = now ?? DateTime.now();
+    final expiredRewards = <RewardModel>[];
+    final usedRewards = <RewardModel>[];
+
+    for (final rewardId in customerState.redeemedRewardIds) {
+      final reward = await _fetchRewardById(rewardId);
+      if (reward != null && !reward.isActiveAt(currentTime)) {
+        expiredRewards.add(reward);
+      }
+    }
+
+    for (final rewardId in customerState.usedRewardIds) {
+      final reward = await _fetchRewardById(rewardId);
+      if (reward != null) {
+        usedRewards.add(reward);
+      }
+    }
+
+    return RewardHistoryState(
+      expiredRewards: expiredRewards,
+      usedRewards: usedRewards,
+    );
   }
 
   @override
@@ -162,5 +195,18 @@ class RewardService implements RewardServiceContract {
       return value.map((item) => item.toString()).toList();
     }
     return [];
+  }
+
+  Future<RewardModel?> _fetchRewardById(String rewardId) async {
+    final rewardDoc = await _firestore
+        .collection('Rewards')
+        .doc(rewardId)
+        .get();
+    if (!rewardDoc.exists) return null;
+
+    return RewardModel.fromFirestore(
+      rewardDoc.data() ?? {},
+      documentId: rewardDoc.id,
+    );
   }
 }

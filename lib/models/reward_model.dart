@@ -53,3 +53,13 @@ class CustomerRewardState {
   final List<String> redeemedRewardIds;
   final List<String> usedRewardIds;
 }
+
+class RewardHistoryState {
+  const RewardHistoryState({
+    required this.expiredRewards,
+    required this.usedRewards,
+  });
+
+  final List<RewardModel> expiredRewards;
+  final List<RewardModel> usedRewards;
+}

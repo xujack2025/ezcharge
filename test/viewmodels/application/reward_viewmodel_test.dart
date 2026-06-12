@@ -13,6 +13,10 @@ class FakeRewardService implements RewardServiceContract {
   CustomerRewardState? customerState;
   List<RewardModel> rewards;
   RewardRedeemResult? redeemResult;
+  RewardHistoryState rewardHistory = const RewardHistoryState(
+    expiredRewards: [],
+    usedRewards: [],
+  );
   String? redeemedCustomerId;
   RewardModel? redeemedReward;
   int redeemCallCount = 0;
@@ -30,6 +34,11 @@ class FakeRewardService implements RewardServiceContract {
   @override
   Future<List<RewardModel>> fetchUsableRedeemedRewards({DateTime? now}) async {
     return rewards;
+  }
+
+  @override
+  Future<RewardHistoryState> fetchRewardHistory({DateTime? now}) async {
+    return rewardHistory;
   }
 
   @override

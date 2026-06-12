@@ -1,9 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../../../services/image_picker_service.dart';
 import '../../../../../../services/profile_account_service.dart';
 import '../../../../../../viewmodels/application/profile_authentication_viewmodel.dart';
 import 'pending_screen.dart';
@@ -28,20 +26,10 @@ class _UploadSelfieContent extends StatefulWidget {
 }
 
 class _UploadSelfieContentState extends State<_UploadSelfieContent> {
-  final ImagePicker _picker = ImagePicker();
-  File? _selfieImage;
-
-  Future<void> _getImage(ImageSource source) async {
-    final image = await _picker.pickImage(source: source);
-    if (image == null || !mounted) return;
-    setState(() => _selfieImage = File(image.path));
-  }
-
   Future<void> _uploadSelfieImage() async {
     final viewModel = context.read<ProfileAuthenticationViewModel>();
     final result = await viewModel.uploadImage(
       type: ProfileAuthenticationImageType.selfie,
-      image: _selfieImage,
     );
 
     if (!mounted) return;
@@ -113,6 +101,7 @@ class _UploadSelfieContentState extends State<_UploadSelfieContent> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<ProfileAuthenticationViewModel>();
+    final selfieImage = viewModel.selectedImage;
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -168,7 +157,7 @@ class _UploadSelfieContentState extends State<_UploadSelfieContent> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
-                child: _selfieImage == null
+                child: selfieImage == null
                     ? const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -189,13 +178,13 @@ class _UploadSelfieContentState extends State<_UploadSelfieContent> {
                       )
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.file(_selfieImage!, fit: BoxFit.cover),
+                        child: Image.file(selfieImage, fit: BoxFit.cover),
                       ),
               ),
             ),
           ),
           const SizedBox(height: 20),
-          if (_selfieImage == null) ...[
+          if (selfieImage == null) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: Column(
@@ -203,20 +192,21 @@ class _UploadSelfieContentState extends State<_UploadSelfieContent> {
                   _ImageSourceButton(
                     icon: Icons.image,
                     label: 'Choose from Gallery',
-                    onPressed: () => _getImage(ImageSource.gallery),
+                    onPressed: () =>
+                        viewModel.pickImage(AppImageSource.gallery),
                   ),
                   const SizedBox(height: 10),
                   _ImageSourceButton(
                     icon: Icons.camera_alt,
                     label: 'Take a picture',
-                    onPressed: () => _getImage(ImageSource.camera),
+                    onPressed: () => viewModel.pickImage(AppImageSource.camera),
                   ),
                 ],
               ),
             ),
           ],
           const SizedBox(height: 20),
-          if (_selfieImage != null)
+          if (selfieImage != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: SizedBox(

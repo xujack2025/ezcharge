@@ -4,12 +4,12 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../core/utils/app_logger.dart';
 import '../models/emergency_request_model.dart';
 import '../models/location_search_model.dart';
 import '../services/emergency_request_service.dart';
+import '../services/image_picker_service.dart';
 import '../services/location_search_service.dart';
 import '../services/location_service.dart';
 
@@ -23,15 +23,18 @@ enum EmergencyRequestSubmitResult {
 class EmergencyRequestViewModel extends ChangeNotifier {
   EmergencyRequestViewModel({
     EmergencyRequestServiceContract? emergencyRequestService,
+    ImagePickerServiceContract? imagePickerService,
     LocationServiceContract? locationService,
     LocationSearchServiceContract? locationSearchService,
   }) : _emergencyRequestService =
            emergencyRequestService ?? EmergencyRequestService(),
+       _imagePickerService = imagePickerService ?? ImagePickerService(),
        _locationService = locationService ?? LocationService(),
        _locationSearchService =
            locationSearchService ?? LocationSearchService();
 
   final EmergencyRequestServiceContract _emergencyRequestService;
+  final ImagePickerServiceContract _imagePickerService;
   final LocationServiceContract _locationService;
   final LocationSearchServiceContract _locationSearchService;
 
@@ -177,10 +180,10 @@ class EmergencyRequestViewModel extends ChangeNotifier {
   }
 
   /// Select Image (Gallery or Camera)
-  Future<void> pickImage(ImageSource source) async {
-    final pickedFile = await ImagePicker().pickImage(source: source);
-    if (pickedFile != null) {
-      selectedImage = File(pickedFile.path);
+  Future<void> pickImage(AppImageSource source) async {
+    final image = await _imagePickerService.pickImage(source);
+    if (image != null) {
+      selectedImage = image;
       uploadedImageUrl = null; // Reset URL (New Image Needs Upload)
       notifyListeners();
     }

@@ -1,9 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../../../services/image_picker_service.dart';
 import '../../../../../../services/profile_account_service.dart';
 import '../../../../../../viewmodels/application/profile_authentication_viewmodel.dart';
 import 'upload_selfie_screen.dart';
@@ -30,20 +28,10 @@ class _AuthenticateAccountContent extends StatefulWidget {
 
 class _AuthenticateAccountContentState
     extends State<_AuthenticateAccountContent> {
-  final ImagePicker _picker = ImagePicker();
-  File? _licenseImage;
-
-  Future<void> _getImage(ImageSource source) async {
-    final image = await _picker.pickImage(source: source);
-    if (image == null || !mounted) return;
-    setState(() => _licenseImage = File(image.path));
-  }
-
   Future<void> _uploadLicenseImage() async {
     final viewModel = context.read<ProfileAuthenticationViewModel>();
     final result = await viewModel.uploadImage(
       type: ProfileAuthenticationImageType.license,
-      image: _licenseImage,
     );
 
     if (!mounted) return;
@@ -117,6 +105,7 @@ class _AuthenticateAccountContentState
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<ProfileAuthenticationViewModel>();
+    final licenseImage = viewModel.selectedImage;
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -166,7 +155,7 @@ class _AuthenticateAccountContentState
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
-                child: _licenseImage == null
+                child: licenseImage == null
                     ? const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -187,13 +176,13 @@ class _AuthenticateAccountContentState
                       )
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.file(_licenseImage!, fit: BoxFit.cover),
+                        child: Image.file(licenseImage, fit: BoxFit.cover),
                       ),
               ),
             ),
           ),
           const SizedBox(height: 20),
-          if (_licenseImage == null) ...[
+          if (licenseImage == null) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: Column(
@@ -201,20 +190,21 @@ class _AuthenticateAccountContentState
                   _ImageSourceButton(
                     icon: Icons.image,
                     label: 'Choose from Gallery',
-                    onPressed: () => _getImage(ImageSource.gallery),
+                    onPressed: () =>
+                        viewModel.pickImage(AppImageSource.gallery),
                   ),
                   const SizedBox(height: 10),
                   _ImageSourceButton(
                     icon: Icons.camera_alt,
                     label: 'Take a picture',
-                    onPressed: () => _getImage(ImageSource.camera),
+                    onPressed: () => viewModel.pickImage(AppImageSource.camera),
                   ),
                 ],
               ),
             ),
           ],
           const SizedBox(height: 20),
-          if (_licenseImage != null)
+          if (licenseImage != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: SizedBox(

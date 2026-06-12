@@ -1,22 +1,30 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../core/utils/app_logger.dart';
 import '../../models/charging_checkout_model.dart';
 import '../../services/check_in_service.dart';
+import '../../services/image_picker_service.dart';
 
 enum CheckInScanResult { upcoming, active, unavailable, empty }
 
 enum CheckInSubmitResult { success, notReady, noReservation, failed }
 
 class CheckInViewModel extends ChangeNotifier {
-  CheckInViewModel({CheckInServiceContract? checkInService})
-    : _checkInService = checkInService ?? CheckInService();
+  CheckInViewModel({
+    CheckInServiceContract? checkInService,
+    ImagePickerServiceContract? imagePickerService,
+  }) : _checkInService = checkInService ?? CheckInService(),
+       _imagePickerService = imagePickerService ?? ImagePickerService();
 
   final CheckInServiceContract _checkInService;
+  final ImagePickerServiceContract _imagePickerService;
 
   String _customerId = "";
   String _reservationStatus = "";
   ChargingCheckInDetails? _checkInDetails;
+  File? _selectedImage;
   bool _isLoading = false;
   bool _isSubmitting = false;
   String? _errorMessage;
@@ -24,6 +32,7 @@ class CheckInViewModel extends ChangeNotifier {
   String get customerId => _customerId;
   String get reservationStatus => _reservationStatus;
   ChargingCheckInDetails? get checkInDetails => _checkInDetails;
+  File? get selectedImage => _selectedImage;
   bool get isLoading => _isLoading;
   bool get isSubmitting => _isSubmitting;
   String? get errorMessage => _errorMessage;
@@ -58,6 +67,15 @@ class CheckInViewModel extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  Future<File?> pickImageFromGallery() async {
+    final image = await _imagePickerService.pickImage(AppImageSource.gallery);
+    if (image == null) return null;
+
+    _selectedImage = image;
+    notifyListeners();
+    return image;
   }
 
   Future<void> loadCheckInDetails() async {

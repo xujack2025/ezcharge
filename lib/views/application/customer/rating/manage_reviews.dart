@@ -1,64 +1,38 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-class ManageReviewsPage extends StatefulWidget {
+import '../../../../../../models/customer_rating_model.dart';
+import '../../../../../../viewmodels/application/manage_reviews_viewmodel.dart';
+
+class ManageReviewsPage extends StatelessWidget {
   const ManageReviewsPage({super.key});
 
   @override
-  State<ManageReviewsPage> createState() => _ManageReviewsPageState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ManageReviewsViewModel(),
+      child: const _ManageReviewsContent(),
+    );
+  }
 }
 
-class _ManageReviewsPageState extends State<ManageReviewsPage> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  String? _customerID; // Store fetched CustomerID
+class _ManageReviewsContent extends StatelessWidget {
+  const _ManageReviewsContent();
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchCustomerID(); // Fetch CustomerID once
-  }
-
-  // 🔹 **Fetch CustomerID Once**
-  Future<void> _fetchCustomerID() async {
-    final User? user = _auth.currentUser;
-    if (user == null) return;
-
-    var customerQuery = await _firestore
-        .collection("Customers")
-        .where("PhoneNumber", isEqualTo: user.phoneNumber)
-        .limit(1)
-        .get();
-
-    if (customerQuery.docs.isNotEmpty) {
-      setState(() {
-        _customerID = customerQuery.docs.first["CustomerID"];
-      });
-    }
-  }
-
-  // ✏️ Function to Edit Review
-  void _editReview(
-    BuildContext context,
-    String reviewId,
-    String currentText,
-    dynamic currentRating,
-  ) {
-    TextEditingController reviewController = TextEditingController(
-      text: currentText,
-    );
-    double newRating = (currentRating is int)
-        ? currentRating.toDouble()
-        : (currentRating ?? 1.0);
+  void _editReview(BuildContext context, CustomerReview review) {
+    final viewModel = context.read<ManageReviewsViewModel>();
+    final messenger = ScaffoldMessenger.of(context);
+    final reviewController = TextEditingController(text: review.reviewText);
+    var newRating = review.rating.clamp(1, 5);
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text("Edit Review"),
+              title: const Text('Edit Review'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -66,20 +40,16 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                     controller: reviewController,
                     maxLines: 3,
                     decoration: const InputDecoration(
-                      labelText: "Update your review",
+                      labelText: 'Update your review',
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // ⭐ Interactive Star Rating
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(5, (index) {
                       return GestureDetector(
                         onTap: () {
-                          setDialogState(() {
-                            newRating =
-                                index + 1.0; // Updates state inside the dialog
-                          });
+                          setDialogState(() => newRating = index + 1);
                         },
                         child: Icon(
                           index < newRating ? Icons.star : Icons.star_border,
@@ -93,89 +63,102 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancel"),
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    await _firestore.collection("Reviews").doc(reviewId).update(
-                      {
-                        "ReviewText": reviewController.text,
-                        "Rating": newRating.toInt(),
-                        // Ensure integer rating
-                      },
+                    final result = await viewModel.updateReview(
+                      reviewId: review.reviewId,
+                      reviewText: reviewController.text,
+                      rating: newRating,
                     );
-
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Review updated!")),
+                    if (!dialogContext.mounted) return;
+                    Navigator.pop(dialogContext);
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          result == ManageReviewActionResult.success
+                              ? 'Review updated!'
+                              : viewModel.errorMessage ??
+                                    'Unable to update review.',
+                        ),
+                      ),
                     );
                   },
-                  child: const Text("Save"),
+                  child: const Text('Save'),
                 ),
               ],
             );
           },
         );
       },
-    );
+    ).whenComplete(reviewController.dispose);
   }
 
-  // ❌ Function to Delete Review
-  void _deleteReview(String reviewId) async {
-    await _firestore.collection("Reviews").doc(reviewId).delete();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Review deleted!")));
+  Future<void> _deleteReview(
+    BuildContext context,
+    CustomerReview review,
+  ) async {
+    final viewModel = context.read<ManageReviewsViewModel>();
+    final messenger = ScaffoldMessenger.of(context);
+    final result = await viewModel.deleteReview(review.reviewId);
+    if (!context.mounted) return;
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          result == ManageReviewActionResult.success
+              ? 'Review deleted!'
+              : viewModel.errorMessage ?? 'Unable to delete review.',
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_customerID == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text("Manage My Reviews"),
-          elevation: 4,
-          backgroundColor: Colors.blueAccent,
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
+    final viewModel = context.watch<ManageReviewsViewModel>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Manage My Reviews"),
+        title: const Text('Manage My Reviews'),
         elevation: 4,
         backgroundColor: Colors.blueAccent,
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore
-            .collection("Reviews")
-            .where("CustomerID", isEqualTo: _customerID)
-            .orderBy("ReviewDate", descending: true)
-            .snapshots(),
+      body: StreamBuilder<List<CustomerReview>>(
+        stream: viewModel.watchReviews(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                viewModel.errorMessage ?? 'Unable to load reviews.',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            );
+          }
+
+          final reviews = snapshot.data ?? const <CustomerReview>[];
+          if (reviews.isEmpty) {
             return const Center(
               child: Text(
-                "No reviews found.",
+                'No reviews found.',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
             );
           }
 
-          var reviews = snapshot.data!.docs;
-
           return ListView.builder(
             itemCount: reviews.length,
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             itemBuilder: (context, index) {
-              var review = reviews[index].data() as Map<String, dynamic>;
-              String reviewId = reviews[index].id;
-
+              final review = reviews[index];
               return Card(
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 shape: RoundedRectangleBorder(
@@ -190,7 +173,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                     child: const Icon(Icons.rate_review, color: Colors.blue),
                   ),
                   title: Text(
-                    review["ReviewText"] ?? "No review",
+                    review.reviewText.isEmpty ? 'No review' : review.reviewText,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -198,13 +181,10 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                   ),
                   subtitle: Row(
                     children: [
-                      _buildStars((review["Rating"] as num?)?.toInt() ?? 0),
+                      _buildStars(review.rating),
                       const SizedBox(width: 10),
                       Text(
-                        review["ReviewDate"]?.toDate().toString().split(
-                              " ",
-                            )[0] ??
-                            "No date",
+                        _formatDate(review.reviewDate),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.black54,
@@ -214,25 +194,20 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                   ),
                   trailing: PopupMenuButton<String>(
                     onSelected: (value) {
-                      if (value == "edit") {
-                        _editReview(
-                          context,
-                          reviewId,
-                          review["ReviewText"],
-                          review["Rating"],
-                        );
-                      } else if (value == "delete") {
-                        _deleteReview(reviewId);
+                      if (value == 'edit') {
+                        _editReview(context, review);
+                      } else if (value == 'delete') {
+                        _deleteReview(context, review);
                       }
                     },
                     itemBuilder: (context) => [
                       const PopupMenuItem(
-                        value: "edit",
-                        child: Text("Edit Review"),
+                        value: 'edit',
+                        child: Text('Edit Review'),
                       ),
                       const PopupMenuItem(
-                        value: "delete",
-                        child: Text("Delete Review"),
+                        value: 'delete',
+                        child: Text('Delete Review'),
                       ),
                     ],
                   ),
@@ -245,10 +220,13 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
     );
   }
 
-  // ⭐ Function to build star rating display with customization
-  Widget _buildStars(int? rating, {double size = 18}) {
-    int safeRating = (rating ?? 0).clamp(0, 5); // Ensure rating is between 0-5
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'No date';
+    return DateFormat('yyyy-MM-dd').format(date);
+  }
 
+  Widget _buildStars(int rating, {double size = 18}) {
+    final safeRating = rating.clamp(0, 5);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (index) {
