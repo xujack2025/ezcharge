@@ -1,7 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../../../viewmodels/application/delete_account_viewmodel.dart';
 import '../../../../onboarding/intro_screen.dart';
 
 class ConfirmDeleteScreen extends StatelessWidget {
@@ -9,6 +9,76 @@ class ConfirmDeleteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => DeleteAccountViewModel(),
+      child: const _ConfirmDeleteContent(),
+    );
+  }
+}
+
+class _ConfirmDeleteContent extends StatelessWidget {
+  const _ConfirmDeleteContent();
+
+  Future<void> _deleteAccount(BuildContext context) async {
+    final viewModel = context.read<DeleteAccountViewModel>();
+    final result = await viewModel.deleteAccount();
+    if (!context.mounted) return;
+
+    switch (result) {
+      case DeleteAccountResult.success:
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const IntroScreen()),
+          (route) => false,
+        );
+      case DeleteAccountResult.noUser:
+      case DeleteAccountResult.customerNotFound:
+      case DeleteAccountResult.failed:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              viewModel.errorMessage ??
+                  'Unable to delete account. Please try again.',
+            ),
+          ),
+        );
+    }
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(
+            'Delete Account',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            'Are you sure you want to permanently remove your account?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('No', style: TextStyle(color: Colors.blue)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                _deleteAccount(context);
+              },
+              child: const Text('Yes', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.watch<DeleteAccountViewModel>();
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -25,7 +95,7 @@ class ConfirmDeleteScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Delete Account",
+          'Delete Account',
           style: TextStyle(
             color: Colors.black,
             fontSize: 30,
@@ -39,17 +109,17 @@ class ConfirmDeleteScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "We are sorry to receive your leaving",
+              'We are sorry to receive your leaving',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             const Text(
-              "Are you sure you want to delete your account?\nYou will permanently lose:",
+              'Are you sure you want to delete your account?\nYou will permanently lose:',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 10),
             const Text(
-              "- Profile\n- Bookmarks\n- Charging records\n- Rewards",
+              '- Profile\n- Bookmarks\n- Charging records\n- Rewards',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 20),
@@ -59,7 +129,7 @@ class ConfirmDeleteScreen extends StatelessWidget {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    "Please note that the account deletion is irreversible. Think wise!",
+                    'Please note that the account deletion is irreversible. Think wise!',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -69,11 +139,13 @@ class ConfirmDeleteScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 430),
+            const Spacer(),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => _showDeleteConfirmation(context),
+                onPressed: viewModel.isLoading
+                    ? null
+                    : () => _showDeleteConfirmation(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 15),
@@ -81,98 +153,21 @@ class ConfirmDeleteScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
-                child: const Text(
-                  "DELETE",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: viewModel.isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'DELETE',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  //Show Confirmation Dialog
-  void _showDeleteConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(
-            "Delete Account",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: const Text(
-            "Are you sure you want to permanently remove your account?",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("No", style: TextStyle(color: Colors.blue)),
-            ),
-            TextButton(
-              onPressed: () {
-                // Close the dialog
-                Navigator.pop(context);
-
-                // Navigate to IntroScreen immediately
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const IntroScreen()),
-                  (route) => false, // Remove all previous routes
-                );
-
-                // Then, start account deletion in the background
-                _deleteAccount();
-              },
-              child: const Text("Yes", style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _deleteAccount() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        // Find the user in Firestore
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-
-          // 🔹 Delete user from Firestore
-          await FirebaseFirestore.instance
-              .collection("Customers")
-              .doc(userDoc.id)
-              .delete();
-        }
-
-        // Delete user from Firebase Authentication
-        await user.delete();
-
-        // Sign out after deletion
-        await FirebaseAuth.instance.signOut();
-
-        debugPrint("Account deleted successfully.");
-      }
-    } catch (e) {
-      debugPrint("Error deleting account: $e");
-    }
   }
 }

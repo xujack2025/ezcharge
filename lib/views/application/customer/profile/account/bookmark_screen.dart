@@ -1,123 +1,52 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../../../models/profile_account_model.dart';
+import '../../../../../../viewmodels/application/profile_bookmark_viewmodel.dart';
 import '../../charging/charging_station_detail_screen.dart';
 
-class BookmarkScreen extends StatefulWidget {
+class BookmarkScreen extends StatelessWidget {
   const BookmarkScreen({super.key});
 
   @override
-  BookmarkScreenState createState() => BookmarkScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ProfileBookmarkViewModel()..loadBookmarks(),
+      child: const _BookmarkContent(),
+    );
+  }
 }
 
-class BookmarkScreenState extends State<BookmarkScreen> {
-  List<Map<String, dynamic>> _bookmarkedStations = [];
-  String _accountId = "";
-  bool _isLoading = true;
+class _BookmarkContent extends StatelessWidget {
+  const _BookmarkContent();
 
-  @override
-  void initState() {
-    super.initState();
-    _getCustomerID();
-  }
+  Future<void> _removeBookmark(BuildContext context, String bookmarkId) async {
+    final viewModel = context.read<ProfileBookmarkViewModel>();
+    final result = await viewModel.removeBookmark(bookmarkId);
+    if (!context.mounted) return;
 
-  // Fetch current log in user id from Firestore
-  Future<void> _getCustomerID() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          setState(() {
-            _accountId = querySnapshot.docs.first["CustomerID"];
-          });
-
-          // Fetch bookmarks after getting CustomerID
-          _fetchBookmarkedStations();
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-      setState(() => _isLoading = false);
-    }
-  }
-
-  //Fetch Bookmarked Stations
-  Future<void> _fetchBookmarkedStations() async {
-    if (_accountId.isEmpty) return;
-
-    try {
-      QuerySnapshot bookmarkSnapshot = await FirebaseFirestore.instance
-          .collection("Customers")
-          .doc(_accountId)
-          .collection("Bookmark")
-          .get();
-
-      List<Map<String, dynamic>> bookmarks = [];
-
-      for (var bookmarkDoc in bookmarkSnapshot.docs) {
-        String stationId = bookmarkDoc["StationID"];
-
-        DocumentSnapshot stationSnapshot = await FirebaseFirestore.instance
-            .collection("Station")
-            .doc(stationId)
-            .get();
-
-        if (stationSnapshot.exists) {
-          Map<String, dynamic> stationData =
-              stationSnapshot.data() as Map<String, dynamic>;
-          stationData["BookmarkID"] =
-              bookmarkDoc.id; // Store BookmarkID for removal
-          bookmarks.add(stationData);
-        }
-      }
-
-      setState(() {
-        _bookmarkedStations = bookmarks;
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint("Error fetching bookmarked stations: $e");
-      setState(() => _isLoading = false);
-    }
-  }
-
-  //Remove Bookmark
-  Future<void> _removeBookmark(String bookmarkId) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection("Customers")
-          .doc(_accountId)
-          .collection("Bookmark")
-          .doc(bookmarkId)
-          .delete();
-
-      if (!mounted) return;
-      setState(() {
-        _bookmarkedStations.removeWhere(
-          (station) => station["BookmarkID"] == bookmarkId,
+    switch (result) {
+      case ProfileBookmarkRemoveResult.success:
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Bookmark removed!')));
+      case ProfileBookmarkRemoveResult.customerNotFound:
+      case ProfileBookmarkRemoveResult.failed:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              viewModel.errorMessage ??
+                  'Unable to remove bookmark. Please try again.',
+            ),
+          ),
         );
-      });
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Bookmark removed!")));
-    } catch (e) {
-      debugPrint("Error removing bookmark: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<ProfileBookmarkViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -133,7 +62,7 @@ class BookmarkScreenState extends State<BookmarkScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Bookmark",
+          'Bookmark',
           style: TextStyle(
             color: Colors.black,
             fontSize: 25,
@@ -143,31 +72,44 @@ class BookmarkScreenState extends State<BookmarkScreen> {
         backgroundColor: Colors.white,
         elevation: 1,
       ),
-      body: _isLoading
+      body: viewModel.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _bookmarkedStations.isEmpty
-          ? const Center(child: Text("No bookmarked stations found!"))
+          : viewModel.errorMessage != null
+          ? Center(child: Text(viewModel.errorMessage!))
+          : viewModel.stations.isEmpty
+          ? const Center(child: Text('No bookmarked stations found!'))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: _bookmarkedStations.length,
+              itemCount: viewModel.stations.length,
               itemBuilder: (context, index) {
-                final station = _bookmarkedStations[index];
-                return _buildStationCard(station);
+                return _StationCard(
+                  station: viewModel.stations[index],
+                  onRemove: () => _removeBookmark(
+                    context,
+                    viewModel.stations[index].bookmarkId,
+                  ),
+                );
               },
             ),
     );
   }
+}
 
-  /// 🔹 Build Station Card (with Remove Bookmark Option)
-  Widget _buildStationCard(Map<String, dynamic> station) {
+class _StationCard extends StatelessWidget {
+  const _StationCard({required this.station, required this.onRemove});
+
+  final ProfileBookmarkStation station;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        //Redirect to ChargingStationDetailScreen with StationID
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>
-                ChargingStationDetailScreen(stationId: station["StationID"]),
+                ChargingStationDetailScreen(stationId: station.stationId),
           ),
         );
       },
@@ -179,55 +121,42 @@ class BookmarkScreenState extends State<BookmarkScreen> {
         ),
         color: Colors.white,
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  //Station Image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      station["ImageUrl"] ?? "https://via.placeholder.com/80",
-                      width: 100,
-                      height: 80,
-                      fit: BoxFit.cover,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  station.imageUrl,
+                  width: 100,
+                  height: 80,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      station.stationName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 15),
-                  //Station Details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          station["StationName"],
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          station["Description"] ?? "",
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 4),
+                    Text(
+                      station.description,
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
-                  ),
-                  // Bookmark Icon (Remove)
-                  IconButton(
-                    icon: const Icon(
-                      Icons.bookmark,
-                      color: Colors.black,
-                    ), // Default Black
-                    onPressed: () => _removeBookmark(station["BookmarkID"]),
-                  ),
-                ],
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.bookmark, color: Colors.black),
+                onPressed: onRemove,
               ),
             ],
           ),

@@ -1,38 +1,36 @@
-import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../../../models/profile_account_model.dart';
+import '../../../../../../viewmodels/application/profile_activity_viewmodel.dart';
 import '../../../check_in_screen.dart';
 import '../../charging/charging_session_timer_screen.dart';
 
-class ActivityScreen extends StatefulWidget {
-  final int initialTabIndex;
-
+class ActivityScreen extends StatelessWidget {
   const ActivityScreen({super.key, this.initialTabIndex = 0});
 
+  final int initialTabIndex;
+
   @override
-  State<ActivityScreen> createState() => _ActivityScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ProfileActivityViewModel()..loadActivity(),
+      child: _ActivityContent(initialTabIndex: initialTabIndex),
+    );
+  }
 }
 
-List<Map<String, dynamic>> _endedAttendances = [];
+class _ActivityContent extends StatefulWidget {
+  const _ActivityContent({required this.initialTabIndex});
 
-class _ActivityScreenState extends State<ActivityScreen>
+  final int initialTabIndex;
+
+  @override
+  State<_ActivityContent> createState() => _ActivityContentState();
+}
+
+class _ActivityContentState extends State<_ActivityContent>
     with SingleTickerProviderStateMixin {
-  // UI timer to trigger periodic rebuilds so the elapsed time updates.
-  Timer? _activityUITimer;
-  String _customerId = "";
-  String _chargerId = "";
-  String _stationId = "";
-  String _reservationStatus = "";
-  String _stationName = "";
-  String _chargerName = "";
-  String _chargerType = "";
-  String _chargerVoltage = " ";
-  String _currentType = " ";
-  String _pricepervoltage = " ";
-
   late TabController _tabController;
 
   @override
@@ -43,194 +41,41 @@ class _ActivityScreenState extends State<ActivityScreen>
       vsync: this,
       initialIndex: widget.initialTabIndex,
     );
-    _getCustomerID();
-
-    // Set up a periodic timer to update the UI (so that elapsed time is refreshed).
-    _activityUITimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {});
-    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _activityUITimer?.cancel();
     super.dispose();
   }
 
-  // Fetch current log in user id from Firestore
-  Future<void> _getCustomerID() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("Customers")
-          .where("PhoneNumber", isEqualTo: user.phoneNumber)
-          .limit(1)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        setState(() {
-          _customerId = querySnapshot.docs.first.id;
-        });
-        _fetchReservationRecord();
-        _fetchEndedAttendances();
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer ID: $e");
-    }
-  }
-
-  //Fetch Reservation Record based on current sign in user
-  Future<void> _fetchReservationRecord() async {
-    if (_customerId.isEmpty) return;
-
-    try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("Reservation")
-          .doc(_customerId)
-          .get();
-
-      if (doc.exists) {
-        setState(() {
-          _chargerId = doc["ChargerID"];
-          _stationId = doc["StationID"];
-          _reservationStatus = doc["Status"];
-        });
-        _fetchStation();
-        _fetchCharger();
-      }
-    } catch (e) {
-      debugPrint("Error fetching reservation record: $e");
-    }
-  }
-
-  Future<void> _fetchEndedAttendances() async {
-    if (_customerId.isEmpty) return;
-
-    try {
-      QuerySnapshot snap = await FirebaseFirestore.instance
-          .collection("Attendance")
-          .where("CustomerID", isEqualTo: _customerId)
-          .get();
-
-      List<Map<String, dynamic>> attendances = [];
-
-      for (var doc in snap.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-
-        // Retrieve StationID from the attendance document.
-        String stationId = data["StationID"] ?? "";
-        // Optionally, if you also store ChargerID in attendance:
-        String chargerId = data["SlotID"] ?? "";
-
-        // Fetch StationName from the station collection.
-        String stationName = "";
-        DocumentSnapshot stationDoc = await FirebaseFirestore.instance
-            .collection("Station")
-            .doc(stationId)
-            .get();
-        if (stationDoc.exists) {
-          stationName = stationDoc["StationName"] ?? "";
-        }
-
-        // Fetch ChargerName from the station's Charger subcollection (if ChargerID is available).
-        String chargerName = "";
-        if (chargerId.isNotEmpty) {
-          DocumentSnapshot chargerDoc = await FirebaseFirestore.instance
-              .collection("Station")
-              .doc(stationId)
-              .collection("Charger")
-              .doc(chargerId)
-              .get();
-          if (chargerDoc.exists) {
-            chargerName = chargerDoc["ChargerName"] ?? "";
-          }
-        }
-
-        // Add the fetched names to the attendance data.
-        data["StationName"] = stationName;
-        data["ChargerName"] = chargerName;
-        attendances.add(data);
-      }
-
-      setState(() {
-        _endedAttendances = attendances;
-      });
-    } catch (e) {
-      debugPrint("Error fetching ended attendances: $e");
-    }
-  }
-
-  //Fetch station information based on the station id
-  Future<void> _fetchStation() async {
-    if (_stationId.isEmpty) return;
-
-    try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("Station")
-          .doc(_stationId)
-          .get();
-
-      if (doc.exists) {
-        setState(() {
-          _stationName = doc["StationName"];
-        });
-        debugPrint("Fetched Station Name: $_stationName");
-      }
-    } catch (e) {
-      debugPrint("Error fetching station: $e");
-    }
-  }
-
-  //Fetch charger information based on the station id and charger id
-  Future<void> _fetchCharger() async {
-    if (_stationId.isEmpty || _chargerId.isEmpty) return;
-
-    try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection("Station")
-          .doc(_stationId)
-          .collection("Charger")
-          .doc(_chargerId)
-          .get();
-
-      if (doc.exists) {
-        setState(() {
-          _chargerName = doc["ChargerName"];
-          _chargerType = doc["ChargerType"];
-          _chargerVoltage = doc["ChargerVoltage"].toString();
-          _currentType = doc["CurrentType"];
-          _pricepervoltage = doc["PricePerVoltage"].toString();
-        });
-      }
-    } catch (e) {
-      debugPrint("Error fetching charger: $e");
-    }
-  }
-
-  // Remove Reservation from Firestore
   Future<void> _cancelReservation() async {
-    try {
-      await FirebaseFirestore.instance
-          .collection("Reservation")
-          .doc(_customerId)
-          .delete();
+    final viewModel = context.read<ProfileActivityViewModel>();
+    final result = await viewModel.cancelReservation();
+    if (!mounted) return;
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Reservation Cancelled!")));
-
-      setState(() {}); // Refresh UI.
-    } catch (e) {
-      debugPrint("Error deleting reservation: $e");
+    switch (result) {
+      case ProfileCancelReservationResult.success:
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Reservation Cancelled!')));
+      case ProfileCancelReservationResult.customerNotFound:
+      case ProfileCancelReservationResult.failed:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              viewModel.errorMessage ??
+                  'Unable to cancel reservation. Please try again.',
+            ),
+          ),
+        );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<ProfileActivityViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -246,7 +91,7 @@ class _ActivityScreenState extends State<ActivityScreen>
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Charging",
+          'Charging',
           style: TextStyle(
             color: Colors.black,
             fontSize: 23,
@@ -260,166 +105,129 @@ class _ActivityScreenState extends State<ActivityScreen>
           indicatorColor: Colors.blue,
           labelColor: Colors.black,
           unselectedLabelColor: Colors.grey,
-          //Three tabs
           tabs: const [
-            Tab(text: "Upcoming"),
-            Tab(text: "Active"),
-            Tab(text: "Ended"),
+            Tab(text: 'Upcoming'),
+            Tab(text: 'Active'),
+            Tab(text: 'Ended'),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [_buildUpcomingTab(), _buildActiveTab(), _buildEndedTab()],
-      ),
+      body: viewModel.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : viewModel.errorMessage != null
+          ? Center(child: Text(viewModel.errorMessage!))
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _UpcomingTab(
+                  reservation: viewModel.hasUpcomingReservation
+                      ? viewModel.reservation
+                      : null,
+                  onCancelReservation: _confirmCancelReservation,
+                ),
+                _ActiveTab(
+                  reservation: viewModel.hasActiveReservation
+                      ? viewModel.reservation
+                      : null,
+                ),
+                _EndedTab(attendances: viewModel.endedAttendances),
+              ],
+            ),
     );
   }
 
-  Widget _buildUpcomingTab() {
-    if (_reservationStatus != "Upcoming") {
-      return const Center(child: Text("No upcoming reservations."));
+  void _confirmCancelReservation() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Cancellation'),
+          content: const Text(
+            'Are you sure you want to cancel the reservation?',
+          ),
+          actions: [
+            TextButton(
+              child: const Text('No'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('Yes'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _cancelReservation();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _UpcomingTab extends StatelessWidget {
+  const _UpcomingTab({
+    required this.reservation,
+    required this.onCancelReservation,
+  });
+
+  final ProfileReservationActivity? reservation;
+  final VoidCallback onCancelReservation;
+
+  @override
+  Widget build(BuildContext context) {
+    final reservation = this.reservation;
+    if (reservation == null) {
+      return const Center(child: Text('No upcoming reservations.'));
     }
 
     return SingleChildScrollView(
       child: Align(
         alignment: Alignment.topCenter,
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 4,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.all(12),
+          child: _ReservationCard(
+            reservation: reservation,
+            showPriceRow: true,
+            footer: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  _stationName,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CheckInScreen(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
+                    child: const Text(
+                      'CHECK IN',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Text(
-                      _chargerName,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: onCancelReservation,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Text(
-                      _chargerType,
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    child: const Text(
+                      'CANCEL RESERVE',
+                      style: TextStyle(color: Colors.white),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Text(
-                      "$_chargerVoltage $_currentType",
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      "RM $_pricepervoltage/kW",
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // CHECK IN button.
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const CheckInScreen(),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                        ),
-                        child: const Text(
-                          "CHECK IN",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    // CANCEL RESERVE button.
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text('Confirm Cancellation'),
-                                content: const Text(
-                                  'Are you sure you want to cancel the reservation?',
-                                ),
-                                actions: <Widget>[
-                                  TextButton(
-                                    child: const Text('No'),
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                  ),
-                                  TextButton(
-                                    child: const Text('Yes'),
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                      _cancelReservation();
-                                    },
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                        ),
-                        child: const Text(
-                          "CANCEL RESERVE",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -428,20 +236,27 @@ class _ActivityScreenState extends State<ActivityScreen>
       ),
     );
   }
+}
 
-  Widget _buildActiveTab() {
-    if (_reservationStatus != "Active") {
-      return const Center(child: Text("No active reservations."));
+class _ActiveTab extends StatelessWidget {
+  const _ActiveTab({required this.reservation});
+
+  final ProfileReservationActivity? reservation;
+
+  @override
+  Widget build(BuildContext context) {
+    final reservation = this.reservation;
+    if (reservation == null) {
+      return const Center(child: Text('No active reservations.'));
     }
 
     return SingleChildScrollView(
       child: Align(
         alignment: Alignment.topCenter,
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(12),
           child: GestureDetector(
             onTap: () {
-              // Navigate to ChargingSessionTimerScreen when tapped.
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -449,74 +264,28 @@ class _ActivityScreenState extends State<ActivityScreen>
                 ),
               );
             },
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+            child: _ReservationCard(
+              reservation: reservation,
+              showPriceRow: false,
+              footer: Row(
                 children: [
-                  // Station Name.
                   Text(
-                    _stationName,
+                    '${reservation.chargerVoltage} ${reservation.currentType}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${ChargingSessionTimerService.hoursStr}:'
+                    '${ChargingSessionTimerService.minutesStr}:'
+                    '${ChargingSessionTimerService.secondsStr}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: Colors.blue,
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Text(
-                        _chargerName,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        _chargerType,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Text(
-                        "$_chargerVoltage $_currentType",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      // Display the elapsed time from ChargingSessionTimerService.
-                      Text(
-                        "${ChargingSessionTimerService.hoursStr}:${ChargingSessionTimerService.minutesStr}:${ChargingSessionTimerService.secondsStr}",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
@@ -526,51 +295,106 @@ class _ActivityScreenState extends State<ActivityScreen>
       ),
     );
   }
+}
 
-  Widget _buildEndedTab() {
-    if (_endedAttendances.isEmpty) {
-      return const Center(child: Text("No ended reservations."));
+class _ReservationCard extends StatelessWidget {
+  const _ReservationCard({
+    required this.reservation,
+    required this.footer,
+    required this.showPriceRow,
+  });
+
+  final ProfileReservationActivity reservation;
+  final Widget footer;
+  final bool showPriceRow;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 4, spreadRadius: 1),
+        ],
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            reservation.stationName,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Text(
+                reservation.chargerName,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                reservation.chargerType,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          if (showPriceRow)
+            Row(
+              children: [
+                Text(
+                  '${reservation.chargerVoltage} ${reservation.currentType}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'RM ${reservation.pricePerVoltage}/kW',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          const SizedBox(height: 10),
+          footer,
+        ],
+      ),
+    );
+  }
+}
+
+class _EndedTab extends StatelessWidget {
+  const _EndedTab({required this.attendances});
+
+  final List<ProfileEndedAttendance> attendances;
+
+  @override
+  Widget build(BuildContext context) {
+    if (attendances.isEmpty) {
+      return const Center(child: Text('No ended reservations.'));
     }
-    // Optionally, sort the list so the latest (by CheckOutTime) appears first:
-    List sortedAttendances = List.from(_endedAttendances);
-    sortedAttendances.sort((a, b) {
-      DateTime aTime = a["CheckOutTime"] is Timestamp
-          ? a["CheckOutTime"].toDate()
-          : DateTime.now();
-      DateTime bTime = b["CheckOutTime"] is Timestamp
-          ? b["CheckOutTime"].toDate()
-          : DateTime.now();
-      return bTime.compareTo(aTime); // Latest first
-    });
 
     return ListView.builder(
-      itemCount: sortedAttendances.length,
+      itemCount: attendances.length,
       itemBuilder: (context, index) {
-        final attendance = sortedAttendances[index];
-
-        // Use fetched station and charger names (or fallback to the ID if empty)
-        final stationName =
-            attendance["StationName"] ?? attendance["StationID"] ?? "";
-        final chargerName =
-            attendance["ChargerName"] ?? attendance["ChargerID"] ?? "";
-
-        final totalCost = attendance["TotalCost"]?.toString() ?? "0.00";
-        final duration = attendance["Duration"] ?? "";
-        final checkInTime = attendance["CheckInTime"];
-        final checkOutTime = attendance["CheckOutTime"];
-
-        // Convert Timestamps if present
-        DateTime? checkInDateTime;
-        if (checkInTime is Timestamp) {
-          checkInDateTime = checkInTime.toDate();
-        }
-        DateTime? checkOutDateTime;
-        if (checkOutTime is Timestamp) {
-          checkOutDateTime = checkOutTime.toDate();
-        }
-
+        final attendance = attendances[index];
         return Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(12),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -587,9 +411,8 @@ class _ActivityScreenState extends State<ActivityScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Display StationName and ChargerName
                 Text(
-                  "Station: $stationName",
+                  'Station: ${attendance.stationName}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -599,7 +422,7 @@ class _ActivityScreenState extends State<ActivityScreen>
                 Row(
                   children: [
                     Text(
-                      "Charger: $chargerName",
+                      'Charger: ${attendance.chargerName}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -607,33 +430,32 @@ class _ActivityScreenState extends State<ActivityScreen>
                     ),
                     const Spacer(),
                     Text(
-                      "Duration: $duration",
+                      'Duration: ${attendance.duration}',
                       style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 6),
                 Row(
                   children: [
                     Text(
-                      checkInDateTime != null
-                          ? "CheckIn: ${checkInDateTime.toString().substring(0, 16)}"
-                          : "CheckIn: -",
+                      attendance.checkInTime != null
+                          ? 'CheckIn: ${_dateText(attendance.checkInTime!)}'
+                          : 'CheckIn: -',
                       style: const TextStyle(fontSize: 14),
                     ),
                     const Spacer(),
                     Text(
-                      checkOutDateTime != null
-                          ? "CheckOut: ${checkOutDateTime.toString().substring(0, 16)}"
-                          : "CheckOut: -",
+                      attendance.checkOutTime != null
+                          ? 'CheckOut: ${_dateText(attendance.checkOutTime!)}'
+                          : 'CheckOut: -',
                       style: const TextStyle(fontSize: 14),
                     ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  "TotalCost: RM$totalCost",
+                  'TotalCost: RM${attendance.totalCost}',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -646,5 +468,9 @@ class _ActivityScreenState extends State<ActivityScreen>
         );
       },
     );
+  }
+
+  String _dateText(DateTime dateTime) {
+    return dateTime.toString().substring(0, 16);
   }
 }

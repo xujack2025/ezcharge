@@ -1,110 +1,38 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../../../viewmodels/application/profile_authentication_viewmodel.dart';
 import '../profile_screen.dart';
 
-class PendingScreen extends StatefulWidget {
+class PendingScreen extends StatelessWidget {
   const PendingScreen({super.key});
 
   @override
-  State<PendingScreen> createState() => _PendingScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) =>
+          ProfileAuthenticationViewModel()..submitAuthenticationRequest(),
+      child: const _PendingContent(),
+    );
+  }
 }
 
-class _PendingScreenState extends State<PendingScreen> {
-  String _customerId = "";
-  String? _licenseImageUrl;
-  String? _selfieImageUrl;
+class _PendingContent extends StatefulWidget {
+  const _PendingContent();
+
+  @override
+  State<_PendingContent> createState() => _PendingContentState();
+}
+
+class _PendingContentState extends State<_PendingContent> {
   Timer? _navigationTimer;
 
   @override
   void initState() {
     super.initState();
-    _getCustomerID(); //Fetch Customer ID
-    _navigateToAccountScreen(); // Auto Navigate after 10 sec
-  }
-
-  // Fetch Logged-in Customer ID
-  Future<void> _getCustomerID() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("Customers")
-          .where("PhoneNumber", isEqualTo: user.phoneNumber)
-          .limit(1)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        var userDoc = querySnapshot.docs.first;
-        _customerId = userDoc["CustomerID"];
-
-        await _fetchImagesAndStoreInFirestore(); // Fetch Images & Store
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer ID: $e");
-    }
-  }
-
-  // Fetch License & Selfie Image URLs, Store in Firestore
-  Future<void> _fetchImagesAndStoreInFirestore() async {
-    try {
-      // Fetch images from Firebase Storage
-      _licenseImageUrl = await _fetchImageFromStorage(
-        "license/$_customerId.jpg",
-      );
-      _selfieImageUrl = await _fetchImageFromStorage("selfie/$_customerId.jpg");
-
-      // Create 'authenticate' collection in Firestore
-      if (_licenseImageUrl != null && _selfieImageUrl != null) {
-        await FirebaseFirestore.instance
-            .collection("Customers")
-            .doc(_customerId)
-            .collection("Authenticate")
-            .doc("authentication") // Document name
-            .set({
-              "LicenseImage": _licenseImageUrl,
-              "SelfieImage": _selfieImageUrl,
-              "Status": "Pending",
-              "Timestamp": FieldValue.serverTimestamp(),
-            });
-
-        debugPrint("Authentication data stored successfully!");
-      }
-    } catch (e) {
-      debugPrint("Error fetching images & storing in Firestore: $e");
-    }
-  }
-
-  // Fetch Image from Firebase Storage
-  Future<String?> _fetchImageFromStorage(String path) async {
-    try {
-      Reference ref = FirebaseStorage.instance.ref().child(path);
-      return await ref.getDownloadURL(); //Get download URL
-    } catch (e) {
-      debugPrint("Error fetching image from Storage: $e");
-      return null;
-    }
-  }
-
-  // Auto-Navigate to ProfileScreen after 10 seconds
-  void _navigateToAccountScreen() {
-    _navigationTimer = Timer(const Duration(seconds: 10), () {
-      if (mounted) {
-        if (Navigator.canPop(context)) {
-          Navigator.pop(context);
-        } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const ProfileScreen()),
-          );
-        }
-      }
-    });
+    _navigationTimer = Timer(const Duration(seconds: 10), _returnToProfile);
   }
 
   @override
@@ -113,36 +41,60 @@ class _PendingScreenState extends State<PendingScreen> {
     super.dispose();
   }
 
+  void _returnToProfile() {
+    if (!mounted) return;
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+      return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const ProfileScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<ProfileAuthenticationViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.hourglass_empty,
-              size: 100,
-              color: Colors.blue,
-            ), // ⏳ Pending Icon
-            SizedBox(height: 20),
-            Text(
-              "Your authentication request is pending approval.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.hourglass_empty, size: 100, color: Colors.blue),
+              const SizedBox(height: 20),
+              const Text(
+                'Your authentication request is pending approval.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              "This process may take some time. Please wait...",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.black54),
-            ),
-          ],
+              const SizedBox(height: 10),
+              Text(
+                viewModel.errorMessage ??
+                    'This process may take some time. Please wait...',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: viewModel.errorMessage == null
+                      ? Colors.black54
+                      : Colors.red,
+                ),
+              ),
+              if (viewModel.isLoading) ...[
+                const SizedBox(height: 20),
+                const CircularProgressIndicator(),
+              ],
+            ],
+          ),
         ),
       ),
     );

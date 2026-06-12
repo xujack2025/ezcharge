@@ -1,174 +1,97 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart' as path;
+import 'package:provider/provider.dart';
 
+import '../../../../../../services/profile_account_service.dart';
+import '../../../../../../viewmodels/application/profile_authentication_viewmodel.dart';
 import 'pending_screen.dart';
 
-class UploadSelfieScreen extends StatefulWidget {
-  const UploadSelfieScreen({super.key}); //Removed `licenseImage`
+class UploadSelfieScreen extends StatelessWidget {
+  const UploadSelfieScreen({super.key});
 
   @override
-  State<UploadSelfieScreen> createState() => _UploadSelfieScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ProfileAuthenticationViewModel(),
+      child: const _UploadSelfieContent(),
+    );
+  }
 }
 
-class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
-  final ImagePicker picker = ImagePicker();
-  File? _selfieImage;
-  final bool _isUploading = false; // Show loading indicator
-  String _accountId = ""; // Store customer ID
+class _UploadSelfieContent extends StatefulWidget {
+  const _UploadSelfieContent();
 
   @override
-  void initState() {
-    super.initState();
-    _getCustomerID();
+  State<_UploadSelfieContent> createState() => _UploadSelfieContentState();
+}
+
+class _UploadSelfieContentState extends State<_UploadSelfieContent> {
+  final ImagePicker _picker = ImagePicker();
+  File? _selfieImage;
+
+  Future<void> _getImage(ImageSource source) async {
+    final image = await _picker.pickImage(source: source);
+    if (image == null || !mounted) return;
+    setState(() => _selfieImage = File(image.path));
   }
 
-  //Fetch the current logged-in customer's ID
-  Future<void> _getCustomerID() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-
-          setState(() {
-            _accountId = userDoc["CustomerID"];
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-    }
-  }
-
-  //Pick Selfie from Gallery
-  Future<void> _getImageFromGallery() async {
-    final XFile? galleryImage = await picker.pickImage(
-      source: ImageSource.gallery,
-    );
-    if (galleryImage != null) {
-      setState(() {
-        _selfieImage = File(galleryImage.path);
-      });
-    }
-  }
-
-  //Take Selfie from Camera
-  Future<void> _getImageFromCamera() async {
-    final XFile? cameraImage = await picker.pickImage(
-      source: ImageSource.camera,
-    );
-    if (cameraImage != null) {
-      setState(() {
-        _selfieImage = File(cameraImage.path);
-      });
-    }
-  }
-
-  //Upload File to Firebase Storage
   Future<void> _uploadSelfieImage() async {
-    if (_selfieImage == null) return;
-
-    // Show Loading Dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const AlertDialog(
-        content: Row(
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 20),
-            Text("Uploading... Please wait"),
-          ],
-        ),
-      ),
+    final viewModel = context.read<ProfileAuthenticationViewModel>();
+    final result = await viewModel.uploadImage(
+      type: ProfileAuthenticationImageType.selfie,
+      image: _selfieImage,
     );
 
-    try {
-      // Generate unique filename
-      final fileName = '$_accountId${path.extension(_selfieImage!.path)}';
-      final Reference storageRef = FirebaseStorage.instance.ref().child(
-        'selfie/$fileName',
-      );
+    if (!mounted) return;
 
-      // Upload file
-      UploadTask uploadTask = storageRef.putFile(_selfieImage!);
-
-      // Track upload progress
-      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-        debugPrint(
-          "Uploading: ${snapshot.bytesTransferred} / ${snapshot.totalBytes}",
+    switch (result) {
+      case ProfileAuthenticationUploadResult.success:
+        _showSuccessDialog();
+      case ProfileAuthenticationUploadResult.noImage:
+      case ProfileAuthenticationUploadResult.customerNotFound:
+      case ProfileAuthenticationUploadResult.failed:
+        _showErrorDialog(
+          viewModel.errorMessage ?? 'Failed to upload image. Please try again.',
         );
-      });
-
-      // Wait for upload to complete
-      TaskSnapshot snapshot = await uploadTask;
-      String downloadUrl = await snapshot.ref.getDownloadURL();
-
-      // Close Loading Dialog
-      if (!mounted) return;
-      Navigator.pop(context);
-
-      // Show Success Dialog
-      _showSuccessDialog(downloadUrl);
-    } catch (error) {
-      if (!mounted) return;
-      Navigator.pop(context); // Close Loading Dialog
-      _showErrorDialog("Failed to upload image. Please try again.");
-      debugPrint("Upload error: $error");
     }
   }
 
-  void _showSuccessDialog(String imageUrl) {
+  void _showSuccessDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Upload Successful"),
+        title: const Text('Upload Successful'),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.check_circle, color: Colors.green, size: 60),
             SizedBox(height: 10),
-            Text("Your selfie has been uploaded successfully."),
+            Text('Your selfie has been uploaded successfully.'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              if (!mounted) return;
               Navigator.pushReplacement(
                 this.context,
                 MaterialPageRoute(builder: (context) => const PendingScreen()),
               );
             },
-            child: const Text("OK"),
+            child: const Text('OK'),
           ),
         ],
       ),
     );
   }
 
-  //Show Error Dialog
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Upload Failed", style: TextStyle(color: Colors.red)),
+        title: const Text('Upload Failed', style: TextStyle(color: Colors.red)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -180,7 +103,7 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -189,12 +112,13 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<ProfileAuthenticationViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             color: Colors.white,
@@ -214,27 +138,23 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
                 ),
                 const SizedBox(width: 10),
                 const Text(
-                  "Authenticate Account",
+                  'Authenticate Account',
                   style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
           ),
-
-          //Step Indicator
           Container(
             width: double.infinity,
             color: Colors.grey[200],
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: const Text(
-              "Step 2/2",
+              'Step 2/2',
               textAlign: TextAlign.right,
               style: TextStyle(fontSize: 14, color: Colors.black54),
             ),
           ),
           const SizedBox(height: 20),
-
-          //Upload Selfie Section
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Container(
@@ -259,7 +179,7 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            "Please upload your selfie",
+                            'Please upload your selfie',
                             style: TextStyle(
                               color: Colors.black54,
                               fontSize: 14,
@@ -274,75 +194,35 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
               ),
             ),
           ),
-
           const SizedBox(height: 20),
-
-          //Buttons for Selecting Image (Hidden if an image is selected)
           if (_selfieImage == null) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: Column(
                 children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _getImageFromGallery,
-                      icon: const Icon(Icons.image, color: Colors.white),
-                      label: const Text(
-                        "Choose from Gallery",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                    ),
+                  _ImageSourceButton(
+                    icon: Icons.image,
+                    label: 'Choose from Gallery',
+                    onPressed: () => _getImage(ImageSource.gallery),
                   ),
                   const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _getImageFromCamera,
-                      icon: const Icon(Icons.camera_alt, color: Colors.white),
-                      label: const Text(
-                        "Take a picture",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                    ),
+                  _ImageSourceButton(
+                    icon: Icons.camera_alt,
+                    label: 'Take a picture',
+                    onPressed: () => _getImage(ImageSource.camera),
                   ),
                 ],
               ),
             ),
           ],
-
           const SizedBox(height: 20),
-
-          //UPLOAD Button (Only Shows if Image is Selected)
           if (_selfieImage != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _uploadSelfieImage,
+                  onPressed: viewModel.isLoading ? null : _uploadSelfieImage,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -350,10 +230,10 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
                       borderRadius: BorderRadius.circular(5),
                     ),
                   ),
-                  child: _isUploading
+                  child: viewModel.isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                          "UPLOAD",
+                          'UPLOAD',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -364,6 +244,42 @@ class _UploadSelfieScreenState extends State<UploadSelfieScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _ImageSourceButton extends StatelessWidget {
+  const _ImageSourceButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, color: Colors.white),
+        label: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        ),
       ),
     );
   }

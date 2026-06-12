@@ -1,158 +1,82 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart' as path;
+import 'package:provider/provider.dart';
 
+import '../../../../../../services/profile_account_service.dart';
+import '../../../../../../viewmodels/application/profile_authentication_viewmodel.dart';
 import 'upload_selfie_screen.dart';
 
-class AuthenticateAccountScreen extends StatefulWidget {
+class AuthenticateAccountScreen extends StatelessWidget {
   const AuthenticateAccountScreen({super.key});
 
   @override
-  State<AuthenticateAccountScreen> createState() =>
-      _AuthenticateAccountScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ProfileAuthenticationViewModel(),
+      child: const _AuthenticateAccountContent(),
+    );
+  }
 }
 
-class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
-  final ImagePicker picker = ImagePicker();
+class _AuthenticateAccountContent extends StatefulWidget {
+  const _AuthenticateAccountContent();
+
   @override
-  void initState() {
-    super.initState();
-    _getCustomerID();
-  }
+  State<_AuthenticateAccountContent> createState() =>
+      _AuthenticateAccountContentState();
+}
 
+class _AuthenticateAccountContentState
+    extends State<_AuthenticateAccountContent> {
+  final ImagePicker _picker = ImagePicker();
   File? _licenseImage;
-  final bool _isUploading = false;
-  String _accountId = "";
 
-  //Pick Image from Gallery
-  Future<void> _getImageFromGallery() async {
-    final XFile? galleryImage = await picker.pickImage(
-      source: ImageSource.gallery,
-    );
-    if (galleryImage != null) {
-      setState(() {
-        _licenseImage = File(galleryImage.path);
-      });
-    }
+  Future<void> _getImage(ImageSource source) async {
+    final image = await _picker.pickImage(source: source);
+    if (image == null || !mounted) return;
+    setState(() => _licenseImage = File(image.path));
   }
 
-  //Take Picture from Camera
-  Future<void> _getImageFromCamera() async {
-    final XFile? cameraImage = await picker.pickImage(
-      source: ImageSource.camera,
-    );
-    if (cameraImage != null) {
-      setState(() {
-        _licenseImage = File(cameraImage.path);
-      });
-    }
-  }
-
-  // Fetch current log in user id from Firestore
-  Future<void> _getCustomerID() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-
-          setState(() {
-            _accountId = userDoc["CustomerID"];
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-    }
-  }
-
-  //Upload Image to Firebase Storage with better user feedback
   Future<void> _uploadLicenseImage() async {
-    if (_licenseImage == null) return;
-
-    // Show Loading Dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const AlertDialog(
-        content: Row(
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 20),
-            Text("Uploading... Please wait"),
-          ],
-        ),
-      ),
+    final viewModel = context.read<ProfileAuthenticationViewModel>();
+    final result = await viewModel.uploadImage(
+      type: ProfileAuthenticationImageType.license,
+      image: _licenseImage,
     );
 
-    try {
-      // Generate unique filename
-      final fileName = '$_accountId${path.extension(_licenseImage!.path)}';
-      final Reference storageRef = FirebaseStorage.instance.ref().child(
-        'license/$fileName',
-      );
+    if (!mounted) return;
 
-      // Upload file
-      UploadTask uploadTask = storageRef.putFile(_licenseImage!);
-
-      // Track upload progress
-      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-        debugPrint(
-          "Uploading: ${snapshot.bytesTransferred} / ${snapshot.totalBytes}",
+    switch (result) {
+      case ProfileAuthenticationUploadResult.success:
+        _showSuccessDialog();
+      case ProfileAuthenticationUploadResult.noImage:
+      case ProfileAuthenticationUploadResult.customerNotFound:
+      case ProfileAuthenticationUploadResult.failed:
+        _showErrorDialog(
+          viewModel.errorMessage ?? 'Failed to upload image. Please try again.',
         );
-      });
-
-      // Wait for upload to complete
-      TaskSnapshot snapshot = await uploadTask;
-      String downloadUrl = await snapshot.ref.getDownloadURL();
-
-      // Close Loading Dialog
-      if (!mounted) return;
-      Navigator.pop(context);
-
-      // Show Success Dialog
-      _showSuccessDialog(downloadUrl);
-    } catch (error) {
-      if (!mounted) return;
-      Navigator.pop(context); // Close Loading Dialog
-      _showErrorDialog("Failed to upload image. Please try again.");
-      debugPrint("Upload error: $error");
     }
   }
 
-  //Show Success Dialog
-  void _showSuccessDialog(String imageUrl) {
+  void _showSuccessDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Upload Successful"),
+        title: const Text('Upload Successful'),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.check_circle, color: Colors.green, size: 60),
             SizedBox(height: 10),
-            Text("Your license has been uploaded successfully."),
+            Text('Your license has been uploaded successfully.'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              if (!mounted) return;
               Navigator.push(
                 this.context,
                 MaterialPageRoute(
@@ -160,19 +84,18 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
                 ),
               );
             },
-            child: const Text("OK"),
+            child: const Text('OK'),
           ),
         ],
       ),
     );
   }
 
-  // Show Error Dialog
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Upload Failed", style: TextStyle(color: Colors.red)),
+        title: const Text('Upload Failed', style: TextStyle(color: Colors.red)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -184,7 +107,7 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -193,6 +116,8 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<ProfileAuthenticationViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -208,7 +133,7 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Authenticate Account",
+          'Authenticate Account',
           style: TextStyle(
             color: Colors.black,
             fontSize: 25,
@@ -221,20 +146,17 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //Step Indicator "1/2"
           Container(
             width: double.infinity,
             color: Colors.grey[200],
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: const Text(
-              "Step 1/2",
+              'Step 1/2',
               textAlign: TextAlign.right,
               style: TextStyle(fontSize: 14, color: Colors.black54),
             ),
           ),
           const SizedBox(height: 20),
-
-          //Upload Driving License Container
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Container(
@@ -255,7 +177,7 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            "Please upload your driving license",
+                            'Please upload your driving license',
                             style: TextStyle(
                               color: Colors.black54,
                               fontSize: 14,
@@ -270,75 +192,35 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
               ),
             ),
           ),
-
           const SizedBox(height: 20),
-
-          //Buttons for Selecting Image (Hide if an image is selected)
           if (_licenseImage == null) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: Column(
                 children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _getImageFromGallery,
-                      icon: const Icon(Icons.image, color: Colors.white),
-                      label: const Text(
-                        "Choose from Gallery",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                    ),
+                  _ImageSourceButton(
+                    icon: Icons.image,
+                    label: 'Choose from Gallery',
+                    onPressed: () => _getImage(ImageSource.gallery),
                   ),
                   const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _getImageFromCamera,
-                      icon: const Icon(Icons.camera_alt, color: Colors.white),
-                      label: const Text(
-                        "Take a picture",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                    ),
+                  _ImageSourceButton(
+                    icon: Icons.camera_alt,
+                    label: 'Take a picture',
+                    onPressed: () => _getImage(ImageSource.camera),
                   ),
                 ],
               ),
             ),
           ],
-
           const SizedBox(height: 20),
-
-          //UPLOAD Button (Only Shows if Image is Selected)
           if (_licenseImage != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _uploadLicenseImage,
+                  onPressed: viewModel.isLoading ? null : _uploadLicenseImage,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -346,10 +228,10 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
                       borderRadius: BorderRadius.circular(5),
                     ),
                   ),
-                  child: _isUploading
+                  child: viewModel.isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                          "UPLOAD",
+                          'UPLOAD',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -360,6 +242,42 @@ class _AuthenticateAccountScreenState extends State<AuthenticateAccountScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _ImageSourceButton extends StatelessWidget {
+  const _ImageSourceButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, color: Colors.white),
+        label: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        ),
       ),
     );
   }
