@@ -218,6 +218,7 @@ class _ActivityScreenState extends State<ActivityScreen>
           .doc(_customerId)
           .delete();
 
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Reservation Cancelled!")));

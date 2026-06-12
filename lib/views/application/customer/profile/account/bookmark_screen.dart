@@ -101,6 +101,7 @@ class BookmarkScreenState extends State<BookmarkScreen> {
           .doc(bookmarkId)
           .delete();
 
+      if (!mounted) return;
       setState(() {
         _bookmarkedStations.removeWhere(
           (station) => station["BookmarkID"] == bookmarkId,

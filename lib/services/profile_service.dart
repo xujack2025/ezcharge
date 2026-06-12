@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../core/utils/app_logger.dart';
 import '../models/customer_model.dart';
 import 'auth_service.dart';
@@ -14,14 +16,47 @@ class CustomerProfileData {
 
 abstract class ProfileServiceContract {
   Future<CustomerProfileData?> fetchCurrentCustomerProfile();
+
+  Future<void> updateCustomerProfile(CustomerProfileUpdate update);
+}
+
+class CustomerProfileUpdate {
+  const CustomerProfileUpdate({
+    required this.customerId,
+    required this.firstName,
+    required this.lastName,
+    required this.email,
+    required this.gender,
+    required this.dateOfBirth,
+  });
+
+  final String customerId;
+  final String firstName;
+  final String lastName;
+  final String email;
+  final String? gender;
+  final String? dateOfBirth;
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'FirstName': firstName,
+      'LastName': lastName,
+      'EmailAddress': email,
+      'Gender': gender,
+      'DateOfBirth': dateOfBirth,
+    };
+  }
 }
 
 class ProfileService implements ProfileServiceContract {
   ProfileService({
     AuthServiceContract? authService,
-  }) : _authService = authService ?? AuthService();
+    FirebaseFirestore? firestore,
+  }) : _authService = authService ?? AuthService(),
+       _firestore = firestore ?? FirebaseFirestore.instance;
 
   final AuthServiceContract _authService;
+  final FirebaseFirestore _firestore;
 
   @override
   Future<CustomerProfileData?> fetchCurrentCustomerProfile() async {
@@ -46,6 +81,20 @@ class ProfileService implements ProfileServiceContract {
       );
     } catch (e) {
       AppLogger.error('Error loading customer profile: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateCustomerProfile(CustomerProfileUpdate update) async {
+    try {
+      await _firestore
+          .collection('Customers')
+          .doc(update.customerId)
+          .update(update.toFirestore());
+      AppLogger.info('Updated customer profile: ${update.customerId}');
+    } catch (e) {
+      AppLogger.error('Error updating customer profile: $e');
       rethrow;
     }
   }

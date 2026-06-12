@@ -1,145 +1,70 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class ReloadPINScreen extends StatefulWidget {
-  final double topUpAmount;
+import '../../../../../viewmodels/application/reload_pin_viewmodel.dart';
+
+class ReloadPINScreen extends StatelessWidget {
   const ReloadPINScreen({required this.topUpAmount, super.key});
 
+  final double topUpAmount;
+
   @override
-  ReloadPINScreenState createState() => ReloadPINScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) =>
+          ReloadPinViewModel(topUpAmount: topUpAmount)..sendReloadPin(),
+      child: const _ReloadPinContent(),
+    );
+  }
 }
 
-class ReloadPINScreenState extends State<ReloadPINScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final TextEditingController _otpController = TextEditingController();
-  String _accountId = "";
-  String _userPhone = "";
-  bool _isLoading = true;
-  bool _isOtpValid = true;
-  String _verificationId = "";
+class _ReloadPinContent extends StatefulWidget {
+  const _ReloadPinContent();
 
   @override
-  void initState() {
-    super.initState();
-    _getCustomerID();
+  State<_ReloadPinContent> createState() => _ReloadPinContentState();
+}
+
+class _ReloadPinContentState extends State<_ReloadPinContent> {
+  final TextEditingController _otpController = TextEditingController();
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    super.dispose();
   }
 
-  // Fetch Customer ID and Phone Number
-  Future<void> _getCustomerID() async {
-    try {
-      User? user = _auth.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
+  Future<void> _verifyAndTopUp() async {
+    final viewModel = context.read<ReloadPinViewModel>();
+    final result = await viewModel.verifyAndTopUp(_otpController.text);
 
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-          if (!mounted) return;
-          setState(() {
-            _accountId = userDoc["CustomerID"];
-            _userPhone = userDoc["PhoneNumber"];
-            _isLoading = false;
-          });
-
-          _sendFirebaseOTP(); // Send OTP to user
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-    }
-  }
-
-  // Send OTP using Firebase Authentication
-  Future<void> _sendFirebaseOTP() async {
     if (!mounted) return;
-    setState(() => _isLoading = true);
 
-    try {
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: _userPhone,
-        timeout: const Duration(seconds: 60),
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          debugPrint("Auto verification completed");
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          debugPrint("Verification Failed: ${e.message}");
-          if (!mounted) return;
-          setState(() => _isLoading = false);
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          if (!mounted) return;
-          setState(() {
-            _verificationId = verificationId; // Store verification ID
-            _isLoading = false;
-          });
-          debugPrint("OTP Sent to $_userPhone");
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          debugPrint("Auto retrieval timeout");
-        },
-      );
-    } catch (e) {
-      debugPrint("Error sending OTP: $e");
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-    }
-  }
-
-  // Verify OTP and Add Credit
-  Future<void> _verifyOTPAndTopUp() async {
-    setState(() => _isLoading = true);
-
-    try {
-      //Create Firebase Credential from entered OTP
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: _verificationId,
-        smsCode: _otpController.text.trim(),
-      );
-
-      //Sign in with this credential
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
-      //Update Wallet Balance
-      DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
-          .collection("Customers")
-          .doc(_accountId)
-          .get();
-      double currentBalance = (userSnapshot["WalletBalance"] ?? 0.0).toDouble();
-      double newBalance = currentBalance + widget.topUpAmount;
-
-      await FirebaseFirestore.instance
-          .collection("Customers")
-          .doc(_accountId)
-          .update({"WalletBalance": newBalance});
-
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Top-up successful!")));
-
-      Navigator.pop(context, true);
-    } catch (e) {
-      debugPrint("Invalid Reload OTP: $e");
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _isOtpValid = false;
-      });
+    switch (result) {
+      case ReloadPinResult.success:
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Top-up successful!')));
+        Navigator.pop(context, true);
+      case ReloadPinResult.emptyOtp:
+      case ReloadPinResult.missingVerification:
+      case ReloadPinResult.customerNotFound:
+      case ReloadPinResult.invalidOtp:
+      case ReloadPinResult.failed:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              viewModel.errorMessage ?? 'Unable to top up. Please try again.',
+            ),
+          ),
+        );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<ReloadPinViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -155,7 +80,7 @@ class ReloadPINScreenState extends State<ReloadPINScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Reload with Reload PIN",
+          'Reload with Reload PIN',
           style: TextStyle(
             color: Colors.black,
             fontSize: 24,
@@ -165,14 +90,20 @@ class ReloadPINScreenState extends State<ReloadPINScreen> {
         backgroundColor: Colors.white,
         elevation: 1,
       ),
-      body: _isLoading
+      body: viewModel.isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // OTP Verification Display
+                  if (viewModel.errorMessage != null) ...[
+                    Text(
+                      viewModel.errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   Center(
                     child: Container(
                       padding: const EdgeInsets.all(16),
@@ -185,8 +116,8 @@ class ReloadPINScreenState extends State<ReloadPINScreen> {
                           Icon(Icons.wallet, size: 50, color: Colors.white),
                           SizedBox(height: 10),
                           Text(
-                            "RELOAD PIN\n"
-                            "   ******",
+                            'RELOAD PIN\n'
+                            '   ******',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -197,41 +128,40 @@ class ReloadPINScreenState extends State<ReloadPINScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
                   const Text(
-                    "Please enter the Reload PIN :",
+                    'Please enter the Reload PIN :',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-
                   const SizedBox(height: 10),
-
                   TextField(
                     controller: _otpController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      hintText: "Reload PIN",
-                      errorText: _isOtpValid ? null : "Invalid Reload OTP",
+                      hintText: 'Reload PIN',
+                      errorText: viewModel.isOtpValid
+                          ? null
+                          : viewModel.errorMessage ?? 'Invalid Reload OTP',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 40),
-
-                  // TOP UP Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _verifyOTPAndTopUp,
+                      onPressed: viewModel.hasVerificationId
+                          ? _verifyAndTopUp
+                          : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: viewModel.hasVerificationId
+                            ? Colors.blue
+                            : Colors.grey,
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
                       child: const Text(
-                        "TOP UP",
+                        'TOP UP',
                         style: TextStyle(color: Colors.white, fontSize: 18),
                       ),
                     ),

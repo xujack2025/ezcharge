@@ -1,55 +1,30 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-import '../../../../../core/utils/app_logger.dart';
+import '../../../../../models/profile_payment_card_model.dart';
+import '../../../../../viewmodels/application/payment_history_viewmodel.dart';
 import '../../charging/charging_payment_history_detail_screen.dart';
 
-class PaymentHistoryListScreen extends StatefulWidget {
+class PaymentHistoryListScreen extends StatelessWidget {
   const PaymentHistoryListScreen({super.key});
 
   @override
-  State<PaymentHistoryListScreen> createState() =>
-      PaymentHistoryListScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => PaymentHistoryViewModel()..loadPaymentHistory(),
+      child: const _PaymentHistoryContent(),
+    );
+  }
 }
 
-class PaymentHistoryListScreenState extends State<PaymentHistoryListScreen> {
-  bool isLoading = false;
-  String _accountId = "";
-
-  @override
-  void initState() {
-    super.initState();
-    _getCustomerID();
-  }
-
-  Future<void> _getCustomerID() async {
-    setState(() => isLoading = true);
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final userPhone = user.phoneNumber ?? "";
-        if (userPhone.isNotEmpty) {
-          final querySnapshot = await FirebaseFirestore.instance
-              .collection("Customers")
-              .where("PhoneNumber", isEqualTo: userPhone)
-              .limit(1)
-              .get();
-
-          if (querySnapshot.docs.isNotEmpty) {
-            _accountId = querySnapshot.docs.first["CustomerID"] ?? "";
-          }
-        }
-      }
-    } catch (e) {
-      AppLogger.error("Error fetching customer data: $e");
-    }
-    setState(() => isLoading = false);
-  }
+class _PaymentHistoryContent extends StatelessWidget {
+  const _PaymentHistoryContent();
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<PaymentHistoryViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -59,9 +34,7 @@ class PaymentHistoryListScreenState extends State<PaymentHistoryListScreen> {
         leading: Padding(
           padding: const EdgeInsets.all(8),
           child: InkWell(
-            onTap: () {
-              Navigator.pop(context);
-            },
+            onTap: () => Navigator.pop(context),
             child: Container(
               decoration: const BoxDecoration(
                 color: Colors.blue,
@@ -72,7 +45,7 @@ class PaymentHistoryListScreenState extends State<PaymentHistoryListScreen> {
           ),
         ),
         title: const Text(
-          "Payment History",
+          'Payment History',
           style: TextStyle(
             color: Colors.black,
             fontSize: 25,
@@ -81,139 +54,127 @@ class PaymentHistoryListScreenState extends State<PaymentHistoryListScreen> {
         ),
         centerTitle: false,
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _accountId.isEmpty
-          ? const Center(child: Text("No account ID found."))
-          : _buildPaymentHistoryStream(),
+      body: _PaymentHistoryBody(viewModel: viewModel),
     );
   }
+}
 
-  Widget _buildPaymentHistoryStream() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection("Customers")
-          .doc(_accountId)
-          .collection("PaymentHistory")
-          .orderBy("Paid Time", descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Center(child: Text("Error loading payment history."));
-        }
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
+class _PaymentHistoryBody extends StatelessWidget {
+  const _PaymentHistoryBody({required this.viewModel});
 
-        final docs = snapshot.data!.docs;
-        if (docs.isEmpty) {
-          return const Center(child: Text("No payment history found."));
-        }
+  final PaymentHistoryViewModel viewModel;
 
-        return ListView.builder(
-          itemCount: docs.length,
-          itemBuilder: (context, index) {
-            final data = docs[index].data() as Map<String, dynamic>;
-            final stationName = data["StationName"] ?? "-";
-            final chargerName = data["ChargerName"] ?? "-";
-            final chargerType = data["ChargerType"] ?? "-";
-            final duration = data["Duration"] ?? "";
-            final paymentMethod = data["PaymentMethod"] ?? "";
-            final totalCost = (data["TotalCost"] ?? 0).toString();
-            final paidTime = data["Paid Time"];
-            final payID = data["Payment ID"]; // Firestore doc ID
-            // Convert timestamp
-            DateTime? paidDateTime;
-            if (paidTime is Timestamp) {
-              paidDateTime = paidTime.toDate();
-            }
-            final dateStr = paidDateTime != null
-                ? DateFormat('EEE MMM d, h:mma').format(paidDateTime)
-                : "";
-            final costStr = "-RM$totalCost";
+  @override
+  Widget build(BuildContext context) {
+    if (viewModel.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-            return InkWell(
-              onTap: () {
-                // Navigate to detail screen, passing docId & accountId
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ChargingPaymentHistoryDetailScreen(
-                      accountId: _accountId,
-                      paymentDocId: payID,
-                    ),
-                  ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.shade300,
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          dateStr,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          costStr,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 6),
-                        Text(stationName, style: const TextStyle(fontSize: 14)),
-                        const SizedBox(height: 4),
-                        Text(
-                          "$chargerName | $chargerType",
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Duration: $duration • $paymentMethod",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
+    final errorMessage = viewModel.errorMessage;
+    if (errorMessage != null) {
+      return Center(child: Text(errorMessage));
+    }
+
+    if (viewModel.items.isEmpty) {
+      return const Center(child: Text('No payment history found.'));
+    }
+
+    return ListView.builder(
+      itemCount: viewModel.items.length,
+      itemBuilder: (context, index) {
+        return _PaymentHistoryTile(
+          accountId: viewModel.customerId,
+          item: viewModel.items[index],
         );
       },
+    );
+  }
+}
+
+class _PaymentHistoryTile extends StatelessWidget {
+  const _PaymentHistoryTile({required this.accountId, required this.item});
+
+  final String accountId;
+  final ProfilePaymentHistoryItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final dateStr = item.paidTime != null
+        ? DateFormat('EEE MMM d, h:mma').format(item.paidTime!)
+        : '';
+    final costStr = '-RM${item.totalCost.toStringAsFixed(2)}';
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChargingPaymentHistoryDetailScreen(
+              accountId: accountId,
+              paymentDocId: item.paymentId,
+            ),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade300,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  dateStr,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  costStr,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 6),
+                Text(item.stationName, style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(
+                  '${item.chargerName} | ${item.chargerType}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Duration: ${item.duration} • ${item.paymentMethod}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

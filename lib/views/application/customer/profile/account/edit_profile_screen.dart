@@ -1,6 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../../../../viewmodels/application/profile_viewmodel.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -17,94 +18,93 @@ class EditProfileScreenState extends State<EditProfileScreen> {
 
   String? _selectedGender;
   String? _selectedDateOfBirth;
-  String? _customerId;
+  bool _hasSyncedProfile = false;
+  bool _hasShownLoadError = false;
 
   final List<String> _genders = ["Male", "Female", "Other"];
 
   @override
   void initState() {
     super.initState();
-    _fetchCustomerData(); // Fetch Firestore data when screen loads
-  }
-
-  //Fetch logged-in user's details from Firestore
-  Future<void> _fetchCustomerData() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        //Query Firestore for customer document
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-
-          setState(() {
-            _customerId =
-                userDoc["CustomerID"]; // Store CustomerID for updating later
-            _firstNameController.text = userDoc["FirstName"];
-            _lastNameController.text = userDoc["LastName"];
-            _emailController.text = userDoc["EmailAddress"];
-            _phoneController.text = userDoc["PhoneNumber"];
-            _selectedGender = userDoc["Gender"];
-            _selectedDateOfBirth = userDoc["DateOfBirth"];
-          });
-        }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<ProfileViewModel>().loadProfile();
       }
-    } catch (e) {
-      debugPrint("❌ Error fetching customer data: $e");
+    });
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveProfile() async {
+    final profileViewModel = context.read<ProfileViewModel>();
+    final result = await profileViewModel.updateProfile(
+      firstName: _firstNameController.text,
+      lastName: _lastNameController.text,
+      email: _emailController.text,
+      gender: _selectedGender,
+      dateOfBirth: _selectedDateOfBirth,
+    );
+
+    if (!mounted) return;
+
+    switch (result) {
+      case ProfileUpdateResult.success:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile updated successfully!")),
+        );
+        Navigator.pop(context);
+        return;
+      case ProfileUpdateResult.noCustomer:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error: Customer not found.")),
+        );
+        break;
+      case ProfileUpdateResult.invalidEmail:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Invalid email address"),
+            backgroundColor: Colors.black,
+          ),
+        );
+        break;
+      case ProfileUpdateResult.failed:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to update profile.")),
+        );
+        break;
     }
   }
 
-  //Save updated profile to Firestore
-  Future<void> _saveProfile() async {
-    if (_customerId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error: Customer not found.")),
-      );
-      return;
-    }
-    final email = _emailController.text.trim();
+  void _syncControllers(ProfileViewModel profileViewModel) {
+    if (_hasSyncedProfile || profileViewModel.customer == null) return;
 
-    // Email validation: must end with @gmail.com
-    if (!email.endsWith('@gmail.com')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Invalid email address"),
-          backgroundColor: Colors.black,
-        ),
-      );
-      return;
-    }
-    try {
-      await FirebaseFirestore.instance
-          .collection("Customers")
-          .doc(_customerId)
-          .update({
-            "FirstName": _firstNameController.text,
-            "LastName": _lastNameController.text,
-            "EmailAddress": _emailController.text,
-            "Gender": _selectedGender,
-            "DateOfBirth": _selectedDateOfBirth,
-          });
+    _firstNameController.text = profileViewModel.firstName;
+    _lastNameController.text = profileViewModel.lastName;
+    _emailController.text = profileViewModel.email;
+    _phoneController.text = profileViewModel.phone;
+    _selectedGender = profileViewModel.gender;
+    _selectedDateOfBirth = profileViewModel.dateOfBirth;
+    _hasSyncedProfile = true;
+  }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Profile updated successfully!")),
-      );
+  void _showLoadErrorIfNeeded(ProfileViewModel profileViewModel) {
+    final errorMessage = profileViewModel.errorMessage;
+    if (_hasSyncedProfile || _hasShownLoadError || errorMessage == null) return;
 
-      Navigator.pop(context);
-    } catch (e) {
-      debugPrint("Error updating profile: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to update profile.")),
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _hasShownLoadError = true;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    });
   }
 
   void _pickDate() async {
@@ -125,6 +125,10 @@ class EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final profileViewModel = context.watch<ProfileViewModel>();
+    _syncControllers(profileViewModel);
+    _showLoadErrorIfNeeded(profileViewModel);
+
     return Scaffold(
       // Set the body background to grey
       backgroundColor: Colors.grey[200],
@@ -186,7 +190,7 @@ class EditProfileScreenState extends State<EditProfileScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _saveProfile,
+                onPressed: profileViewModel.isLoading ? null : _saveProfile,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 15),
@@ -194,14 +198,23 @@ class EditProfileScreenState extends State<EditProfileScreen> {
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
-                child: const Text(
-                  "SAVE",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: profileViewModel.isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        "SAVE",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
           ],

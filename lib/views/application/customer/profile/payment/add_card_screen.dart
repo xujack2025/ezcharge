@@ -1,112 +1,78 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class AddCardScreen extends StatefulWidget {
+import '../../../../../../viewmodels/application/add_card_viewmodel.dart';
+
+class AddCardScreen extends StatelessWidget {
   const AddCardScreen({super.key});
 
   @override
-  AddCardScreenState createState() => AddCardScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) => AddCardViewModel(),
+      child: const _AddCardContent(),
+    );
+  }
 }
 
-class AddCardScreenState extends State<AddCardScreen> {
+class _AddCardContent extends StatefulWidget {
+  const _AddCardContent();
+
+  @override
+  State<_AddCardContent> createState() => _AddCardContentState();
+}
+
+class _AddCardContentState extends State<_AddCardContent> {
   final TextEditingController _cardNumberController = TextEditingController();
   final TextEditingController _expiryDateController = TextEditingController();
   final TextEditingController _cvvController = TextEditingController();
-  bool isLoading = false;
-  String _accountId = "00000000"; // Store logged-in user's customer ID
 
   @override
-  void initState() {
-    super.initState();
-    _getCustomerID();
+  void dispose() {
+    _cardNumberController.dispose();
+    _expiryDateController.dispose();
+    _cvvController.dispose();
+    super.dispose();
   }
 
-  // Fetch current log in user id from Firestore
-  Future<void> _getCustomerID() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
+  Future<void> _addCard() async {
+    final viewModel = context.read<AddCardViewModel>();
+    final result = await viewModel.addCard(
+      cardNumber: _cardNumberController.text,
+      expiredDate: _expiryDateController.text,
+      cvv: _cvvController.text,
+    );
 
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
+    if (!mounted) return;
 
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-
-          setState(() {
-            _accountId = userDoc["CustomerID"];
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-    }
-  }
-
-  //Function to Add Payment Method to Firestore
-  Future<void> _addCardToFirestore() async {
-    if (_cardNumberController.text.isEmpty ||
-        _expiryDateController.text.isEmpty ||
-        _cvvController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in all fields!")),
-      );
-      return;
-    }
-
-    setState(() => isLoading = true);
-
-    try {
-      // Reference to the customer's payment method collection
-      CollectionReference paymentRef = FirebaseFirestore.instance
-          .collection("Customers")
-          .doc(_accountId)
-          .collection("PaymentMethod");
-
-      // Check if the card number already exists
-      QuerySnapshot existingCards = await paymentRef
-          .where("CardNumber", isEqualTo: _cardNumberController.text)
-          .get();
-
-      if (existingCards.docs.isNotEmpty) {
-        // Card Already Exists
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("This card is already registered!")),
-        );
-      } else {
-        // Create a new card if none exists
-        String newCardId = "PMM${DateTime.now().millisecondsSinceEpoch}";
-
-        await paymentRef.doc(newCardId).set({
-          "CardNumber": _cardNumberController.text,
-          "ExpiredDate": _expiryDateController.text,
-          "CVV": _cvvController.text,
-        });
-
+    switch (result) {
+      case AddCardResult.success:
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Card added successfully!")),
         );
-
-        //Close the modal and refresh PaymentMethodScreen
-        Navigator.pop(context, true); // Return true to indicate success
-      }
-    } catch (e) {
-      debugPrint("Error adding card: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to add card. Try again!")),
-      );
+        Navigator.pop(context, true);
+        return;
+      case AddCardResult.emptyFields:
+        _showSnackBar("Please fill in all fields!");
+      case AddCardResult.customerNotFound:
+        _showSnackBar("Customer profile was not found.");
+      case AddCardResult.duplicate:
+        _showSnackBar("This card is already registered!");
+      case AddCardResult.failed:
+        _showSnackBar("Failed to add card. Try again!");
     }
-    setState(() => isLoading = false);
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<AddCardViewModel>();
+
     return Dialog(
       insetPadding: const EdgeInsets.all(20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -164,12 +130,12 @@ class AddCardScreenState extends State<AddCardScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: isLoading ? null : _addCardToFirestore,
+                onPressed: viewModel.isLoading ? null : _addCard,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                 ),
-                child: isLoading
+                child: viewModel.isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
                         "PROCEED",

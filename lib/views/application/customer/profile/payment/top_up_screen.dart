@@ -1,181 +1,146 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../../viewmodels/application/top_up_viewmodel.dart';
 import 'reload_pin_screen.dart';
 
-class TopUpScreen extends StatefulWidget {
+class TopUpScreen extends StatelessWidget {
   const TopUpScreen({super.key});
 
   @override
-  TopUpScreenState createState() => TopUpScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => TopUpViewModel()..loadTopUpProfile(),
+      child: const _TopUpContent(),
+    );
+  }
 }
 
-class TopUpScreenState extends State<TopUpScreen> {
-  double _walletBalance = 0.0; // Default wallet balance
-  String _accountId = "";
-  String _cardNumber = "";
-  bool isLoading = false;
-  bool isCardSelected = false;
-  bool isReloadPinSelected = false;
+class _TopUpContent extends StatefulWidget {
+  const _TopUpContent();
+
+  @override
+  State<_TopUpContent> createState() => _TopUpContentState();
+}
+
+class _TopUpContentState extends State<_TopUpContent> {
   final TextEditingController _amountController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _getCustomerID();
-    _fetchWalletBalance();
-    _amountController.addListener(_updateButtonState);
-  }
-
-  // Get Customer ID
-  Future<void> _getCustomerID() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-
-          if (!mounted) return;
-          setState(() {
-            _accountId = userDoc["CustomerID"];
-          });
-
-          _fetchCardNumber(); // Fetch card number after getting account ID
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-    }
-  }
-
-  //Fetch the logged-in user's wallet balance from Firestore
-  Future<void> _fetchWalletBalance() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        // 🔹 Search Firestore for matching phone number
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-          if (!mounted) return;
-          setState(() {
-            _accountId = userDoc["CustomerID"];
-            _walletBalance = userDoc["WalletBalance"].toDouble();
-          });
-
-          // Fetch the card number after getting customer ID
-          _fetchCardNumber();
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching wallet balance: $e");
-    }
-  }
-
-  void _updateButtonState() {
-    setState(() {});
-  }
-
-  bool _isNextButtonEnabled() {
-    return _amountController.text.isNotEmpty &&
-        (isCardSelected || isReloadPinSelected);
+    _amountController.addListener(_syncAmount);
   }
 
   @override
   void dispose() {
-    _amountController.dispose();
+    _amountController
+      ..removeListener(_syncAmount)
+      ..dispose();
     super.dispose();
   }
 
-  //Fetch Card Number from Firestore
-  Future<void> _fetchCardNumber() async {
-    if (_accountId.isEmpty) return;
-
-    try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("Customers")
-          .doc(_accountId)
-          .collection("PaymentMethod")
-          .limit(1)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        if (!mounted) return;
-        setState(() {
-          _cardNumber = querySnapshot.docs.first["CardNumber"];
-        });
-      }
-    } catch (e) {
-      debugPrint("Error fetching card number: $e");
-    }
+  void _syncAmount() {
+    context.read<TopUpViewModel>().setAmountText(_amountController.text);
   }
 
-  //Build Card Number Display Widget
-  Widget _buildCardNumberDisplay(bool isSelected) {
-    return _cardNumber.isNotEmpty
-        ? GestureDetector(
-            onTap: () {
-              setState(() {
-                isCardSelected = true;
-                isReloadPinSelected = false;
-                _updateButtonState();
-              });
-            },
-            child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 15),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.blue.withValues(alpha: 0.3)
-                    : Colors.white, //Highlight when selected
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.credit_card,
-                    size: 30,
-                    color: isCardSelected ? Colors.blue : Colors.black,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    _cardNumber,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+  void _setQuickAmount(int amount) {
+    _amountController.value = TextEditingValue(
+      text: amount.toString(),
+      selection: TextSelection.collapsed(offset: amount.toString().length),
+    );
+    context.read<TopUpViewModel>().selectQuickAmount(amount);
+  }
+
+  Widget _buildCardNumberDisplay(TopUpViewModel viewModel) {
+    if (!viewModel.hasCard) {
+      return const SizedBox.shrink();
+    }
+
+    return GestureDetector(
+      onTap: () => viewModel.selectPaymentMethod(TopUpPaymentMethod.card),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 15),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: viewModel.isCardSelected
+              ? Colors.blue.withValues(alpha: 0.3)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.credit_card,
+              size: 30,
+              color: viewModel.isCardSelected ? Colors.blue : Colors.black,
             ),
-          )
-        : const SizedBox.shrink();
+            const SizedBox(width: 10),
+            Text(
+              viewModel.cardNumber,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submitTopUp(TopUpViewModel viewModel) async {
+    final enteredAmount = viewModel.selectedAmount;
+    if (enteredAmount == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a valid top-up amount.')),
+      );
+      return;
+    }
+
+    if (viewModel.isReloadPinSelected) {
+      final didTopUp = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ReloadPINScreen(topUpAmount: enteredAmount),
+        ),
+      );
+      if (didTopUp == true && mounted) {
+        Navigator.pop(context, true);
+      }
+      return;
+    }
+
+    if (!viewModel.isCardSelected) return;
+
+    final result = await viewModel.topUpWithCard();
+    if (!mounted) return;
+
+    switch (result) {
+      case TopUpResult.success:
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Top-up successful!')));
+        Navigator.pop(context, true);
+      case TopUpResult.invalidAmount:
+      case TopUpResult.customerNotFound:
+      case TopUpResult.failed:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              viewModel.errorMessage ??
+                  'Unable to update wallet. Please try again.',
+            ),
+          ),
+        );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<TopUpViewModel>();
+    final canSubmit = viewModel.canSubmit && !viewModel.isLoading;
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      resizeToAvoidBottomInset:
-          false, //Prevent UI from resizing when keyboard appears
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         leading: IconButton(
           icon: Container(
@@ -189,7 +154,7 @@ class TopUpScreenState extends State<TopUpScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Top Up EZCHARGE Credit",
+          'Top Up EZCHARGE Credit',
           style: TextStyle(
             color: Colors.black,
             fontSize: 23,
@@ -199,14 +164,12 @@ class TopUpScreenState extends State<TopUpScreen> {
         backgroundColor: Colors.white,
         elevation: 1,
       ),
-
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              //EZCharge Credits Display
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -227,7 +190,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          "EZCharge Credits",
+                          'EZCharge Credits',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -236,7 +199,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          "RM ${_walletBalance.toStringAsFixed(2)}",
+                          'RM ${viewModel.walletBalance.toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -244,15 +207,25 @@ class TopUpScreenState extends State<TopUpScreen> {
                         ),
                       ],
                     ),
+                    if (viewModel.isLoading)
+                      const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
                   ],
                 ),
               ),
-
+              if (viewModel.errorMessage != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  viewModel.errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ],
               const SizedBox(height: 20),
-
-              //Top Up Amount Input
               const Text(
-                "Enter Top Up Amount",
+                'Enter Top Up Amount',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -260,23 +233,18 @@ class TopUpScreenState extends State<TopUpScreen> {
                 controller: _amountController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  prefixText: "RM ",
+                  prefixText: 'RM ',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
               ),
               const SizedBox(height: 10),
-
-              // Quick Amount Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [50, 100, 150].map((amount) {
                   return ElevatedButton(
-                    onPressed: () {
-                      _amountController.text = amount.toString();
-                      _updateButtonState();
-                    },
+                    onPressed: () => _setQuickAmount(amount),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       side: const BorderSide(color: Colors.blue),
@@ -286,7 +254,7 @@ class TopUpScreenState extends State<TopUpScreen> {
                       ),
                     ),
                     child: Text(
-                      "RM $amount",
+                      'RM $amount',
                       style: const TextStyle(
                         color: Colors.blue,
                         fontWeight: FontWeight.bold,
@@ -295,29 +263,19 @@ class TopUpScreenState extends State<TopUpScreen> {
                   );
                 }).toList(),
               ),
-              // Card Number Display
+              _buildCardNumberDisplay(viewModel),
               GestureDetector(
                 onTap: () {
-                  setState(() {
-                    isCardSelected = true;
-                    isReloadPinSelected = false;
-                  });
-                },
-                child: _buildCardNumberDisplay(isCardSelected),
-              ),
-
-              //Payment Options
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    isReloadPinSelected = !isReloadPinSelected;
-                    isCardSelected = false;
-                  });
+                  if (viewModel.isReloadPinSelected) {
+                    viewModel.clearPaymentMethod();
+                  } else {
+                    viewModel.selectPaymentMethod(TopUpPaymentMethod.reloadPin);
+                  }
                 },
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isReloadPinSelected
+                    color: viewModel.isReloadPinSelected
                         ? Colors.blue[100]
                         : Colors.white,
                     borderRadius: BorderRadius.circular(10),
@@ -333,11 +291,13 @@ class TopUpScreenState extends State<TopUpScreen> {
                     children: [
                       Icon(
                         Icons.autorenew,
-                        color: isReloadPinSelected ? Colors.blue : Colors.black,
+                        color: viewModel.isReloadPinSelected
+                            ? Colors.blue
+                            : Colors.black,
                       ),
                       const SizedBox(width: 10),
                       const Text(
-                        "Reload PIN",
+                        'Reload PIN',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -347,87 +307,23 @@ class TopUpScreenState extends State<TopUpScreen> {
                   ),
                 ),
               ),
-
-              const SizedBox(height: 270), //Prevent bottom overflow
-              // Next Button (Always Visible)
+              const SizedBox(height: 270),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isNextButtonEnabled() && !isLoading
-                      ? () async {
-                          final enteredAmount =
-                              double.tryParse(_amountController.text) ?? 0.0;
-                          if (enteredAmount <= 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Enter a valid top-up amount."),
-                              ),
-                            );
-                            return;
-                          }
-                          if (isReloadPinSelected) {
-                            // Navigate to ReloadPINScreen with the top-up amount
-                            final didTopUp = await Navigator.push<bool>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ReloadPINScreen(topUpAmount: enteredAmount),
-                              ),
-                            );
-                            if (didTopUp == true && context.mounted) {
-                              Navigator.pop(context, true);
-                            }
-                          } else if (isCardSelected) {
-                            // Set loading state and simulate processing for 3 seconds
-                            setState(() {
-                              isLoading = true;
-                            });
-                            final newWalletBalance =
-                                _walletBalance + enteredAmount;
-                            try {
-                              await Future.delayed(const Duration(seconds: 3));
-                              await FirebaseFirestore.instance
-                                  .collection("Customers")
-                                  .doc(_accountId)
-                                  .update({"WalletBalance": newWalletBalance});
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Top-up successful!"),
-                                ),
-                              );
-                              Navigator.pop(context, true);
-                            } catch (error) {
-                              if (!mounted) return;
-                              setState(() {
-                                isLoading = false;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    "Unable to update wallet. Please try again.",
-                                  ),
-                                ),
-                              );
-                              debugPrint("Error updating wallet: $error");
-                            }
-                          }
-                        }
-                      : null,
+                  onPressed: canSubmit ? () => _submitTopUp(viewModel) : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _isNextButtonEnabled() && !isLoading
-                        ? Colors.blue
-                        : Colors.grey,
+                    backgroundColor: canSubmit ? Colors.blue : Colors.grey,
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  child: isLoading
+                  child: viewModel.isProcessingTopUp
                       ? const CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
                             Colors.white,
                           ),
                         )
                       : const Text(
-                          "Top Up",
+                          'Top Up',
                           style: TextStyle(color: Colors.white, fontSize: 18),
                         ),
                 ),

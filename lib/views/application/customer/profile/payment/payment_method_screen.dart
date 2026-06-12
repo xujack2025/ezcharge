@@ -1,114 +1,31 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../../../viewmodels/application/payment_method_viewmodel.dart';
 import 'add_card_screen.dart';
 import 'top_up_screen.dart';
 
-class PaymentMethodScreen extends StatefulWidget {
+class PaymentMethodScreen extends StatelessWidget {
   const PaymentMethodScreen({super.key});
 
   @override
-  PaymentMethodScreenState createState() => PaymentMethodScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) => PaymentMethodViewModel()..loadPaymentMethodProfile(),
+      child: const _PaymentMethodContent(),
+    );
+  }
 }
 
-class PaymentMethodScreenState extends State<PaymentMethodScreen> {
-  double _walletBalance = 0.0; // Default wallet balance
-  String _accountId = "";
-  String _cardNumber = "";
+class _PaymentMethodContent extends StatelessWidget {
+  const _PaymentMethodContent();
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchWalletBalance();
-    _getCustomerID();
+  Future<void> _refreshPaymentMethodProfile(BuildContext context) {
+    return context.read<PaymentMethodViewModel>().loadPaymentMethodProfile();
   }
 
-  Future<void> _getCustomerID() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-
-          if (!mounted) return;
-          setState(() {
-            _accountId = userDoc["CustomerID"];
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching customer data: $e");
-    }
-  }
-
-  //Fetch the logged-in user's wallet balance from Firestore
-  Future<void> _fetchWalletBalance() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        String userPhone = user.phoneNumber ?? "";
-        if (userPhone.isEmpty) return;
-
-        // 🔹 Search Firestore for matching phone number
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("Customers")
-            .where("PhoneNumber", isEqualTo: userPhone)
-            .limit(1)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          var userDoc = querySnapshot.docs.first;
-          if (!mounted) return;
-          setState(() {
-            _accountId = userDoc["CustomerID"];
-            _walletBalance = userDoc["WalletBalance"].toDouble();
-          });
-
-          // Fetch the card number after getting customer ID
-          _fetchCardNumber();
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching wallet balance: $e");
-    }
-  }
-
-  //Fetch the Card Number from Firestore
-  Future<void> _fetchCardNumber() async {
-    if (_accountId.isEmpty) return;
-
-    try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection("Customers")
-          .doc(_accountId)
-          .collection("PaymentMethod")
-          .limit(1)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        if (!mounted) return;
-        setState(() {
-          _cardNumber = querySnapshot.docs.first["CardNumber"];
-        });
-      }
-    } catch (e) {
-      debugPrint("Error fetching card number: $e");
-    }
-  }
-
-  //Build Card Number Display Widget
-  Widget _buildCardNumberDisplay() {
-    return _cardNumber.isNotEmpty
+  Widget _buildCardNumberDisplay(String cardNumber) {
+    return cardNumber.isNotEmpty
         ? Container(
             margin: const EdgeInsets.symmetric(vertical: 15),
             padding: const EdgeInsets.all(16),
@@ -128,7 +45,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
                 const Icon(Icons.credit_card, size: 30, color: Colors.black),
                 const SizedBox(width: 10),
                 Text(
-                  _cardNumber,
+                  cardNumber,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -142,6 +59,8 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<PaymentMethodViewModel>();
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -171,6 +90,14 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            if (viewModel.errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  viewModel.errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
             // 🔹 EZCharge Wallet Balance Card
             Container(
               padding: const EdgeInsets.all(16),
@@ -201,7 +128,7 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        "RM ${_walletBalance.toStringAsFixed(2)}", //Display Wallet Balance
+                        "RM ${viewModel.walletBalance.toStringAsFixed(2)}",
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -218,7 +145,8 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
                         ),
                       );
                       if (didTopUp == true) {
-                        await _fetchWalletBalance();
+                        if (!context.mounted) return;
+                        await _refreshPaymentMethodProfile(context);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -244,7 +172,13 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
             const SizedBox(height: 20),
 
             //Display Saved Card (If Exists)
-            _buildCardNumberDisplay(),
+            if (viewModel.isLoading)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 15),
+                child: CircularProgressIndicator(),
+              )
+            else
+              _buildCardNumberDisplay(viewModel.cardNumber),
 
             //Add Payment Method Section
             ElevatedButton.icon(
@@ -256,7 +190,8 @@ class PaymentMethodScreenState extends State<PaymentMethodScreen> {
 
                 //Refresh if card was added
                 if (isCardAdded == true) {
-                  _fetchCardNumber(); // Reload the card details
+                  if (!context.mounted) return;
+                  await _refreshPaymentMethodProfile(context);
                 }
               },
               icon: const Icon(Icons.add, color: Colors.blue),
